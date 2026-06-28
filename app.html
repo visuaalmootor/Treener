@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Trenn & Toitumine</title>
   <link rel="manifest" href="manifest.json">
+  <!-- Firebase SDK (v0.9.0) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <meta name="theme-color" content="#2563eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1737,6 +1741,12 @@
           </svg>
           <span id="refresh-label" style="display:none;font-size:12px;font-weight:600;line-height:1;"></span>
         </button>
+        <button id="fb-auth-btn" title="Logi sisse Google'iga" style="
+          height:32px;width:32px;border:0.5px solid var(--border);border-radius:50%;
+          background:var(--surface);display:flex;align-items:center;justify-content:center;
+          color:var(--text-2);flex-shrink:0;padding:0;transition:border-color 0.3s;overflow:hidden;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
         <button id="budget-btn" onclick="cycleBudget()" title="Vaheta eelarve klass">
           <div id="budget-name">—</div>
           <div id="budget-range">—</div>
@@ -1868,7 +1878,138 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.8.5';
+const APP_VERSION  = '0.9.0';
+
+/* ============================================================
+   FIREBASE (v0.9.0) — Google Auth + Firestore sync
+   Offline-first: localStorage on primaarne, Firestore sünkroniseerib.
+   Andmestruktuur: /users/{uid}/kv/{key} → { v: value, ts: timestamp }
+============================================================ */
+const FB_CONFIG = {
+  apiKey:            'AIzaSyCl6quwFkM3wpGEId_Pmh8VEbL3ABPMrB8',
+  authDomain:        'trenn-toitumine.firebaseapp.com',
+  projectId:         'trenn-toitumine',
+  storageBucket:     'trenn-toitumine.firebasestorage.app',
+  messagingSenderId: '736192118553',
+  appId:             '1:736192118553:web:fa71b25e5650d04a774f88'
+};
+
+let _fbAuth = null;
+let _fbDb   = null;
+let FB_USER = null;
+
+function fbInit() {
+  try {
+    firebase.initializeApp(FB_CONFIG);
+    _fbAuth = firebase.auth();
+    _fbDb   = firebase.firestore();
+    _fbAuth.onAuthStateChanged(async user => {
+      FB_USER = user;
+      renderAuthBtn();
+      if (user) {
+        log(`Firebase: sisse logitud ${user.email}`, 'dbg-ok');
+        await syncFromFirestore();
+        updateDayStats();
+        renderTab(STATE.currentTab);
+      } else {
+        log('Firebase: välja logitud', 'dbg-warn');
+      }
+    });
+    log('Firebase init ✓', 'dbg-ok');
+  } catch (e) {
+    log('Firebase init viga: ' + e.message, 'dbg-err');
+  }
+}
+
+async function fbLogin() {
+  if (!_fbAuth) return;
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await _fbAuth.signInWithPopup(provider);
+  } catch (e) {
+    log('Login viga: ' + e.message, 'dbg-err');
+    showToast('❌ Login ebaõnnestus');
+  }
+}
+
+async function fbLogout() {
+  if (!_fbAuth) return;
+  await _fbAuth.signOut();
+  showToast('Välja logitud');
+}
+
+// Kirjuta Firestoresse — fire-and-forget, ei blokeeri UI-d
+function fbWrite(key, value) {
+  if (!FB_USER || !_fbDb) return;
+  _fbDb.collection('users').doc(FB_USER.uid)
+    .collection('kv').doc(key)
+    .set({ v: value, ts: Date.now() })
+    .catch(e => log('fbWrite viga: ' + e.message, 'dbg-err'));
+}
+
+// Lae kõik võtmed Firestorest → localStorage (login järel).
+// Kui Firestores pole veel midagi → push kõik lokaalsed andmed automaatselt üles.
+async function syncFromFirestore() {
+  if (!FB_USER || !_fbDb) return;
+  try {
+    const snap = await _fbDb.collection('users').doc(FB_USER.uid)
+      .collection('kv').get();
+    if (snap.empty) {
+      // Esimene login sellel kontol — laadi lokaalsed andmed pilve
+      log('Firestore tühi — push kõik lokaalsed andmed üles', 'dbg-warn');
+      await pushAllToFirestore();
+    } else {
+      let count = 0;
+      snap.forEach(doc => {
+        localStorage.setItem('ttm_' + doc.id, JSON.stringify(doc.data().v));
+        count++;
+      });
+      log(`Firestore sync: ${count} kirjet laetud`, 'dbg-ok');
+      showToast(`☁️ Sünkroonitud (${count} kirjet)`);
+    }
+  } catch (e) {
+    log('syncFromFirestore viga: ' + e.message, 'dbg-err');
+  }
+}
+
+// Sünkroniseeri kogu localStorage Firestoresse (esimene login / uus seade)
+async function pushAllToFirestore() {
+  if (!FB_USER || !_fbDb) return;
+  const batch = _fbDb.batch();
+  const ref = _fbDb.collection('users').doc(FB_USER.uid).collection('kv');
+  let count = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k || !k.startsWith('ttm_')) continue;
+    const key = k.slice(4);
+    try {
+      const val = JSON.parse(localStorage.getItem(k));
+      batch.set(ref.doc(key), { v: val, ts: Date.now() });
+      count++;
+    } catch {}
+  }
+  await batch.commit();
+  showToast(`☁️ ${count} kirjet üles laetud`);
+  log(`pushAllToFirestore: ${count} kirjet`, 'dbg-ok');
+}
+
+function renderAuthBtn() {
+  const btn = document.getElementById('fb-auth-btn');
+  if (!btn) return;
+  if (FB_USER) {
+    btn.innerHTML = FB_USER.photoURL
+      ? `<img src="${FB_USER.photoURL}" style="width:32px;height:32px;object-fit:cover;" referrerpolicy="no-referrer">`
+      : `<span style="font-size:12px;font-weight:700;">${(FB_USER.displayName||'?')[0]}</span>`;
+    btn.style.borderColor = 'var(--green)';
+    btn.title = `${FB_USER.email} — kliki väljumiseks`;
+    btn.onclick = () => { if (confirm(`Logi välja?\n${FB_USER.email}`)) fbLogout(); };
+  } else {
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    btn.style.borderColor = 'var(--border)';
+    btn.title = "Logi sisse Google'iga";
+    btn.onclick = fbLogin;
+  }
+}
 const APP_START    = Date.now();
 const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/OWNER/REPO/main/data/';
 
@@ -2444,6 +2585,7 @@ function lsGet(key) {
 function lsSet(key, value) {
   try {
     localStorage.setItem('ttm_' + key, JSON.stringify(value));
+    fbWrite(key, value);   // ← Firestore sync (fire-and-forget)
     scheduleBackup();
     return true;
   } catch (e) { log('ls viga: ' + e.message, 'dbg-err'); return false; }
@@ -6922,13 +7064,50 @@ function removeLastAlkohol() {
 /* Tab 5 — Mina */
 function renderMina() {
   setTimeout(renderBackupCard, 50);
+  setTimeout(renderFirebaseCard, 60);
   return `
     ${renderMinaSettings()}
     ${renderAlkohol()}
     ${renderProgress()}
     ${renderBtbRoadmap()}
     <div id="backup-card" class="card" style="overflow:hidden;margin-top:var(--sp-sm);"></div>
+    <div id="firebase-card" class="card" style="overflow:hidden;margin-top:var(--sp-sm);"></div>
   `;
+}
+
+function renderFirebaseCard() {
+  const el = document.getElementById('firebase-card');
+  if (!el) return;
+  if (FB_USER) {
+    const name = FB_USER.displayName || FB_USER.email;
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--sp-sm) var(--sp-md);border-bottom:0.5px solid var(--border);">
+        <span style="font-size:14px;font-weight:700;">☁️ Pilvsünkroonimine</span>
+        <span style="font-size:11px;color:var(--green);font-weight:600;">● Ühendatud</span>
+      </div>
+      <div style="padding:var(--sp-sm) var(--sp-md);">
+        <p style="font-size:12px;color:var(--text-2);margin:0 0 10px 0;">
+          Logitud sisse: <strong>${name}</strong><br>
+          Kõik andmemuutused sünkroniseeritakse automaatselt pilve.
+        </p>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sm" onclick="pushAllToFirestore()" style="flex:1;">⬆️ Laadi kõik üles</button>
+          <button class="btn-sm" onclick="if(confirm('Logi välja?\\n${FB_USER.email}'))fbLogout()" style="flex:1;color:var(--red);border-color:var(--red);">Logi välja</button>
+        </div>
+      </div>`;
+  } else {
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--sp-sm) var(--sp-md);border-bottom:0.5px solid var(--border);">
+        <span style="font-size:14px;font-weight:700;">☁️ Pilvsünkroonimine</span>
+        <span style="font-size:11px;color:var(--text-3);">Välja logitud</span>
+      </div>
+      <div style="padding:var(--sp-sm) var(--sp-md);">
+        <p style="font-size:12px;color:var(--text-2);margin:0 0 10px 0;">
+          Logi sisse Google'iga et sünkroonida treeningud, kaal ja toitumine kõigi seadmete vahel.
+        </p>
+        <button class="btn-primary" onclick="fbLogin()" style="width:100%;">🔑 Logi sisse Google'iga</button>
+      </div>`;
+  }
 }
 
 /* Lisandite sektsioon */
@@ -8714,6 +8893,9 @@ function renderTulemas(icon, title, desc) {
 async function init() {
   log(`App käivitus v${APP_VERSION}`);
   document.getElementById('version-label').textContent = `v${APP_VERSION}`;
+
+  /* Firebase käivitus */
+  fbInit();
 
   /* Oota window.cowork — ⚠ teadaolev timeout probleem */
   await waitForCowork(10000);
