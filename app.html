@@ -1859,7 +1859,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.8.5</span>
+  <span id="version-label">v0.9.1</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1878,7 +1878,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.0';
+const APP_VERSION  = '0.9.1';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2183,12 +2183,12 @@ const FALLBACK = {
       M12: { id: 'M12', name: 'The Buff Teacher (smuuti)', emoji: '🥤', batch: false,
         intro: 'BtB hommikusmuuti. ~950 kcal, ~50g valku. 5 minutit.',
         ingredients: [{qty:'1 annust (30g)',name:'vadakupulber'},{qty:'2 tk',name:'munad (toored)'},{qty:'1 tk',name:'banaan'},{qty:'1 tk',name:'virsik (või mangotükid 100g)'},{qty:'100g',name:'vaarikad'},{qty:'2 dl',name:'täispiim'},{qty:'1 dl',name:'kreeka jogurt'},{qty:'1 spl',name:'mandlivõi (või maapähklivõi)'},{qty:'3–4 tk',name:'kalaõlikapslid'}],
-        steps: ['Joo esmalt 0.5L vett (tühja kõhu peale)','Võta 3–4 kalaõlikapsleid + multivitamiin','Blenderda: vadakupulber + 2 muna + banaan + virsik + vaarikad','Lisa 2dl piima + 1dl joguetit + 1 spl mandlivõid','Blenderda, lisa jää kui soovid paksemat'],
+        steps: ['Joo esmalt 0.5L vett (tühja kõhu peale)','Võta 3–4 kalaõlikapsleid + multivitamiin','Blenderda: vadakupulber + 2 muna + banaan + virsik + vaarikad','Lisa 2dl piima + 1dl jogurtit + 1 spl mandlivõid','Blenderda, lisa jää kui soovid paksemat'],
         kcal_approx: 950, protein_g: 50 },
       M13: { id: 'M13', name: 'The Fit Frenchman (omlett)', emoji: '🍳', batch: false,
         intro: 'BtB omletthommik. ~775 kcal, ~45g valku. 15 minutit.',
         ingredients: [{qty:'4 tk',name:'munad'},{qty:'1 tl',name:'või (või oliiviõli)'},{qty:'30g',name:'mozzarella (riivitud)'},{qty:'peotäis',name:'spinat (värske)'},{qty:'¼ tk',name:'sibul (viilutatud)'},{qty:'½ tk',name:'habanero (või cayenne näpuotsatäis)'},{qty:'150g',name:'kreeka jogurt'},{qty:'1 tk',name:'virsik (viilutatud)'}],
-        steps: ['Kuumuta pann madalale kuumusele, lisa või','Klopi 4 muna kausis, vala pannile','Küpseta aeglaselt — ära kiirusta','Kui muna on peaaegu tahke, lisa täidis: mozzarella + spinat + sibul + habanero','Keera omlett kokku','Serveeri: kauss joguetit virsikuviiludega + must kohv'],
+        steps: ['Kuumuta pann madalale kuumusele, lisa või','Klopi 4 muna kausis, vala pannile','Küpseta aeglaselt — ära kiirusta','Kui muna on peaaegu tahke, lisa täidis: mozzarella + spinat + sibul + habanero','Keera omlett kokku','Serveeri: kauss jogurtit virsikuviiludega + must kohv'],
         kcal_approx: 775, protein_g: 45 },
       M14: { id: 'M14', name: 'The Powerhouse', emoji: '💥', batch: false,
         intro: 'BtB täishommik. ~1000 kcal, ~55g valku. 20 minutit.',
@@ -2198,7 +2198,7 @@ const FALLBACK = {
       M15: { id: 'M15', name: 'The Lazy Beast', emoji: '⚡', batch: false,
         intro: 'BtB kiireimhommik. ~850 kcal. 2 minutit.',
         ingredients: [{qty:'4 tk',name:'munad (toored)'},{qty:'1 tk',name:'valgubatoon (eelmine päev külmikusse)'},{qty:'0,5 dl',name:'jogurt (kastmeks batonile)'}],
-        steps: ['Võta 4 toort muna klaasi (otsus on sinu)','Võta külmkapist eelmisel päeval valmistatud valgubatoon','Lisa joguetikaste batonile (0.5dl)','Söö'],
+        steps: ['Võta 4 toort muna klaasi (otsus on sinu)','Võta külmkapist eelmisel päeval valmistatud valgubatoon','Lisa jogurtikaste batonile (0.5dl)','Söö'],
         kcal_approx: 850, protein_g: 50 },
       M16: { id: 'M16', name: 'The Buff Italian', emoji: '🇮🇹', batch: false,
         intro: 'BtB omlett kikerhernetega. ~700 kcal. 20 minutit.',
@@ -2219,7 +2219,7 @@ const FALLBACK = {
       { name: 'Piim + vadakupulber',     desc: '3dl piim + 30g vadakupulber',              kcal: 300, time_sec: 60  },
       { name: 'Kreeka jogurt + mesi',    desc: '250g kreeka jogurt + 2 spl mesi',          kcal: 350, time_sec: 60  },
       { name: '5 min kiirfix',             desc: 'Pähklid (180 kcal) + banaan (100 kcal) + piimaklaas (150 kcal)',         kcal: 430, time_sec: 120 },
-      { name: 'Trail mix 100g',            desc: 'Pähklid + kuivatatud ploomid + tume shokolaad — konts, kaloritihe',        kcal: 500, time_sec: 30  },
+      { name: 'Trail mix 100g',            desc: 'Pähklid + kuivatatud ploomid + tume šokolaad — snäkk, kaloritihe',        kcal: 500, time_sec: 30  },
       { name: 'Taispiim 300ml',            desc: '1 suur klaas taispiima — kiirim lahendus: 150 kcal + valk + D-vitamiin',   kcal: 150, time_sec: 10  }
     ]
   },
@@ -2245,17 +2245,17 @@ const FALLBACK = {
     exercises: {
       '8':  { name: 'Rumeenia deadlift', emoji: '🏋️', category: 'Jalad', plans: ['B','C'], is_bodyweight: false, steps: ['Seisa püsti, hantel käes, jalad õlgade laiuselt, põlved kergelt kõverdatud', 'Hinga sisse — lase hantel aeglaselt mööda jalga alla (jääb jalale lähedale)', 'Mine alla kuni tunned venitust reie tagaosas (põlve kõrguseni)', 'Tõuse üles, pigista tuharad üleval'], ingmar_note: 'Pilk 1 m enda ees põrandal — kael neutraalne kogu aeg', youtube_search: 'Romanian deadlift dumbbell Alan Thrall' },
       '9':  { name: 'Sumo deadlift', emoji: '🏋️', category: 'Jalad', plans: ['B'], is_bodyweight: false, steps: ['Jalad laiem kui õlgade laius, varbad ~45° väljapoole, hantel keskel', 'Kükita alla, hoia selg sirge, rind üleval', 'Tõuse üles pigistades tuharad ülaosas', 'Lase aeglaselt alla'], ingmar_note: 'Laiad jalad vähendavad pahkluule koormust', youtube_search: 'sumo deadlift dumbbell technique' },
-      '10': { name: 'Goblet kyyk', emoji: '🏋️', category: 'Jalad', plans: ['B'], is_bodyweight: false, steps: ['Hoia hantlit mõlema käega rinnale, jalad õlgade laiuselt, varbad 15–30° väljapoole', 'Mine sügavale alla — reied paralleelsed põrandaga', 'Põlved järgivad varbade suunda', 'Tõuse üles hingates välja'], ingmar_note: 'Hantel rinnale, mitte pea kohale — õlale ei tule koormust', youtube_search: 'goblet squat Dan John' },
+      '10': { name: 'Goblet kükk', emoji: '🏋️', category: 'Jalad', plans: ['B'], is_bodyweight: false, steps: ['Hoia hantlit mõlema käega rinnale, jalad õlgade laiuselt, varbad 15–30° väljapoole', 'Mine sügavale alla — reied paralleelsed põrandaga', 'Põlved järgivad varbade suunda', 'Tõuse üles hingates välja'], ingmar_note: 'Hantel rinnale, mitte pea kohale — õlale ei tule koormust', youtube_search: 'goblet squat Dan John' },
       '11': { name: 'Tagasisamm (reverse lunge)', emoji: '🦵', category: 'Jalad', plans: ['B','C'], is_bodyweight: false, steps: ['Seisa püsti, hantlid külgedel', 'Astu TAGASI ühe jalaga — esijala põlv on otse kanna kohal', 'Tagumise jala põlv laskub põranda suunas', 'Tõuse algasendisse, vaheta jalga'], ingmar_note: 'AINULT tagasisamm — edasisamm on pahkluule ohtlik', youtube_search: 'reverse lunge vs forward lunge difference' },
       '12': { name: 'Jalapress (masin)', emoji: '🦵', category: 'Jalad', plans: ['C'], is_bodyweight: false, steps: ['Istu masinasse, jalad plaadil õlgade laiuselt', 'Eemalda lukustus, lase jalad aeglaselt kõverduda', 'Mine nii sügavale kui saad ilma et tuharad istmelt tõusevad', 'Suru plaati tagasi — ära lukusta põlved sirutusel'], ingmar_note: 'Jalad plaadi peal kõrgemale = tuharad; madalamale = reied', youtube_search: 'leg press form tutorial Renaissance Periodization' },
       '13': { name: 'Ühe käe hantelrida', emoji: '💪', category: 'Selg', plans: ['B'], is_bodyweight: false, steps: ['Toeta üks käsi ja sama poole põlv diivanil, hantel alla rippumas', 'Tõmba hantlit üles reie suunas — küünar üles ja tahapoole', 'Pigista abaluud ülaosas', 'Lase aeglaselt alla'], ingmar_note: 'Ära kasuta hoogu — kontrollitud liigutus', youtube_search: 'one arm dumbbell row technique Jeff Nippard' },
       '14': { name: 'Rinnale toetuv rida', emoji: '💪', category: 'Selg', plans: ['B','C'], is_bodyweight: false, steps: ['Lama kõhuli, rind toetub pinnale, käed hantlitega alla', 'Tõmba hantlid üles — küünar kaarest üles', 'Pigista abaluud kokku ülaosas', 'Lase aeglaselt alla'], ingmar_note: 'Hoia kael neutraalne — ära tõsta pead', youtube_search: 'chest supported dumbbell row' },
       '15': { name: 'Lat pulldown (alakäsi)', emoji: '💪', category: 'Selg', plans: ['C'], is_bodyweight: false, steps: ['Istu masinasse, alakäsi haare', 'Kummarda kergelt tahapoole (~15°)', 'Tõmba riba alla rindkeresse', 'Pigista lats all-asendis, lase aeglaselt üles'], ingmar_note: 'ÄRA tõmba kaela taha — ohtlik kaelaprobleemiga!', youtube_search: 'lat pulldown underhand grip form' },
       '16': { name: 'Istudes kabeltõmme', emoji: '💪', category: 'Selg', plans: ['C'], is_bodyweight: false, steps: ['Istu masinasse, kitsas neutraalne haare', 'Suru rind ette, hoia selg sirge', 'Tõmba käepideme kõhtu — küünar mööda keha tahapoole', 'Pigista abaluud, lase aeglaselt ette'], ingmar_note: 'Liigutus toimub kätes, mitte seljas', youtube_search: 'seated cable row proper form' },
-      '17': { name: 'Bicep curl', emoji: '💪', category: 'Biitseps', plans: ['B'], is_bodyweight: false, steps: ['Seisa, hantel käes, küünar keha küljes, peopesa ülespoole', 'Tõmba hantel üles täis kõverduseni', 'Lase aeglaselt alla — TÄIS sirutüs all-asendis', 'Küünar keha küljes kogu aeg'], ingmar_note: 'Ära kiiguta keha — liigutus ainult küünarliigeses', youtube_search: 'bicep curl full range of motion Jeff Nippard' },
+      '17': { name: 'Bicep curl', emoji: '💪', category: 'Biitseps', plans: ['B'], is_bodyweight: false, steps: ['Seisa, hantel käes, küünar keha küljes, peopesa ülespoole', 'Tõmba hantel üles täis kõverduseni', 'Lase aeglaselt alla — TÄIS sirutus all-asendis', 'Küünar keha küljes kogu aeg'], ingmar_note: 'Ära kiiguta keha — liigutus ainult küünarliigeses', youtube_search: 'bicep curl full range of motion Jeff Nippard' },
       '18': { name: 'Põrandapress (floor press)', emoji: '💪', category: 'Rind', plans: ['B'], is_bodyweight: false, steps: ['Lama selili põrandal, põlved kõverdatud', 'Hantlid rinna kõrgusel, küünar ~45° kehast (mitte 90°)', 'Suru hantlid üles sirgeks', 'Lase alla — küünar puudutab põrandat, peatu ja tõuse uuesti'], ingmar_note: 'Põrand piirab liikumisulatust — turvalisem õlale kui tavapressiga', youtube_search: 'floor press dumbbell technique' },
       '19': { name: 'Madala kaldega hantlipress', emoji: '💪', category: 'Rind', plans: ['C'], is_bodyweight: false, steps: ['Seadista pink 15–30° kaldele — MITTE üle 45°', 'Hantlid rinna kõrgusel, küünar ~45° kehast', 'Suru üles, hantlid kergelt üksteise poole ülaosas', 'Lase aeglaselt alla täis venituseni'], ingmar_note: 'Kalle üle 45° = sisuliselt overhead press — välditud!', youtube_search: 'low incline dumbbell press vs flat bench' },
-      '20': { name: 'Kaabli rinnpress', emoji: '💪', category: 'Rind', plans: ['C'], is_bodyweight: false, steps: ['Seadista kaablid õla kõrgusele', 'Seisa kaablite vahel, astu ühe jalaga ette', 'Suru käed otse ette kokku', 'Lase tagasi kontrolliga — tunne rinna venitüst'], ingmar_note: 'Parem valik kui baarrauaga press — pidev pinge, õlale sõbralikum', youtube_search: 'cable chest press standing form' },
+      '20': { name: 'Kaabli rinnpress', emoji: '💪', category: 'Rind', plans: ['C'], is_bodyweight: false, steps: ['Seadista kaablid õla kõrgusele', 'Seisa kaablite vahel, astu ühe jalaga ette', 'Suru käed otse ette kokku', 'Lase tagasi kontrolliga — tunne rinna venitust'], ingmar_note: 'Parem valik kui baarrauaga press — pidev pinge, õlale sõbralikum', youtube_search: 'cable chest press standing form' },
       '21': { name: 'Tricepsi kick-back', emoji: '💪', category: 'Triitseps', plans: ['B'], is_bodyweight: false, steps: ['Kummarda ette ~45°, toeta üks käsi toolile', 'Küünar on üleval, keha kõrgusel', 'Sirutage käsi taha täielikult sirgeks, pigista triitsepsi üleval', 'Lase aeglaselt tagasi'], ingmar_note: 'Ei nõua ülepea liigutust — sobib õlapiiranguga', youtube_search: 'tricep kickback proper form' },
       '22': { name: 'Külgmine tõstmine', emoji: '💪', category: 'Õlad', plans: ['B','C'], is_bodyweight: false, steps: ['Seisa püsti, hantlid külgedel', 'Tõsta käed AEGLASELT kuni õla kõrguseni (90°)', 'ÄRA mine üle õla taseme', 'Lase AEGLASELT alla — 3 sek alla (see kasvatab lihast)'], ingmar_note: 'Ära kasuta hoogu — kerge raskus, puhas tehnika', youtube_search: 'lateral raise slow eccentric Jeff Nippard' },
       '23': { name: 'Face pull', emoji: '💪', category: 'Õlad', plans: ['C'], is_bodyweight: false, steps: ['Seadista kaabel silma kõrgusele, kasuta köit', 'Haara mõlema käega, astu samm tahapoole', 'Tõmba köit näo poole — käed lähevad kõrvale-tahapoole (W-kuju)', 'Pigista abaluud ülaosas, lase aeglaselt tagasi'], ingmar_note: 'Parim õlatervise harjutus — parandab välisrotatsiooni', youtube_search: 'face pull Jeff Cavaliere Athlean-X' },
@@ -2272,7 +2272,7 @@ const FALLBACK = {
       '34': { name: 'Rööbaspuud dips (OG81)', emoji: '🌳', category: 'Rind/Triitseps', plans: ['A'], is_bodyweight: true, steps: ['Hoia keha sirgetel kätel üleval, rista pahkluud', 'Lase keha sujuvalt alla kuni küünar ~90°', 'Tõuse üles sirutades käed sirgeks', 'Keha sirge = triitseps; ette kallutatud = alumine rind'], ingmar_note: 'Parema õla jaoks alusta triitsepsi variandiga (keha sirge)', youtube_url: 'https://youtu.be/EpGUjqhuf0A' },
       '35': { name: 'Seljapink / back extension (OG20)', emoji: '🌳', category: 'Alaselg', plans: ['A'], is_bodyweight: true, steps: ['Aseta reite ülaosa vaagnatoele, jalad jalatugedele', 'Lase ülakeha aeglaselt vöökohast alla (~45°)', 'Tõsta üles kuni keha on sirge joon — pigista tuharad', 'Hoia 1 sek, lase aeglaselt alla'], ingmar_note: 'Hoia kael neutraalne — ÄRA tõsta keha üle sirge joone', youtube_url: 'https://youtu.be/1AqMj20VDGw' },
       '36': { name: 'Kõhupink / crunch (OG90)', emoji: '🌳', category: 'Core', plans: ['A'], is_bodyweight: true, steps: ['Istu pingile, jalad jalaplaadile, ristista käed rinnale', 'Hinga välja ja tõsta ülakeha — liigu roide vaagna poole', 'Pigista kõhulihased ülaosas, hoia 1 sek', 'Lase kontrollitult tagasi — hoia kerge pinge'], ingmar_note: 'ÄRA tõmba kaelast — käed rinnale, mitte pea taha', youtube_url: 'https://youtu.be/ve_yqBoECcw' },
-      '37': { name: 'Rõngassurumised', emoji: '🌳', category: 'Rind', plans: ['A'], is_bodyweight: true, steps: ['Haara rõngastest mõlema käega, keha sirge nagu plankis', 'Lase keha alla — rõngad lähevad laiemaks, suurem venitüs', 'Tõuse üles, suru rõngad kergelt üksteise poole', 'Rõngad kõrgemale = kergem; madalamale = raskem'], ingmar_note: 'Ebastabiilsus aktiveerib rohkem stabilisaatoreid kui tavalised kätekõverdused', youtube_search: 'ring push ups tutorial calisthenics' },
+      '37': { name: 'Rõngassurumised', emoji: '🌳', category: 'Rind', plans: ['A'], is_bodyweight: true, steps: ['Haara rõngastest mõlema käega, keha sirge nagu plankis', 'Lase keha alla — rõngad lähevad laiemaks, suurem venitus', 'Tõuse üles, suru rõngad kergelt üksteise poole', 'Rõngad kõrgemale = kergem; madalamale = raskem'], ingmar_note: 'Ebastabiilsus aktiveerib rohkem stabilisaatoreid kui tavalised kätekõverdused', youtube_search: 'ring push ups tutorial calisthenics' },
       '41': { name: '½ Kneeling Cable Row', emoji: '💪', category: 'Selg', plans: ['C'], is_bodyweight: false, steps: ['Põlvitu ühe põlvega maas (poolpõlvili), kaabel ees', 'Hoia selg sirge ja stabiilne', 'Tõmba kaablit põlvitava poole küünarnukiga keha kõrvale tahapoole', 'Pigista abaluu, lase kontrollitult ette — korda mõlemat poolt'], ingmar_note: 'F2 upgrade: poolpõlvili asend sunnib kasutama core stabilisaatoreid', youtube_search: 'half kneeling cable row tutorial' },
       '45': { name: '1-DB Step Up', emoji: '🦵', category: 'Jalad', plans: ['C'], is_bodyweight: false, steps: ['Seisa kõrge pinkide/toolide ees, hantel ühes käes', 'Aseta üks jalg toolile/pingile', 'Suru keha üles kasutades eesmist jalga — tagajalg EI lükka', 'Lase kontrollitult alla; tee kõik kordused ühelt poolt, siis vaheta'], ingmar_note: 'F2 upgrade: suurem alajala töö kui tagasisamm — hea Faas 2-ks', youtube_search: '1 dumbbell step up BtB tutorial' },
       '47': { name: 'Chin-Up ISO Hoid', emoji: '🌳', category: 'Selg', plans: ['A','C'], is_bodyweight: true, steps: ['Hüppa alakäsi haardega lati juurde üles — rind lati lähedal', 'Hoia asend 15–25 sekundit (pindala suureneb ajaga)', 'Lase väga aeglaselt alla — kontrolli kogu laskumist', 'Korda vastavalt seeriatele'], ingmar_note: 'ISO hoid = isomeetriline hoid (lihas pingul, aga ei liigu) — tekitab suurt pinget kogu lihasele korraga. F2 upgrade: võimsam lihasmassi stimuleerija kui tavalised kordused.', youtube_search: 'chin up iso hold BtB Bony to Beastly' },
@@ -3387,7 +3387,7 @@ function renderKodu() {
   const progressToGoal = Math.max(0, Math.min(100, Math.round((curKg - startKg) / (goalKg - startKg) * 100)));
 
   /* ---- JÄRGMINE EINE ---- */
-  let nextMealBlock = `<div style="color:var(--text-2);font-size:13px;">Kõik einied täna söödud 🎉</div>`;
+  let nextMealBlock = `<div style="color:var(--text-2);font-size:13px;">Kõik eined täna söödud 🎉</div>`;
   if (STATE.nutrition) {
     const slots    = STATE.nutrition.slots ?? [];
     const fullMenu = generateMenuFromCart();
@@ -3414,7 +3414,7 @@ function renderKodu() {
         </div>`;
     } else if (!nextSlot) {
       // kontrollime kas on üldse homme esimene slots
-      nextMealBlock = `<div style="color:var(--text-2);font-size:13px;">Kõik tänased eineid on täidetud 👌</div>`;
+      nextMealBlock = `<div style="color:var(--text-2);font-size:13px;">Kõik tänased eined on täidetud 👌</div>`;
     }
   }
 
@@ -5680,7 +5680,7 @@ function renderToitumine() {
             <button class="coffee-count-btn" onclick="addCoffee(1)">+</button>
           </div>
         </div>
-        <div style="font-size:11px;color:var(--text-3);">Regulaarsel kohvijoomine ≈ täisvedeliku saamine — iga tass läheb +200ml koguarvesse.</div>
+        <div style="font-size:11px;color:var(--text-3);">Regulaarne kohvijoomine ≈ täisvedeliku saamine — iga tass läheb +200ml koguarvesse.</div>
       </div>
     </div>` : ''}
 
@@ -8645,7 +8645,7 @@ function renderWarmupCard(trainingType) {
   ];
 
   const exercises = trainingType === 'A' ? warmupA : warmupB;
-  const label = trainingType === 'A' ? 'Ülaekeha soojendus' : 'Alakeha soojendus';
+  const label = trainingType === 'A' ? 'Ülakeha soojendus' : 'Alakeha soojendus';
 
   const exHtml = exercises.map((ex, i) => `
     <div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0;${i < exercises.length-1 ? 'border-bottom:0.5px solid var(--border);' : ''}">
