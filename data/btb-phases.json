@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "phases": {
+    "1": {
+      "name": "Faas 1",
+      "subtitle": "Core, Seljatehnika & Lihasmass",
+      "weeks": 5,
+      "rest_s": 60,
+      "tempo": "301",
+      "focus": "Alusta 40–50% 1RM (suurim raskus, mida suudad øhe korraga tõsta). Fookus tehnikal ja mind-muscle connection-il (keskendu sellele, et töötab täpselt see lihas mida tahad, mitte et lihtsalt raskus liiguks). Tempo 301 = 3 sek alla, 0 paus all, 1 sek üles.",
+      "week_progression": [
+        { "week": 1, "sets": 2, "deload": true,  "reps_min": 12, "reps_max": 12 },
+        { "week": 2, "sets": 3, "deload": false, "reps_min": 12, "reps_max": 12 },
+        { "week": 3, "sets": 3, "deload": false, "reps_min": 12, "reps_max": 12 },
+        { "week": 4, "sets": 3, "deload": false, "reps_min": 10, "reps_max": 10 },
+        { "week": 5, "sets": 4, "deload": false, "reps_min": 10, "reps_max": 10 }
+      ],
+      "core_sets": 3,
+      "core_reps_note": "vt harjutuse enda seaded"
+    },
+    "2": {
+      "name": "Faas 2",
+      "subtitle": "Maht + Jõud",
+      "weeks": 5,
+      "rest_s": 90,
+      "tempo": "301",
+      "focus": "Raskemad kaalud, pikem puhkus (60 sek → 90 sek). Makrode tasakaal: 20–25% valk / 40–50% SV / 25–30% rasv. Double progressioon: tõsta raskust (+2,5 kg) alles siis, kui køik seeriad jõuavad ülemisse korduste piiresse puhtalt.",
+      "week_progression": [
+        { "week": 1, "sets": 2, "deload": true,  "reps_min": 10, "reps_max": 10 },
+        { "week": 2, "sets": 3, "deload": false, "reps_min": 10, "reps_max": 10 },
+        { "week": 3, "sets": 3, "deload": false, "reps_min": 10, "reps_max": 8  },
+        { "week": 4, "sets": 3, "deload": false, "reps_min": 10, "reps_max": 8  },
+        { "week": 5, "sets": 3, "deload": false, "reps_min": 8,  "reps_max": 8  }
+      ],
+      "core_sets": 3,
+      "core_reps_note": "vt harjutuse enda seaded"
+    },
+    "3": { "name": "Faas 3", "subtitle": "Jõud + Maht", "coming_soon": true },
+    "4": { "name": "Faas 4", "subtitle": "Beast Mode", "coming_soon": true }
+  }
+}
