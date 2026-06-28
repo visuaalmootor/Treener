@@ -4003,17 +4003,34 @@ function cancelConfirmation() {
 /* ===== Barkoodiskänner ===== */
 let _barcodeStream = null;
 
-async function scanBarcode() {
-  const hasCamera   = !!(navigator.mediaDevices?.getUserMedia);
-  const hasDetector = ('BarcodeDetector' in window);
+async function loadBarcodePolyfill() {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/barcode-detector@2/dist/iife/barcode-detector.min.js';
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
 
+async function scanBarcode() {
+  const hasCamera = !!(navigator.mediaDevices?.getUserMedia);
   if (!hasCamera) {
     showEanInput('Kaamera pole saadaval —');
     return;
   }
-  if (!hasDetector) {
-    showEanInput('Sinu brauser ei toeta automaatset skaneerimist —');
-    return;
+
+  // Lae polyfill kui BarcodeDetector pole natiivne (nt Brave iOS)
+  if (!('BarcodeDetector' in window)) {
+    const resultsEl = document.getElementById('custom-off-results');
+    if (resultsEl) resultsEl.innerHTML = `<div class="off-status">⏳ Laen skännerit...</div>`;
+    try {
+      await loadBarcodePolyfill();
+    } catch(e) {
+      showEanInput('Skänner ei laadinud —');
+      return;
+    }
+    if (resultsEl) resultsEl.innerHTML = '';
   }
 
   // Loo overlay
