@@ -1,0 +1,18 @@
+{
+  "name": "Ingmar",
+  "age": 34,
+  "height_cm": 178,
+  "weight_kg": 63,
+  "goal_weight_kg": 78,
+  "calories_target": 3300,
+  "macros": {
+    "protein_g": 208,
+    "carbs_g": 371,
+    "fat_g": 109,
+    "fiber_g": 30
+  },
+  "budget_class": 2,
+  "location": "Tartu, Tähe 49",
+  "restrictions": ["soy"],
+  "water_target_ml": 2750
+}
