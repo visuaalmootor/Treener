@@ -1,0 +1,38 @@
+{
+  "name": "Trenn & Toitumine",
+  "short_name": "T&T",
+  "description": "Isiklik trennija toitumiskava — BtB programm",
+  "start_url": "./app.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "lang": "et",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "fitness"],
+  "shortcuts": [
+    {
+      "name": "Toitumine",
+      "url": "./app.html#toitumine",
+      "description": "Ava toidupäevik"
+    },
+    {
+      "name": "Trennikava",
+      "url": "./app.html#trenn",
+      "description": "Ava treeningkava"
+    }
+  ]
+}
