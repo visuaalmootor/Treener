@@ -1,11 +1,11 @@
-const CACHE_NAME = 'tt-v0.8.0';
+const CACHE_NAME = 'tt-v0.8.5';
 const STATIC = [
-  './app.html',
   './manifest.json',
-  './data/prices.json'
+  './icons/icon-192.png',
+  './icons/icon-512.png',
 ];
 
-// Paigalda: cachimine
+// Paigalda: cache ainult staatilised varad (mitte app.html)
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(c => c.addAll(STATIC))
@@ -23,13 +23,16 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch: network-first prices.json (hinnad peavad olema värsked),
-// cache-first kõik muu (app.html töötab offline)
+// Fetch strateegia:
+//   app.html      → network-first (alati värsked muutused kohe näha)
+//   prices.json   → network-first (hinnad peavad olema värsked)
+//   data/*.json   → network-first (andmed peavad olema värsked)
+//   muu (ikoonid, manifest) → cache-first (muutuvad harva)
 self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
+  const url = e.request.url;
 
-  // prices.json — proovi võrku, kui ei saa kasuta cache
-  if (url.pathname.endsWith('prices.json')) {
+  // app.html + kõik .json failid → network-first
+  if (url.endsWith('app.html') || url.includes('.json')) {
     e.respondWith(
       fetch(e.request)
         .then(res => {
@@ -42,7 +45,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Kõik muu — cache-first
+  // Kõik muu (ikoonid, manifest) — cache-first
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
@@ -55,3 +58,5 @@ self.addEventListener('fetch', e => {
     })
   );
 });
+</content>
+</invoke>
