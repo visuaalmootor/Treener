@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "updated": "2026-06-22",
-  "note": "BtB (Bony to Beastly) lisandite protokoll. Kõik ajastused on kriitilised — eelkøige kreatiin ja magneesium.",
+  "note": "BtB (Bony to Beastly) lisandite protokoll. Kõik ajastused on kriitilised — eelkõige kreatiin ja magneesium.",
   "supplements": [
     {
       "id": "SUP01",
-      "name": "Kreatiin monohødraat",
+      "name": "Kreatiin monohüdraat",
       "emoji": "💊",
       "dose": "5g",
       "timing": "S01 koos — hommikusmuutis",
@@ -14,7 +14,83 @@
       "brand_note": "Osta mikroniseeritud kreatiini — lahustub paremini",
       "absorption_tip": "Sega alati smuutisse või mahlasse — kuiva neelamine aeglustab imendumist",
       "priority": 1
+    },
+    {
+      "id": "SUP02",
+      "name": "D-vitamiin",
+      "emoji": "☀️",
+      "dose": "2000–4000 IU",
+      "timing": "S01 koos rasvaga — hommikusöögiga",
+      "slot": "S01",
+      "why": "Eestis on D-vitamiini puudus 8 kuud aastas. Madal D-vitamiin = madal testosteroon ja aeglasem taastumine.",
+      "absorption_tip": "Võta koos rasvaga (munad, maapähklivõi) — rasvlahustuv vitamiin",
+      "seasonal_note": "Aprill–september (päikesepaiste): 2000 IU. Oktoober–märts (tume): 4000 IU.",
+      "priority": 2
+    },
+    {
+      "id": "SUP03",
+      "name": "Omega-3 (kalaõli)",
+      "emoji": "🐟",
+      "dose": "3 kapslit",
+      "timing": "S01 koos — hommikusöögiga",
+      "slot": "S01",
+      "why": "Vähendab põletikku, toetab testosterooni tootmist. BtB: suunab toidu lihasmassi, mitte rasvaks.",
+      "absorption_tip": "Võta koos söögiga (rasvlahustuv — vajab rasva imendumiseks). Maovalu risk väiksem söögiga.",
+      "brand_note": "Kontrolli: min 30% EPA+DHA protsent. Lõhe/sardiin/anšoovis paremas järjestuses.",
+      "priority": 3
+    },
+    {
+      "id": "SUP04",
+      "name": "Magneesium (glütsinaat)",
+      "emoji": "🌙",
+      "dose": "300–400mg",
+      "timing": "Enne und — 30–60 min enne magamaminekut",
+      "slot": "öö",
+      "why": "Parandab une kvaliteeti, vähendab lihaskrampe, toetab taastumist. BtB: kriitilne hardgainerile.",
+      "absorption_tip": "Glütsinaat imendub paremini kui oksiid. Võta tühja kõhuga või kergelt söönult.",
+      "brand_note": "Väldi magneesiumoksiidi — kehv imendumine (~4%). Glütsinaat/malaat/threonate on paremad.",
+      "priority": 4
+    },
+    {
+      "id": "SUP05",
+      "name": "Vadakupulber (whey)",
+      "emoji": "🥛",
+      "dose": "30–40g (1 scoop)",
+      "timing": "S01 hommikusmuutis VÕI M08 treeninjoogis",
+      "slot": "S01",
+      "why": "Kiireim valguallikas. BtB: hommikusmuutis (M03) tagab vajaliku proteiini ilma täitvuseta.",
+      "absorption_tip": "Kasuta isolaati (whey isolate) kui laktoositaluvus on probleem. Kontsentraat on odavam.",
+      "brand_note": "⚠️ Ingmar: VÄLDEwsojaletsitsiiniga whey-d (sojaallergeen). Kontrollikoostist.",
+      "priority": 5
+    },
+    {
+      "id": "SUP06",
+      "name": "Dekstroos (treeningul)",
+      "emoji": "⚡",
+      "dose": "76g (M08 järgi)",
+      "timing": "Ainult treeningutel — M08 treeninjoogis",
+      "slot": "trenn",
+      "why": "Kiire glükoos lihasglükogeeni täiendamiseks treeningu ajal. BtB: kombineerituna vadakuga = maksimaalne anaboolne aken.",
+      "absorption_tip": "Ära kasuta puhkepäevadel — liiga palju kiireid süsivesikuid ilma treeningustressi.",
+      "note": "Kogus = 1.2g × 63kg. Kasvades suurenda vastavalt.",
+      "priority": 6
+    },
+    {
+      "id": "SUP07",
+      "name": "Glutamiin (treeningul)",
+      "emoji": "💉",
+      "dose": "15g",
+      "timing": "Ainult treeningutel — M08 treeninjoogis",
+      "slot": "trenn",
+      "why": "Parandab taastumist, vähendab lihasvalu. BtB: kombineerituna dekstroosi ja vadakuga treeningus.",
+      "absorption_tip": "Lisa otse treeninjoogipudelisse koos dekstroosiga.",
+      "note": "Fikseeritud annus — ei sõltu kehakaalust",
+      "priority": 7
     }
   ],
-  "daily_schedule": []
+  "daily_schedule": [
+    { "time": "S01 (08:00)", "items": ["SUP01", "SUP02", "SUP03", "SUP05"], "note": "Lisa kreatiin smuutisse, D-vit + omega-3 söögiga" },
+    { "time": "Trennipäevad", "items": ["SUP06", "SUP07"], "note": "Ainult treeningutel — M08 treeninjoogis" },
+    { "time": "Enne und (~21:00)", "items": ["SUP04"], "note": "Magneesiumglütsinaat 30–60 min enne magamaminekut" }
+  ]
 }
