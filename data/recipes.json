@@ -1,0 +1,736 @@
+{
+  "version": "2.0",
+  "updated": "2026-06-22",
+  "methods": {
+    "M01": {
+      "id": "M01",
+      "name": "Küpsetamine ahjus",
+      "emoji": "♨️",
+      "batch": true,
+      "batch_note": "Tee pühapäeval — kestab 4–5 päeva",
+      "intro": "Liha maitsestamine ja küpsetamine. 5 min ettevalmistus + 35–45 min passiivset aega. Sobib 1 kg+ kogustele.",
+      "base_spices": "Oliiviõli + küüslauk + sool + pipar + paprika",
+      "steps": [
+        "Kuumuta ahi 200°C",
+        "Sega maitseained (õli + küüslauk + sool + pipar + paprika) kausis",
+        "Kasta liha/kala segusse, kata ühtlaselt",
+        "Küpseta vastavalt tabelile all",
+        "Lase jahtuda, jaga portsjoniteks (180–220g), pane suletud karpidesse"
+      ],
+      "times": [
+        {
+          "product": "Kana rinnatükk",
+          "temp": "200°C",
+          "time_min": 38,
+          "sign": "Lõika paksimast kohast — valge seest"
+        },
+        {
+          "product": "Kana reietükk",
+          "temp": "200°C",
+          "time_min": 43,
+          "sign": "Mahl on selge, mitte roosakas"
+        },
+        {
+          "product": "Lõhe / forell",
+          "temp": "200°C",
+          "time_min": 19,
+          "sign": "Ketendab kergelt, roosakas seest"
+        },
+        {
+          "product": "Tursk / lahja kala",
+          "temp": "200°C",
+          "time_min": 17,
+          "sign": "Valge ja ketendab"
+        },
+        {
+          "product": "Veiseliha filee",
+          "temp": "200°C",
+          "time_min": 22,
+          "sign": "Sisetemperatuur 63°C"
+        },
+        {
+          "product": "Sealiha filee",
+          "temp": "200°C",
+          "time_min": 28,
+          "sign": "Sisetemperatuur 71°C"
+        }
+      ],
+      "storage": "Külmkapis 4–5 päeva | sügavkülmas 3 kuud",
+      "reheat": "Mikrolaineahi 2 min (lisa paar tilka vett)"
+    },
+    "M02": {
+      "id": "M02",
+      "name": "Keetmine",
+      "emoji": "🫕",
+      "batch": true,
+      "batch_note": "Riis ja kartul sobivad ette. Pasta keeda alati värskelt.",
+      "intro": "Tärkliste keetmine. Riis ja kartul sobivad batch-cookingiks — pasta keeda alati värskelt.",
+      "steps": [
+        "Riis: loputa külma veega kuni vesi on selge",
+        "Riis: lisa 1:2 vett, keeda kaanega madalal kuumusel 18 min",
+        "Riis: lase 5 min kaane all aurutada, ära sega",
+        "Kartul: kata veega, keeda 20–25 min (kahvel tungib kergelt sisse)",
+        "Pasta: paks pott, palju soolaga vett — keeda pakendi järgi al dente"
+      ],
+      "yields": [
+        {
+          "product": "Riis (700g kuivalt)",
+          "yield": "~1,96 kg keedetud",
+          "portions": "4–5 lõunat"
+        },
+        {
+          "product": "Kartul (1 kg)",
+          "yield": "~1 kg keedetud",
+          "portions": "~4 portsjonit 250g"
+        },
+        {
+          "product": "Pasta (500g kuivalt)",
+          "yield": "~1,25 kg keedetud",
+          "portions": "~4 portsjonit"
+        }
+      ],
+      "storage": "Külmkapis 4–5 päeva (riis ja kartul)",
+      "pasta_note": "Pasta ei sobi ette tegemiseks — keeda alati värskelt (~8 min). Kaste (hakkliha + tomatikaste) saab ette teha."
+    },
+    "M03": {
+      "id": "M03",
+      "name": "Hommikusmuuti",
+      "emoji": "🥤",
+      "batch": false,
+      "intro": "Kiire hommikusöök blenderiga — valmib 3 minutiga. Muutub paksemaks kui ootad, joo kohe.",
+      "steps": [
+        "Lisa blenderisse järjekorras:",
+        "1. Vedelik: täispiim 2–3 dl",
+        "2. Pulber: vadakupulber 30–40g + kreatiin 5g",
+        "3. Pehme: banaan (või mustikad 150g + mesi 1 spl)",
+        "4. Kõva: kaerahelbed 50g",
+        "5. Rasv: maapähklivõi 2 spl (lisa viimasena — muidu kleepub põhja)",
+        "Blenderda 30–60 sekundit",
+        "Joo kohe — kaer paisub ja muutub paksemaks"
+      ],
+      "subs": [
+        {
+          "missing": "Banaan",
+          "use": "Mustikad 150g + mesi 1 spl"
+        },
+        {
+          "missing": "Maapähklivõi",
+          "use": "Mandlivõi VÕI pähklid 30g (blenderda)"
+        },
+        {
+          "missing": "Täispiim",
+          "use": "Keefir VÕI lahja piim + oliiviõli 1 spl"
+        },
+        {
+          "missing": "Vadakupulber",
+          "use": "Hernepulber sama kogusega"
+        }
+      ],
+      "kcal_approx": 700,
+      "note": "Lisa kreatiin alati smuutisse — maitseta, ei märkagi"
+    },
+    "M04": {
+      "id": "M04",
+      "name": "Külmvalmistamine",
+      "emoji": "❄️",
+      "batch": true,
+      "batch_note": "Energiapallid valmista pühapäeval — kestab 1–2 nädalat",
+      "intro": "Ei küpseta, ei keeda. Energiapallid, kodujuust ja öö-kaer.",
+      "variants": {
+        "energiapallid": {
+          "name": "Energiapallid (batch)",
+          "batch_note": "Tee pühapäeval ~15 palli — snäkid kogu nädalaks",
+          "ingredients": [
+            {
+              "name": "Kaerahelbed",
+              "amount": "150g",
+              "note": "Asendamatu"
+            },
+            {
+              "name": "Maapähklivõi",
+              "amount": "80g",
+              "sub": "Mandlivõi"
+            },
+            {
+              "name": "Mesi",
+              "amount": "60g",
+              "sub": "Vahtrasiirup"
+            },
+            {
+              "name": "Vadakupulber",
+              "amount": "40g",
+              "sub": "Hernepulber"
+            },
+            {
+              "name": "Kakaonibs / tume šokolaad",
+              "amount": "30g",
+              "note": "Valikuline"
+            }
+          ],
+          "steps": [
+            "Sega kõik koostisained kausis",
+            "Pane 15 min külmkappi (lihtsam vormida)",
+            "Vooli 30g pallid — ~15 palli kokku",
+            "Hoia külmkapis suletud anumas"
+          ],
+          "kcal_per_ball": 115,
+          "storage": "Külmkapis 1–2 nädalat | sügavkülmas 3 kuud"
+        },
+        "oo_kaer": {
+          "name": "Öö-kaer (tee eelmisel õhtul)",
+          "steps": [
+            "Sega kausis: kaerahelbed 80g + piim 2dl + vadakupulber 30g + banaan (viilutatud)",
+            "Kata ja pane külmkappi",
+            "Hommikul vala peale maapähklivõi 2 spl — valmis"
+          ],
+          "kcal_approx": 680
+        },
+        "kodujuust": {
+          "name": "Kodujuust marjadega",
+          "steps": [
+            "Tõsta kodujuust 200g kaussi",
+            "Lisa marjad 100g + mesi 1 spl",
+            "Sega kergelt — valmis. 2 minutit."
+          ],
+          "kcal_approx": 380
+        }
+      }
+    },
+    "M05": {
+      "id": "M05",
+      "name": "Praadmine pannil",
+      "emoji": "🍳",
+      "batch": false,
+      "intro": "Munad ja hakkliha pannilt. Kiire — 5–10 minutit.",
+      "variants": {
+        "munarost": {
+          "name": "Munaröst (4 muna)",
+          "steps": [
+            "Kuumuta pann keskmisele kuumusele",
+            "Lisa või 10g — oota kuni sulab",
+            "Löö munad pannile",
+            "Sega aeglaselt kahvliga 3–4 min",
+            "Jäta natuke niiske — kivikõvaks praetud munad on kuivad"
+          ],
+          "kcal_approx": 320
+        },
+        "hakkliha": {
+          "name": "Hakkliha panniga",
+          "steps": [
+            "Kuumuta pann kõrgele kuumusele, lisa oliiviõli 1 spl",
+            "Lisa hakkliha 200g — ära sega kohe, lase pruunistuda 2–3 min",
+            "Purusta kahvliga, sega ja pruunista veel 2–3 min",
+            "Alanda kuumust, lisa tomatikaste (150–200g)",
+            "Hauta 3–4 min — valmis"
+          ],
+          "kcal_approx": 440,
+          "note": "Hakkliha kastmega sobib ette teha — kestab 4–5 päeva külmkapis"
+        }
+      }
+    },
+    "M07": {
+      "id": "M07",
+      "name": "Keedetud munad (batch)",
+      "emoji": "🥚",
+      "batch": true,
+      "batch_note": "Tee pühapäeval 8–10 muna — kestab 7 päeva",
+      "intro": "Pühapäevane ettevalmistus — nädalase snäkipõhja jaoks.",
+      "steps": [
+        "Pane munad (8–10 tk) külma veega potti",
+        "Kuumuta keemiseni",
+        "Keemise hetkest loenda 7 minutit (täiesti tahke — batch jaoks ideaalne)",
+        "Tõsta kohe külma vette — 5 min (lihtsam koorida)",
+        "Hoia külmkapis KOOS koorega — kooritud munad kuivavad kiiremini"
+      ],
+      "kcal_per_egg": 70,
+      "storage": "Külmkapis 7 päeva (koorega)"
+    },
+    "M08": {
+      "id": "M08",
+      "name": "Trennijook",
+      "emoji": "💪",
+      "batch": false,
+      "intro": "Faas 3+ treeningute ajal. Dekstroos + vadakupulber + glutamiin — joo enne/ajal/pärast treeningut.",
+      "note": "Kogused 63 kg kohta. Kohandada kehakaalu kasvades: 1.2g dekstroos / 0.6g vadak × praegune kg.",
+      "ingredients": [
+        {
+          "name": "Dekstroos (glükoos)",
+          "amount": "76g",
+          "calc": "1.2g × 63 kg"
+        },
+        {
+          "name": "Vadakupulber",
+          "amount": "38g",
+          "calc": "0.6g × 63 kg"
+        },
+        {
+          "name": "Glutamiin",
+          "amount": "15g",
+          "calc": "fikseeritud"
+        }
+      ],
+      "steps": [
+        "Lisa kõik ühte suurde pudelisse (800ml+ vett)",
+        "Sega korralikult kuni lahustunud",
+        "Alusta jooma 15–20 min enne treeningut",
+        "Joo aeglaselt kogu treeningu vältel",
+        "Ülejääk joo kohe pärast treeningut"
+      ],
+      "kcal_approx": 450,
+      "protein_g": 30,
+      "carbs_g": 76,
+      "fat_g": 1
+    },
+    "M09": {
+      "id": "M09",
+      "name": "Strongman Cereal",
+      "emoji": "🥣",
+      "batch": false,
+      "intro": "BtB hommikusöök — muesli + piim + marjad + šokolaad. Kaloritihe, vähe täitev. 5 minutit.",
+      "steps": [
+        "Sulata külmutatud marjad 30 sek mikrolaineahjus (või lase 10 min seista)",
+        "Kalla muesli (150g) kaussi",
+        "Lisa piim 2% või kreeka joguet (1.5 tassi)",
+        "Lisa sulanud marjad (¾ tassi)",
+        "Lisa tume šokolaad tükid 30g",
+        "Valikuliselt: kaneel, moos, lisapähklid",
+        "Tip: lisa 1 scoop (27g) vadakupulbrit piima sisse — rohkem valku ilma täitvust suurendamata"
+      ],
+      "ingredients": [
+        {
+          "name": "Muesli (pähklid + kuivatatud puuviljad + seemned)",
+          "amount": "150g"
+        },
+        {
+          "name": "Piim 2% või kreeka joguet",
+          "amount": "1.5 tassi"
+        },
+        {
+          "name": "Külmutatud marjad",
+          "amount": "¾ tassi"
+        },
+        {
+          "name": "Tume šokolaad chips",
+          "amount": "30g"
+        }
+      ],
+      "kcal_approx": 800,
+      "protein_g": 25,
+      "carbs_g": 120,
+      "fat_g": 25
+    },
+    "M10": {
+      "id": "M10",
+      "name": "Musclenog",
+      "emoji": "🥛",
+      "batch": false,
+      "intro": "BtB kiire lõunajook — 730 kcal, 41g valku, 5 minutit. Vedelik → ei täida kõhtu.",
+      "steps": [
+        "Lisa blenderisse: täispiim 500ml + 3 suurt muna + mesi 2 spl",
+        "Lisa vaniljeekstrakt 1 tl + muskaatpähkel ⅛ tl + nelk ⅛ tl + kaneel ⅛ tl",
+        "Blenderda 10–20 sek kuni ühtlane ja vahune",
+        "Joo kohe",
+        "Kreemjam variant: asenda osa piima kreeka joguetiga"
+      ],
+      "ingredients": [
+        {
+          "name": "Täispiim",
+          "amount": "500ml (2 tassi)"
+        },
+        {
+          "name": "Munad (suured)",
+          "amount": "3 tk"
+        },
+        {
+          "name": "Mesi (toores, pastöriseerimata)",
+          "amount": "2 spl"
+        },
+        {
+          "name": "Vaniljeekstrakt",
+          "amount": "1 tl"
+        },
+        {
+          "name": "Muskaatpähkel + nelk + kaneel",
+          "amount": "⅛ tl kumbagi"
+        }
+      ],
+      "kcal_approx": 730,
+      "protein_g": 41,
+      "carbs_g": 57,
+      "fat_g": 39,
+      "note": "Sojaletsitsiinita vadakupulbri lisamine tõstab valku 27g võrra ilma täitvust suurendamata"
+    },
+    "M11": {
+      "id": "M11",
+      "name": "Sunday Night Chili",
+      "emoji": "🌶️",
+      "batch": true,
+      "batch_note": "Tee pühapäeval — 7 portsjonit → kaks nädalat lõunaid",
+      "intro": "BtB batch retsept. Hakkliha = pre-chewed → kiiremini seeditav. Säilib nädal külmkapis.",
+      "steps": [
+        "Kuumuta suur pott keskmisele kuumusele, lisa või 2 spl",
+        "Prae sibul (1 suur) kuni pehme (~5 min)",
+        "Lisa habanero/jalapeño 2 tk (käed plastiikkotis — ei põle!)",
+        "Lisa purustatud küüslauk 3 küünt, prae 1–2 min",
+        "Lisa tomatipasta ½ tassi + maitseained, sega",
+        "Lisa hakkliha 1.5 kg, purusta tükkideks, prae kuni enam ei roosakas",
+        "Lisa purustatud tomatid 2 tassi + oad 5 tassi koos vedelikuga + punane vein ¼ tassi",
+        "Beastly Upgrades (valikuline): + 2 tassi külmutatud mais + 30g tume šokolaad",
+        "Lase keemiseni, alanda kuumus, hauta 30 min segades",
+        "Maitsesta: chilli pulber (maitse) + kuum kaste (vürts) + äädikas (hapus) + pruun suhkur (magus)",
+        "Serveeri kohe, ülejääk jaga karpidesse"
+      ],
+      "ingredients": [
+        {
+          "name": "Hakkliha (kana või veise, lahja)",
+          "amount": "1.5 kg"
+        },
+        {
+          "name": "Purustatud tomatid",
+          "amount": "2 tassi"
+        },
+        {
+          "name": "Tomatipasta",
+          "amount": "½ tassi"
+        },
+        {
+          "name": "Punased oad konservist koos vedelikuga",
+          "amount": "5 tassi"
+        },
+        {
+          "name": "Suur sibul",
+          "amount": "1 tk"
+        },
+        {
+          "name": "Küüslauk",
+          "amount": "3 küünt"
+        },
+        {
+          "name": "Habanero või jalapeño",
+          "amount": "2 tk"
+        },
+        {
+          "name": "Või",
+          "amount": "2 spl"
+        },
+        {
+          "name": "Punane vein või õlu",
+          "amount": "¼ tassi"
+        }
+      ],
+      "kcal_approx": 650,
+      "protein_g": 52,
+      "carbs_g": 56,
+      "fat_g": 21,
+      "servings": 7,
+      "storage": "Külmkapis 1 nädal | sügavkülmas 3 kuud",
+      "variants": {
+        "klassikaline": "4–5 spl chilli pulber + 2 spl pruun suhkur",
+        "ameerika": "4 spl chilli pulber + ¼ tassi BBQ kaste",
+        "india": "2–3 spl tandoori masala + 1 spl chilli pulber"
+      },
+      "note": "Sojakasteasemel kasuta tamari (Ingmari sojatoidu piirang)"
+    },
+    "M12": {
+      "id": "M12",
+      "name": "The Buff Teacher (smuuti)",
+      "emoji": "🥤",
+      "batch": false,
+      "intro": "BtB hommikusmuuti. ~900–1000 kcal, ~50g valku, 5 minutit.",
+      "steps": [
+        "Joo esmalt 0.5L vett (tühja kõhu peale)",
+        "Võta 3–4 kalaõlikapsleid + multivitamiin",
+        "Blenderda: vadakupulber 1 annust + 2 toort muna + banaan + virsik + peotäis vaarikaid",
+        "Lisa 2dl piima + 1dl joguetit + 1 spl mandlivõid",
+        "Blenderda, lisa jää kui soovid paksemat"
+      ],
+      "kcal_approx": 950,
+      "protein_g": 50,
+      "note": "Kontrolli vadakupulber: ei tohi sisaldada sojaletsitsiini (Ingmari piirang)",
+      "ingredients": [
+        {
+          "qty": "1 annust (30g)",
+          "name": "vadakupulber"
+        },
+        {
+          "qty": "2 tk",
+          "name": "munad (toored)"
+        },
+        {
+          "qty": "1 tk",
+          "name": "banaan"
+        },
+        {
+          "qty": "1 tk",
+          "name": "virsik (või mangotükid 100g)"
+        },
+        {
+          "qty": "100g",
+          "name": "vaarikad (külmutatud sobib)"
+        },
+        {
+          "qty": "2 dl",
+          "name": "täispiim"
+        },
+        {
+          "qty": "1 dl",
+          "name": "jogurt (kreeka)"
+        },
+        {
+          "qty": "1 spl",
+          "name": "mandlivõi (või maapähklivõi)"
+        },
+        {
+          "qty": "3–4 tk",
+          "name": "kalaõlikapslid"
+        }
+      ]
+    },
+    "M13": {
+      "id": "M13",
+      "name": "The Fit Frenchman (omlett)",
+      "emoji": "🍳",
+      "batch": false,
+      "intro": "BtB omletthommik. ~700–850 kcal, ~45g valku, 15 minutit.",
+      "steps": [
+        "Kuumuta pann madalale kuumusele, lisa või",
+        "Klopi 4 muna kausis, vala pannile",
+        "Küpseta aeglaselt — ära kiirusta",
+        "Kui muna on peaaegu tahke, lisa täidis: mozzarella + spinat + sibul + habanero",
+        "Keera omlett kokku",
+        "Serveeri: kauss joguetit virsikuviiludega + must kohv"
+      ],
+      "kcal_approx": 775,
+      "protein_g": 45,
+      "ingredients": [
+        {
+          "qty": "4 tk",
+          "name": "munad"
+        },
+        {
+          "qty": "1 tl",
+          "name": "või (või oliiviõli)"
+        },
+        {
+          "qty": "30g",
+          "name": "mozzarella (riivitud)"
+        },
+        {
+          "qty": "peotäis",
+          "name": "spinat (värske)"
+        },
+        {
+          "qty": "¼ tk",
+          "name": "sibul (viilutatud)"
+        },
+        {
+          "qty": "½ tk",
+          "name": "habanero (või cayenne näpuotsatäis)"
+        },
+        {
+          "qty": "150g",
+          "name": "kreeka jogurt"
+        },
+        {
+          "qty": "1 tk",
+          "name": "virsik (viilutatud)"
+        }
+      ]
+    },
+    "M14": {
+      "id": "M14",
+      "name": "The Powerhouse",
+      "emoji": "💥",
+      "batch": false,
+      "intro": "BtB täishommik. ~900–1100 kcal, ~55g valku, 20 minutit.",
+      "steps": [
+        "Prae 3 kalkunivorsti pannil (või kalkunipeekon)",
+        "Tee 3 praetud muna (sunny side up) paprika/cayenne/pipraga",
+        "Valmista puuviljasalat: banaanid + vaarikad",
+        "Serveeri koos 1 klaasi 2% piimaga"
+      ],
+      "kcal_approx": 1000,
+      "protein_g": 55,
+      "note": "Kalkunivorst: kontrolli et ei sisalda sojavalku täiteainena",
+      "ingredients": [
+        {
+          "qty": "3 tk",
+          "name": "kalkunivorstid (või kalkunipeekon)"
+        },
+        {
+          "qty": "3 tk",
+          "name": "munad"
+        },
+        {
+          "qty": "1 tk",
+          "name": "banaan"
+        },
+        {
+          "qty": "100g",
+          "name": "vaarikad"
+        },
+        {
+          "qty": "2 dl",
+          "name": "piim (2%)"
+        },
+        {
+          "qty": "näpuotsatäis",
+          "name": "paprika + cayenne + must pipar"
+        }
+      ]
+    },
+    "M15": {
+      "id": "M15",
+      "name": "The Lazy Beast",
+      "emoji": "⚡",
+      "batch": false,
+      "intro": "BtB kiireimhommik. ~800–900 kcal, ~50g valku, 2 minutit.",
+      "steps": [
+        "Võta 4 toort muna klaasi (otsus on sinu)",
+        "Võta külmkapist eelmisel päeval valmistatud valgubatoon",
+        "Lisa joguetikaste batonile (0.5dl)",
+        "Söö"
+      ],
+      "kcal_approx": 850,
+      "protein_g": 50,
+      "note": "Toormunade salmonellariisk ~1:833 333. Kerge maohaigus halvimal juhul.",
+      "ingredients": [
+        {
+          "qty": "4 tk",
+          "name": "munad (toored)"
+        },
+        {
+          "qty": "1 tk",
+          "name": "valgubatoon (eelmine päev külmikusse)"
+        },
+        {
+          "qty": "0,5 dl",
+          "name": "jogurt (kastmeks batonile)"
+        }
+      ]
+    },
+    "M16": {
+      "id": "M16",
+      "name": "The Buff Italian (kikerhernesatoon)",
+      "emoji": "🇮🇹",
+      "batch": false,
+      "intro": "BtB omlett kikerhernetega. ~650–750 kcal, ~35g valku, 20 minutit.",
+      "steps": [
+        "Kuumuta pann, lisa õli",
+        "Lisa pannile keedetud kikerherned 0.5dl (konservist loputatud VÕI eelnevalt keedetud)",
+        "Klopi 4 muna, vala peale",
+        "Lisa riivitud parmesan + näputäis rosmariini",
+        "Küpseta omleti moodi madalal kuumusel"
+      ],
+      "kcal_approx": 700,
+      "protein_g": 35,
+      "note": "BPA hoiatus: osta kikerherned kuivatatud, mitte konservist",
+      "ingredients": [
+        {
+          "qty": "0,5 dl",
+          "name": "kikerherned (konserveeritud, loputatud)"
+        },
+        {
+          "qty": "4 tk",
+          "name": "munad"
+        },
+        {
+          "qty": "2 spl",
+          "name": "parmesan (riivitud)"
+        },
+        {
+          "qty": "näpuotsatäis",
+          "name": "rosmariin (kuivatatud)"
+        },
+        {
+          "qty": "1 spl",
+          "name": "oliiviõli"
+        }
+      ]
+    },
+    "M17": {
+      "id": "M17",
+      "name": "Brunch With the Boys (nädalavahetus)",
+      "emoji": "🥩",
+      "batch": false,
+      "intro": "BtB nädalavahetuse brunch. ~1000–1300 kcal, ~60g valku, 25 minutit.",
+      "steps": [
+        "Variant A: Prae veiseliha steak + 3 praetud muna + kodukartulid panniga + puuviljasalat",
+        "Variant B: Munad + vorstid + lisamunad + puuviljasalat",
+        "Serveeri koos suurde klaasi piimaga"
+      ],
+      "kcal_approx": 1150,
+      "protein_g": 60,
+      "ingredients": [
+        {
+          "qty": "200g",
+          "name": "veiseliha steak VÕI vorstid 3 tk"
+        },
+        {
+          "qty": "3 tk",
+          "name": "munad"
+        },
+        {
+          "qty": "200g",
+          "name": "kartulid (kodukartulid panniga)"
+        },
+        {
+          "qty": "1 tk",
+          "name": "banaan"
+        },
+        {
+          "qty": "100g",
+          "name": "marjad (vaarikad/mustikad)"
+        },
+        {
+          "qty": "2 dl",
+          "name": "täispiim"
+        }
+      ]
+    }
+  },
+  "emergency_calories": [
+    {
+      "name": "Maapähklivõi lusikaga",
+      "desc": "3 spl otse lusikalt",
+      "kcal": 285,
+      "time_sec": 30,
+      "method_id": null
+    },
+    {
+      "name": "Oliiviõlishot",
+      "desc": "2 spl oliiviõli",
+      "kcal": 240,
+      "time_sec": 10,
+      "method_id": null
+    },
+    {
+      "name": "Energiapallid × 3",
+      "desc": "Eeldab: energiapallid on külmkapis (M04)",
+      "kcal": 345,
+      "time_sec": 30,
+      "method_id": "M04"
+    },
+    {
+      "name": "Kiire smuuti",
+      "desc": "Piim 3dl + vadakupulber 30g + banaan",
+      "kcal": 400,
+      "time_sec": 120,
+      "method_id": "M03"
+    },
+    {
+      "name": "Piim + vadakupulber",
+      "desc": "3dl piim + 30g vadakupulber, klopi klaasis",
+      "kcal": 300,
+      "time_sec": 60,
+      "method_id": null
+    },
+    {
+      "name": "Kreeka jogurt + mesi",
+      "desc": "250g kreeka jogurt + 2 spl mesi",
+      "kcal": 350,
+      "time_sec": 60,
+      "method_id": null
+    }
+  ]
+}
