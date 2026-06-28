@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "updated": "2026-06-22",
+  "note": "BtB (Bony to Beastly) lisandite protokoll. Kõik ajastused on kriitilised — eelkøige kreatiin ja magneesium.",
+  "supplements": [
+    {
+      "id": "SUP01",
+      "name": "Kreatiin monohødraat",
+      "emoji": "💊",
+      "dose": "5g",
+      "timing": "S01 koos — hommikusmuutis",
+      "slot": "S01",
+      "why": "Suurendab ATP tootmist lihastes. BtB: kõige uuritud lisand jõu ja massi kasvuks. Ei vaja laadimisfaasi.",
+      "brand_note": "Osta mikroniseeritud kreatiini — lahustub paremini",
+      "absorption_tip": "Sega alati smuutisse või mahlasse — kuiva neelamine aeglustab imendumist",
+      "priority": 1
+    }
+  ],
+  "daily_schedule": []
+}
