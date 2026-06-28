@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-25",
+  "updated": "2026-06-28",
   "scheduled_update_attempted": "2026-06-28",
   "scheduled_update_status": "FAILED — Claude in Chrome extension ei olnud ühendatud. Hinnad ei uuendatud. Järgmine katse järgmisel nädalal.",
   "source": "ostukorvid.ee",
@@ -10,13 +10,41 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "HINNAPOMM", "price": 2.98, "product_name": "Wikmani Broilerikoib Seljaosaga ca 0,8-1kg" },
-        { "store": "RIMI", "price": 3.10, "product_name": "Broileri poolkoivad Rimi 500g" },
-        { "store": "COOP", "price": 3.23, "product_name": "Tallegg broiler Eestimaine ~1.7kg jahutatud" },
-        { "store": "PRISMA", "price": 3.25, "product_name": "Marineeritud kanakoivad, kg" },
-        { "store": "A1000", "price": 3.49, "product_name": "Tallegg broileripoolkoib Eestimaine ~500g" },
-        { "store": "MAXIMA", "price": 3.49, "product_name": "Jahutatud broiler A-klass WELL DONE, kg" },
-        { "store": "SELVER", "price": 3.69, "product_name": "Eestimaine broileripoolkoib, TALLEGG, kg" }
+        {
+          "store": "HINNAPOMM",
+          "price": 2.98,
+          "product_name": "Wikmani Broilerikoib Seljaosaga ca 0,8-1kg"
+        },
+        {
+          "store": "RIMI",
+          "price": 3.1,
+          "product_name": "Broileri poolkoivad Rimi 500g"
+        },
+        {
+          "store": "COOP",
+          "price": 3.23,
+          "product_name": "Tallegg broiler Eestimaine ~1.7kg jahutatud"
+        },
+        {
+          "store": "PRISMA",
+          "price": 3.25,
+          "product_name": "Marineeritud kanakoivad, kg"
+        },
+        {
+          "store": "A1000",
+          "price": 3.49,
+          "product_name": "Tallegg broileripoolkoib Eestimaine ~500g"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 3.49,
+          "product_name": "Jahutatud broiler A-klass WELL DONE, kg"
+        },
+        {
+          "store": "SELVER",
+          "price": 3.69,
+          "product_name": "Eestimaine broileripoolkoib, TALLEGG, kg"
+        }
       ]
     },
     "kana_filee": {
@@ -24,8 +52,16 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "RIMI", "price": 7.39, "product_name": "Eestimaine broilerifilee kg Tallegg" },
-        { "store": "MAXIMA", "price": 9.35, "product_name": "Eestimaine broilerifilee TALLEGG, kg" }
+        {
+          "store": "RIMI",
+          "price": 7.39,
+          "product_name": "Eestimaine broilerifilee kg Tallegg"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 9.35,
+          "product_name": "Eestimaine broilerifilee TALLEGG, kg"
+        }
       ]
     },
     "munad": {
@@ -33,13 +69,48 @@
       "unit": "tk",
       "display_unit": "10 tk pk",
       "stores": [
-        { "store": "COOP", "price": 0.15, "product_name": "Säästu kanamunad M 10tk", "display_price": 1.49 },
-        { "store": "PRISMA", "price": 0.15, "product_name": "BALTICOVO Kanamunad 10tk ML", "display_price": 1.49 },
-        { "store": "MAXIMA", "price": 0.16, "product_name": "Munad M/L 10tk", "display_price": 1.60 },
-        { "store": "RIMI", "price": 0.18, "product_name": "Kanamunad Rimi 10tk", "display_price": 1.79 },
-        { "store": "SELVER", "price": 0.19, "product_name": "Munad M10, SELVER, 10 tk", "display_price": 1.89 },
-        { "store": "LIDL", "price": 0.20, "product_name": "Munad M 10tk, LIDL", "display_price": 1.99 },
-        { "store": "KAUPMEES", "price": 0.20, "product_name": "Kanamunad Kalevipoja Munad M 10TK", "display_price": 1.99 }
+        {
+          "store": "COOP",
+          "price": 0.15,
+          "product_name": "Säästu kanamunad M 10tk",
+          "display_price": 1.49
+        },
+        {
+          "store": "PRISMA",
+          "price": 0.15,
+          "product_name": "BALTICOVO Kanamunad 10tk ML",
+          "display_price": 1.49
+        },
+        {
+          "store": "MAXIMA",
+          "price": 0.16,
+          "product_name": "Munad M/L 10tk",
+          "display_price": 1.6
+        },
+        {
+          "store": "RIMI",
+          "price": 0.18,
+          "product_name": "Kanamunad Rimi 10tk",
+          "display_price": 1.79
+        },
+        {
+          "store": "SELVER",
+          "price": 0.19,
+          "product_name": "Munad M10, SELVER, 10 tk",
+          "display_price": 1.89
+        },
+        {
+          "store": "LIDL",
+          "price": 0.2,
+          "product_name": "Munad M 10tk, LIDL",
+          "display_price": 1.99
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 0.2,
+          "product_name": "Kanamunad Kalevipoja Munad M 10TK",
+          "display_price": 1.99
+        }
       ]
     },
     "kodujuust": {
@@ -48,12 +119,39 @@
       "display_unit": "kg",
       "note": "Kategooria: kodujuust (mitte kohupiim)",
       "stores": [
-        { "store": "SELVER", "price": 1.98, "product_name": "Kodujuust, BALTAIS, 500 g", "note": "0.99€/500g" },
-        { "store": "PRISMA", "price": 2.18, "product_name": "Baltais kodujuust, 500g", "note": "1.09€/500g" },
-        { "store": "MAXIMA", "price": 2.18, "product_name": "Kodujuust 5% Farm Milk, 500g" },
-        { "store": "A1000", "price": 3.13, "product_name": "Piimameister Otto traditsiooniline kodujuust 4%, 380 g" },
-        { "store": "RIMI", "price": 3.50, "product_name": "Kodujuust väherasvane Rimi 3% 500g" },
-        { "store": "KAUPMEES", "price": 4.96, "product_name": "BALTAIS Kodujuust 7% 500g", "note": "2.48€/500g" }
+        {
+          "store": "SELVER",
+          "price": 1.98,
+          "product_name": "Kodujuust, BALTAIS, 500 g",
+          "note": "0.99€/500g"
+        },
+        {
+          "store": "PRISMA",
+          "price": 2.18,
+          "product_name": "Baltais kodujuust, 500g",
+          "note": "1.09€/500g"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 2.18,
+          "product_name": "Kodujuust 5% Farm Milk, 500g"
+        },
+        {
+          "store": "A1000",
+          "price": 3.13,
+          "product_name": "Piimameister Otto traditsiooniline kodujuust 4%, 380 g"
+        },
+        {
+          "store": "RIMI",
+          "price": 3.5,
+          "product_name": "Kodujuust väherasvane Rimi 3% 500g"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 4.96,
+          "product_name": "BALTAIS Kodujuust 7% 500g",
+          "note": "2.48€/500g"
+        }
       ]
     },
     "riis": {
@@ -61,13 +159,41 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "PRISMA", "price": 0.49, "product_name": "Pikateraline riis, BALTIX, 1 kg" },
-        { "store": "SELVER", "price": 0.49, "product_name": "Pikateraline riis, BALTIX, 1 kg" },
-        { "store": "RIMI", "price": 0.99, "product_name": "Pikateraline riis Rimi Basic 800g" },
-        { "store": "HINNAPOMM", "price": 1.40, "product_name": "Riis Extra 1kg Zelta Saule" },
-        { "store": "KAUPMEES", "price": 1.55, "product_name": "ORIENTE Pikateraline riis 5kg" },
-        { "store": "COOP", "price": 1.59, "product_name": "Säästu Riis pikateraline 1kg" },
-        { "store": "MAXIMA", "price": 1.74, "product_name": "Riis pikateraline WELL DONE 800g" }
+        {
+          "store": "PRISMA",
+          "price": 0.49,
+          "product_name": "Pikateraline riis, BALTIX, 1 kg"
+        },
+        {
+          "store": "SELVER",
+          "price": 0.49,
+          "product_name": "Pikateraline riis, BALTIX, 1 kg"
+        },
+        {
+          "store": "RIMI",
+          "price": 0.99,
+          "product_name": "Pikateraline riis Rimi Basic 800g"
+        },
+        {
+          "store": "HINNAPOMM",
+          "price": 1.4,
+          "product_name": "Riis Extra 1kg Zelta Saule"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 1.55,
+          "product_name": "ORIENTE Pikateraline riis 5kg"
+        },
+        {
+          "store": "COOP",
+          "price": 1.59,
+          "product_name": "Säästu Riis pikateraline 1kg"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 1.74,
+          "product_name": "Riis pikateraline WELL DONE 800g"
+        }
       ]
     },
     "kartul": {
@@ -75,12 +201,36 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "PRISMA", "price": 0.31, "product_name": "Kartul pesemata Gala kg" },
-        { "store": "SELVER", "price": 0.32, "product_name": "Kartul kollane Gala, kg" },
-        { "store": "RIMI", "price": 0.34, "product_name": "Kartul pesemata, kg Eesti" },
-        { "store": "MAXIMA", "price": 0.34, "product_name": "Kartul lahtine, kg" },
-        { "store": "COOP", "price": 0.35, "product_name": "Kartul lahtine Eesti" },
-        { "store": "KAUPMEES", "price": 0.48, "product_name": "PJ Kartul varajane Solist pesemata kg" }
+        {
+          "store": "PRISMA",
+          "price": 0.31,
+          "product_name": "Kartul pesemata Gala kg"
+        },
+        {
+          "store": "SELVER",
+          "price": 0.32,
+          "product_name": "Kartul kollane Gala, kg"
+        },
+        {
+          "store": "RIMI",
+          "price": 0.34,
+          "product_name": "Kartul pesemata, kg Eesti"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 0.34,
+          "product_name": "Kartul lahtine, kg"
+        },
+        {
+          "store": "COOP",
+          "price": 0.35,
+          "product_name": "Kartul lahtine Eesti"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 0.48,
+          "product_name": "PJ Kartul varajane Solist pesemata kg"
+        }
       ]
     },
     "pasta": {
@@ -88,12 +238,37 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "MAXIMA", "price": 0.52, "product_name": "Makaronid sarvekesed EXTRA LINE 400g" },
-        { "store": "PRISMA", "price": 0.58, "product_name": "Xtra makaronid 500g" },
-        { "store": "SELVER", "price": 0.70, "product_name": "Makaronid Elbows, BALTIX, 400 g" },
-        { "store": "RIMI", "price": 0.80, "product_name": "Makaron Knees-sarveke Rimi Basic 400g" },
-        { "store": "COOP", "price": 0.95, "product_name": "Säästu makaron Sarveke 400g" },
-        { "store": "KAUPMEES", "price": 1.60, "product_name": "BALTIX Elbows makaronid 400g", "note": "0.64€/400g" }
+        {
+          "store": "MAXIMA",
+          "price": 0.52,
+          "product_name": "Makaronid sarvekesed EXTRA LINE 400g"
+        },
+        {
+          "store": "PRISMA",
+          "price": 0.58,
+          "product_name": "Xtra makaronid 500g"
+        },
+        {
+          "store": "SELVER",
+          "price": 0.7,
+          "product_name": "Makaronid Elbows, BALTIX, 400 g"
+        },
+        {
+          "store": "RIMI",
+          "price": 0.8,
+          "product_name": "Makaron Knees-sarveke Rimi Basic 400g"
+        },
+        {
+          "store": "COOP",
+          "price": 0.95,
+          "product_name": "Säästu makaron Sarveke 400g"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 1.6,
+          "product_name": "BALTIX Elbows makaronid 400g",
+          "note": "0.64€/400g"
+        }
       ]
     },
     "kaerahelbed": {
@@ -101,13 +276,41 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "PRISMA", "price": 0.48, "product_name": "Kaerahelbed 1 kg" },
-        { "store": "RIMI", "price": 0.57, "product_name": "Kaerahelbed täistera Rimi Smart 400g" },
-        { "store": "COOP", "price": 1.06, "product_name": "Säästu Kaerahelbed 500g" },
-        { "store": "KAUPMEES", "price": 1.17, "product_name": "VESKI MATI Neljaviljahelbed 25kg" },
-        { "store": "A1000", "price": 1.33, "product_name": "Valdo Kaerahelbed 3kg" },
-        { "store": "MAXIMA", "price": 1.58, "product_name": "Täistera kaerahelbed WELL DONE 500g" },
-        { "store": "SELVER", "price": 1.59, "product_name": "Neljaviljahelbed, TARTU MILL, 1 kg" }
+        {
+          "store": "PRISMA",
+          "price": 0.48,
+          "product_name": "Kaerahelbed 1 kg"
+        },
+        {
+          "store": "RIMI",
+          "price": 0.57,
+          "product_name": "Kaerahelbed täistera Rimi Smart 400g"
+        },
+        {
+          "store": "COOP",
+          "price": 1.06,
+          "product_name": "Säästu Kaerahelbed 500g"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 1.17,
+          "product_name": "VESKI MATI Neljaviljahelbed 25kg"
+        },
+        {
+          "store": "A1000",
+          "price": 1.33,
+          "product_name": "Valdo Kaerahelbed 3kg"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 1.58,
+          "product_name": "Täistera kaerahelbed WELL DONE 500g"
+        },
+        {
+          "store": "SELVER",
+          "price": 1.59,
+          "product_name": "Neljaviljahelbed, TARTU MILL, 1 kg"
+        }
       ]
     },
     "oliivioli": {
@@ -115,13 +318,43 @@
       "unit": "l",
       "display_unit": "l",
       "stores": [
-        { "store": "PRISMA", "price": 3.09, "product_name": "Coop rapsiõli ja ekstra-väärisoliiviõli segu 1l", "note": "⚠️ rapsiõli segu, mitte puhas oliiviõli" },
-        { "store": "HINNAPOMM", "price": 4.50, "product_name": "Oliivijääkõli 1L Urzate" },
-        { "store": "MAXIMA", "price": 5.02, "product_name": "Oliivijääkõli EXTRA LINE 1l" },
-        { "store": "KAUPMEES", "price": 5.06, "product_name": "LA MASIA Oliivijääkõli 5l" },
-        { "store": "SELVER", "price": 5.32, "product_name": "Oliivijääkõli, SELVER, 750ml" },
-        { "store": "COOP", "price": 5.34, "product_name": "Borges rüpsi- ja väärisoliiviõlisegu 1l", "note": "⚠️ segu" },
-        { "store": "RIMI", "price": 5.85, "product_name": "Oliivijääkõli Rimi Basic 1l" }
+        {
+          "store": "PRISMA",
+          "price": 3.09,
+          "product_name": "Coop rapsiõli ja ekstra-väärisoliiviõli segu 1l",
+          "note": "⚠️ rapsiõli segu, mitte puhas oliiviõli"
+        },
+        {
+          "store": "HINNAPOMM",
+          "price": 4.5,
+          "product_name": "Oliivijääkõli 1L Urzate"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 5.02,
+          "product_name": "Oliivijääkõli EXTRA LINE 1l"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 5.06,
+          "product_name": "LA MASIA Oliivijääkõli 5l"
+        },
+        {
+          "store": "SELVER",
+          "price": 5.32,
+          "product_name": "Oliivijääkõli, SELVER, 750ml"
+        },
+        {
+          "store": "COOP",
+          "price": 5.34,
+          "product_name": "Borges rüpsi- ja väärisoliiviõlisegu 1l",
+          "note": "⚠️ segu"
+        },
+        {
+          "store": "RIMI",
+          "price": 5.85,
+          "product_name": "Oliivijääkõli Rimi Basic 1l"
+        }
       ]
     },
     "maapahklivoi": {
@@ -129,11 +362,36 @@
       "unit": "kg",
       "display_unit": "~350g pk",
       "stores": [
-        { "store": "PRISMA", "price": 5.49, "product_name": "Krõmpsuv maapähklikreem 1kg", "display_price": 1.92 },
-        { "store": "KAUPMEES", "price": 5.49, "product_name": "Krõmpsuv maapähklikreem 1kg", "display_price": 1.92 },
-        { "store": "RIMI", "price": 7.15, "product_name": "Maapähklikreem krõmpsuv Rimi 1kg", "display_price": 2.50 },
-        { "store": "SELVER", "price": 8.26, "product_name": "Maapähklivõie crunchy, LA COMTESSE, 350 g", "display_price": 2.89 },
-        { "store": "MAXIMA", "price": 8.83, "product_name": "Sante Maapähklikreem Crunchy 350g", "display_price": 3.09 }
+        {
+          "store": "PRISMA",
+          "price": 5.49,
+          "product_name": "Krõmpsuv maapähklikreem 1kg",
+          "display_price": 1.92
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 5.49,
+          "product_name": "Krõmpsuv maapähklikreem 1kg",
+          "display_price": 1.92
+        },
+        {
+          "store": "RIMI",
+          "price": 7.15,
+          "product_name": "Maapähklikreem krõmpsuv Rimi 1kg",
+          "display_price": 2.5
+        },
+        {
+          "store": "SELVER",
+          "price": 8.26,
+          "product_name": "Maapähklivõie crunchy, LA COMTESSE, 350 g",
+          "display_price": 2.89
+        },
+        {
+          "store": "MAXIMA",
+          "price": 8.83,
+          "product_name": "Sante Maapähklikreem Crunchy 350g",
+          "display_price": 3.09
+        }
       ]
     },
     "banaanid": {
@@ -141,12 +399,36 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "PRISMA", "price": 1.18, "product_name": "Banaan" },
-        { "store": "MAXIMA", "price": 1.29, "product_name": "Banaan, kg" },
-        { "store": "RIMI", "price": 1.29, "product_name": "Banaan kg" },
-        { "store": "COOP", "price": 1.29, "product_name": "Banaan" },
-        { "store": "SELVER", "price": 1.29, "product_name": "Banaan, kg" },
-        { "store": "KAUPMEES", "price": 1.65, "product_name": "PJ Banaan kg" }
+        {
+          "store": "PRISMA",
+          "price": 1.18,
+          "product_name": "Banaan"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 1.29,
+          "product_name": "Banaan, kg"
+        },
+        {
+          "store": "RIMI",
+          "price": 1.29,
+          "product_name": "Banaan kg"
+        },
+        {
+          "store": "COOP",
+          "price": 1.29,
+          "product_name": "Banaan"
+        },
+        {
+          "store": "SELVER",
+          "price": 1.29,
+          "product_name": "Banaan, kg"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 1.65,
+          "product_name": "PJ Banaan kg"
+        }
       ]
     },
     "tuunikala": {
@@ -154,12 +436,44 @@
       "unit": "kg",
       "display_unit": "~185g tk",
       "stores": [
-        { "store": "HINNAPOMM", "price": 6.70, "product_name": "BLIK Purustatud tuunikala omas mahlas 185g", "display_price": 1.24 },
-        { "store": "PRISMA", "price": 8.54, "product_name": "Kapten Grant tuunikala purustatud tükid õlis 185g", "display_price": 1.58, "note": "1.58€/185g" },
-        { "store": "RIMI", "price": 9.62, "product_name": "Tuunikala veesisus Rimi ~185g", "display_price": 1.25 },
-        { "store": "COOP", "price": 10.76, "product_name": "KGr tuunikala purustatud tükid õlis 185g", "display_price": 1.99 },
-        { "store": "MAXIMA", "price": 10.76, "product_name": "Tuunikala purustatud õlis 185g", "display_price": 1.99 },
-        { "store": "SELVER", "price": 11.12, "product_name": "Tuunikala veesisus ~170g", "display_price": 1.89, "note": "170g" }
+        {
+          "store": "HINNAPOMM",
+          "price": 6.7,
+          "product_name": "BLIK Purustatud tuunikala omas mahlas 185g",
+          "display_price": 1.24
+        },
+        {
+          "store": "PRISMA",
+          "price": 8.54,
+          "product_name": "Kapten Grant tuunikala purustatud tükid õlis 185g",
+          "display_price": 1.58,
+          "note": "1.58€/185g"
+        },
+        {
+          "store": "RIMI",
+          "price": 9.62,
+          "product_name": "Tuunikala veesisus Rimi ~185g",
+          "display_price": 1.25
+        },
+        {
+          "store": "COOP",
+          "price": 10.76,
+          "product_name": "KGr tuunikala purustatud tükid õlis 185g",
+          "display_price": 1.99
+        },
+        {
+          "store": "MAXIMA",
+          "price": 10.76,
+          "product_name": "Tuunikala purustatud õlis 185g",
+          "display_price": 1.99
+        },
+        {
+          "store": "SELVER",
+          "price": 11.12,
+          "product_name": "Tuunikala veesisus ~170g",
+          "display_price": 1.89,
+          "note": "170g"
+        }
       ]
     },
     "lohe": {
@@ -167,12 +481,36 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "MAXIMA", "price": 9.99, "product_name": "Jahutatud lõhe, kg" },
-        { "store": "PRISMA", "price": 9.99, "product_name": "Lõhe jahutatud, roogitud, kg" },
-        { "store": "COOP", "price": 11.75, "product_name": "Lõhe roogitud 1-3kg jahutatud, Norra" },
-        { "store": "LIDL", "price": 11.99, "product_name": "Lõhefilee nahaga" },
-        { "store": "SELVER", "price": 11.99, "product_name": "Lõhe roogitud, jahutatud, kg" },
-        { "store": "RIMI", "price": 12.99, "product_name": "Lõhefilee Rimi kg" }
+        {
+          "store": "MAXIMA",
+          "price": 9.99,
+          "product_name": "Jahutatud lõhe, kg"
+        },
+        {
+          "store": "PRISMA",
+          "price": 9.99,
+          "product_name": "Lõhe jahutatud, roogitud, kg"
+        },
+        {
+          "store": "COOP",
+          "price": 11.75,
+          "product_name": "Lõhe roogitud 1-3kg jahutatud, Norra"
+        },
+        {
+          "store": "LIDL",
+          "price": 11.99,
+          "product_name": "Lõhefilee nahaga"
+        },
+        {
+          "store": "SELVER",
+          "price": 11.99,
+          "product_name": "Lõhe roogitud, jahutatud, kg"
+        },
+        {
+          "store": "RIMI",
+          "price": 12.99,
+          "product_name": "Lõhefilee Rimi kg"
+        }
       ]
     },
     "kreeka_jogurt": {
@@ -180,10 +518,26 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "PRISMA", "price": 2.25, "product_name": "Coop Kreeka jogurt 1kg" },
-        { "store": "RIMI", "price": 2.73, "product_name": "Kreeka jogurt maitsestamata Rimi 400g" },
-        { "store": "KAUPMEES", "price": 2.93, "product_name": "ALMA Kreeka jogurt maitsestamata 4% 5kg" },
-        { "store": "SELVER", "price": 3.29, "product_name": "Kreeka jogurt 10%, SAARE, 3x380g" }
+        {
+          "store": "PRISMA",
+          "price": 2.25,
+          "product_name": "Coop Kreeka jogurt 1kg"
+        },
+        {
+          "store": "RIMI",
+          "price": 2.73,
+          "product_name": "Kreeka jogurt maitsestamata Rimi 400g"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 2.93,
+          "product_name": "ALMA Kreeka jogurt maitsestamata 4% 5kg"
+        },
+        {
+          "store": "SELVER",
+          "price": 3.29,
+          "product_name": "Kreeka jogurt 10%, SAARE, 3x380g"
+        }
       ]
     },
     "leib": {
@@ -191,13 +545,48 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "PRISMA", "price": 1.07, "product_name": "Fazer Kodu Pereleib 600g", "note": "0.64€/600g" },
-        { "store": "SELVER", "price": 1.08, "product_name": "Kodu Pereleib, FAZER, 600g", "note": "0.65€/600g" },
-        { "store": "COOP", "price": 1.08, "product_name": "Rehe rukkileib 600g", "note": "0.65€/600g" },
-        { "store": "MAXIMA", "price": 1.08, "product_name": "Rehe rukkileib viilutatud, EESTI PAGAR, 600g", "note": "0.65€/600g" },
-        { "store": "RIMI", "price": 1.08, "product_name": "Rukkileib Rehe Eesti Pagar 600g", "note": "0.65€/600g" },
-        { "store": "A1000", "price": 1.42, "product_name": "Eesti Pagar Rehe Vormileib 600g", "note": "0.85€/600g" },
-        { "store": "KAUPMEES", "price": 1.65, "product_name": "Rehe rukkileib viilutatud, EESTI PAGAR, 600g", "note": "0.99€/600g" }
+        {
+          "store": "PRISMA",
+          "price": 1.07,
+          "product_name": "Fazer Kodu Pereleib 600g",
+          "note": "0.64€/600g"
+        },
+        {
+          "store": "SELVER",
+          "price": 1.08,
+          "product_name": "Kodu Pereleib, FAZER, 600g",
+          "note": "0.65€/600g"
+        },
+        {
+          "store": "COOP",
+          "price": 1.08,
+          "product_name": "Rehe rukkileib 600g",
+          "note": "0.65€/600g"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 1.08,
+          "product_name": "Rehe rukkileib viilutatud, EESTI PAGAR, 600g",
+          "note": "0.65€/600g"
+        },
+        {
+          "store": "RIMI",
+          "price": 1.08,
+          "product_name": "Rukkileib Rehe Eesti Pagar 600g",
+          "note": "0.65€/600g"
+        },
+        {
+          "store": "A1000",
+          "price": 1.42,
+          "product_name": "Eesti Pagar Rehe Vormileib 600g",
+          "note": "0.85€/600g"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 1.65,
+          "product_name": "Rehe rukkileib viilutatud, EESTI PAGAR, 600g",
+          "note": "0.99€/600g"
+        }
       ]
     },
     "cashew": {
@@ -205,10 +594,27 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "MAXIMA", "price": 11.45, "product_name": "India pähkli segu WELL DONE 200g" },
-        { "store": "RIMI", "price": 11.99, "product_name": "India pähklid Rimi 700g" },
-        { "store": "KAUPMEES", "price": 12.70, "product_name": "India pähkel, NÄKS NÄKS, 1kg" },
-        { "store": "SELVER", "price": 12.95, "product_name": "India pähkli segu, PÄHKLINÄPP, 200g", "note": "segu jõhvikaga" }
+        {
+          "store": "MAXIMA",
+          "price": 11.45,
+          "product_name": "India pähkli segu WELL DONE 200g"
+        },
+        {
+          "store": "RIMI",
+          "price": 11.99,
+          "product_name": "India pähklid Rimi 700g"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 12.7,
+          "product_name": "India pähkel, NÄKS NÄKS, 1kg"
+        },
+        {
+          "store": "SELVER",
+          "price": 12.95,
+          "product_name": "India pähkli segu, PÄHKLINÄPP, 200g",
+          "note": "segu jõhvikaga"
+        }
       ]
     },
     "mustikad": {
@@ -216,12 +622,36 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "PRISMA", "price": 7.22, "product_name": "Ardo kultuurmustikad, 450g" },
-        { "store": "MAXIMA", "price": 7.72, "product_name": "Kultuurmustikad WELL DONE 400g" },
-        { "store": "COOP", "price": 8.19, "product_name": "Figuraata Kultuurmustikad 1kg külmutatud" },
-        { "store": "KAUPMEES", "price": 8.64, "product_name": "GREENS Mustikad 2,5kg külmutatud" },
-        { "store": "SELVER", "price": 9.96, "product_name": "Mustikad, külmutatud, GESTUS, 250 g" },
-        { "store": "RIMI", "price": 9.97, "product_name": "Mustikad ämbris Rimi 400g" }
+        {
+          "store": "PRISMA",
+          "price": 7.22,
+          "product_name": "Ardo kultuurmustikad, 450g"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 7.72,
+          "product_name": "Kultuurmustikad WELL DONE 400g"
+        },
+        {
+          "store": "COOP",
+          "price": 8.19,
+          "product_name": "Figuraata Kultuurmustikad 1kg külmutatud"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 8.64,
+          "product_name": "GREENS Mustikad 2,5kg külmutatud"
+        },
+        {
+          "store": "SELVER",
+          "price": 9.96,
+          "product_name": "Mustikad, külmutatud, GESTUS, 250 g"
+        },
+        {
+          "store": "RIMI",
+          "price": 9.97,
+          "product_name": "Mustikad ämbris Rimi 400g"
+        }
       ]
     },
     "pahklid": {
@@ -229,12 +659,39 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "A1000", "price": 9.27, "product_name": "A1000 Kreeka Pähkel 700g" },
-        { "store": "RIMI", "price": 10.70, "product_name": "Kreeka pähklid Rimi 700g" },
-        { "store": "MAXIMA", "price": 10.98, "product_name": "Kooritud kreeka pähklid WELL DONE 500g" },
-        { "store": "KAUPMEES", "price": 13.98, "product_name": "PÄHKLINÄPP Kreeka pähklid 500g", "note": "6.99€/500g" },
-        { "store": "SELVER", "price": 13.98, "product_name": "Kreeka pähkel, PÄHKLINÄPP, 500g", "note": "6.99€/500g" },
-        { "store": "PRISMA", "price": 14.96, "product_name": "Pähklinäpp kreeka pähkel 500g", "note": "7.48€/500g" }
+        {
+          "store": "A1000",
+          "price": 9.27,
+          "product_name": "A1000 Kreeka Pähkel 700g"
+        },
+        {
+          "store": "RIMI",
+          "price": 10.7,
+          "product_name": "Kreeka pähklid Rimi 700g"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 10.98,
+          "product_name": "Kooritud kreeka pähklid WELL DONE 500g"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 13.98,
+          "product_name": "PÄHKLINÄPP Kreeka pähklid 500g",
+          "note": "6.99€/500g"
+        },
+        {
+          "store": "SELVER",
+          "price": 13.98,
+          "product_name": "Kreeka pähkel, PÄHKLINÄPP, 500g",
+          "note": "6.99€/500g"
+        },
+        {
+          "store": "PRISMA",
+          "price": 14.96,
+          "product_name": "Pähklinäpp kreeka pähkel 500g",
+          "note": "7.48€/500g"
+        }
       ]
     },
     "keefir": {
@@ -242,13 +699,42 @@
       "unit": "l",
       "display_unit": "l",
       "stores": [
-        { "store": "PRISMA", "price": 0.68, "product_name": "Keefir 2,5%, ALMA, 1 kg" },
-        { "store": "RIMI", "price": 0.74, "product_name": "Keefir Rimi 2,5% 1kg" },
-        { "store": "MAXIMA", "price": 0.75, "product_name": "Keefir FARM MILK 2%, 1kg kile" },
-        { "store": "SELVER", "price": 0.75, "product_name": "Keefir 2,5%, ALMA, 1 kg" },
-        { "store": "COOP", "price": 0.75, "product_name": "Farmi keefir 2.5% 1kg" },
-        { "store": "KAUPMEES", "price": 0.94, "product_name": "ALMA Keefir 2,5% 1kg", "note": "korrigeeritud (varem vale 0.68)" },
-        { "store": "A1000", "price": 0.95, "product_name": "Alma Keefir Kile 1kg" }
+        {
+          "store": "PRISMA",
+          "price": 0.68,
+          "product_name": "Keefir 2,5%, ALMA, 1 kg"
+        },
+        {
+          "store": "RIMI",
+          "price": 0.74,
+          "product_name": "Keefir Rimi 2,5% 1kg"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 0.75,
+          "product_name": "Keefir FARM MILK 2%, 1kg kile"
+        },
+        {
+          "store": "SELVER",
+          "price": 0.75,
+          "product_name": "Keefir 2,5%, ALMA, 1 kg"
+        },
+        {
+          "store": "COOP",
+          "price": 0.75,
+          "product_name": "Farmi keefir 2.5% 1kg"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 0.94,
+          "product_name": "ALMA Keefir 2,5% 1kg",
+          "note": "korrigeeritud (varem vale 0.68)"
+        },
+        {
+          "store": "A1000",
+          "price": 0.95,
+          "product_name": "Alma Keefir Kile 1kg"
+        }
       ]
     },
     "parmesan": {
@@ -257,13 +743,49 @@
       "display_unit": "100g pk",
       "note": "Parmesan ei leitud riivjuust kategoorias — kasutame odavaimat riivjuustu",
       "stores": [
-        { "store": "A1000", "price": 5.98, "product_name": "Estover Hiirte Juust Riivitud 500g", "display_price": 0.60 },
-        { "store": "KAUPMEES", "price": 5.98, "product_name": "Estover Hiirte Juust Riivitud 500g", "display_price": 0.60 },
-        { "store": "MAXIMA", "price": 10.76, "product_name": "Riivjuust E-PIIM Light 250g", "display_price": 1.08, "note": "2.69€/250g" },
-        { "store": "COOP", "price": 10.76, "product_name": "E-Piim riivjuust light 250g", "display_price": 1.08 },
-        { "store": "PRISMA", "price": 10.92, "product_name": "Epiim Light riivjuust 250g", "display_price": 1.09 },
-        { "store": "SELVER", "price": 10.92, "product_name": "Riivjuust light, EPIIM, 250g", "display_price": 1.09 },
-        { "store": "RIMI", "price": 11.00, "product_name": "Riivjuust Epiim light 250g", "display_price": 1.10 }
+        {
+          "store": "A1000",
+          "price": 5.98,
+          "product_name": "Estover Hiirte Juust Riivitud 500g",
+          "display_price": 0.6
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 5.98,
+          "product_name": "Estover Hiirte Juust Riivitud 500g",
+          "display_price": 0.6
+        },
+        {
+          "store": "MAXIMA",
+          "price": 10.76,
+          "product_name": "Riivjuust E-PIIM Light 250g",
+          "display_price": 1.08,
+          "note": "2.69€/250g"
+        },
+        {
+          "store": "COOP",
+          "price": 10.76,
+          "product_name": "E-Piim riivjuust light 250g",
+          "display_price": 1.08
+        },
+        {
+          "store": "PRISMA",
+          "price": 10.92,
+          "product_name": "Epiim Light riivjuust 250g",
+          "display_price": 1.09
+        },
+        {
+          "store": "SELVER",
+          "price": 10.92,
+          "product_name": "Riivjuust light, EPIIM, 250g",
+          "display_price": 1.09
+        },
+        {
+          "store": "RIMI",
+          "price": 11.0,
+          "product_name": "Riivjuust Epiim light 250g",
+          "display_price": 1.1
+        }
       ]
     },
     "musli": {
@@ -271,13 +793,41 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "SUMENA", "price": 3.18, "product_name": "Täisteramüsli rosina-pähkli, VIOLA, 500g" },
-        { "store": "SELVER", "price": 3.39, "product_name": "Müsli banaanikrõpsude ja rosinatega, FIRST PRICE, 1 kg" },
-        { "store": "RIMI", "price": 3.89, "product_name": "Müsli kuivatatud puuviljadega Rimi Basic 1kg" },
-        { "store": "KAUPMEES", "price": 3.99, "product_name": "JEDEN TAG Puuviljamüsli 1kg" },
-        { "store": "HINNAPOMM", "price": 3.99, "product_name": "JEDEN TAG Puuviljamüsli 1kg" },
-        { "store": "PRISMA", "price": 4.16, "product_name": "Muhuu hommikusöögimüsli 500g" },
-        { "store": "MAXIMA", "price": 5.33, "product_name": "Müsli maasikatega, BONA VITA, 375g" }
+        {
+          "store": "SUMENA",
+          "price": 3.18,
+          "product_name": "Täisteramüsli rosina-pähkli, VIOLA, 500g"
+        },
+        {
+          "store": "SELVER",
+          "price": 3.39,
+          "product_name": "Müsli banaanikrõpsude ja rosinatega, FIRST PRICE, 1 kg"
+        },
+        {
+          "store": "RIMI",
+          "price": 3.89,
+          "product_name": "Müsli kuivatatud puuviljadega Rimi Basic 1kg"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 3.99,
+          "product_name": "JEDEN TAG Puuviljamüsli 1kg"
+        },
+        {
+          "store": "HINNAPOMM",
+          "price": 3.99,
+          "product_name": "JEDEN TAG Puuviljamüsli 1kg"
+        },
+        {
+          "store": "PRISMA",
+          "price": 4.16,
+          "product_name": "Muhuu hommikusöögimüsli 500g"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 5.33,
+          "product_name": "Müsli maasikatega, BONA VITA, 375g"
+        }
       ]
     },
     "ploomid": {
@@ -285,12 +835,42 @@
       "unit": "kg",
       "display_unit": "200g pk",
       "stores": [
-        { "store": "KAUPMEES", "price": 6.57, "product_name": "ALISCO Kuivatatud mustad ploomid 10kg", "display_price": 1.31 },
-        { "store": "PRISMA", "price": 7.10, "product_name": "COOP kuivatatud ploomid kivideta 500g", "display_price": 1.42 },
-        { "store": "MAXIMA", "price": 7.25, "product_name": "Kuivatatud ploomid MINI DAY 200g", "display_price": 1.45 },
-        { "store": "RIMI", "price": 7.98, "product_name": "Kuivatatud ploomid kivideta Rimi 500g", "display_price": 1.60 },
-        { "store": "COOP", "price": 10.95, "product_name": "Coop Kuivatatud ploomid 200g", "display_price": 2.19 },
-        { "store": "SELVER", "price": 17.95, "product_name": "Kuivatatud ploomid kivideta, SEEBERGER, 200g", "display_price": 3.59 }
+        {
+          "store": "KAUPMEES",
+          "price": 6.57,
+          "product_name": "ALISCO Kuivatatud mustad ploomid 10kg",
+          "display_price": 1.31
+        },
+        {
+          "store": "PRISMA",
+          "price": 7.1,
+          "product_name": "COOP kuivatatud ploomid kivideta 500g",
+          "display_price": 1.42
+        },
+        {
+          "store": "MAXIMA",
+          "price": 7.25,
+          "product_name": "Kuivatatud ploomid MINI DAY 200g",
+          "display_price": 1.45
+        },
+        {
+          "store": "RIMI",
+          "price": 7.98,
+          "product_name": "Kuivatatud ploomid kivideta Rimi 500g",
+          "display_price": 1.6
+        },
+        {
+          "store": "COOP",
+          "price": 10.95,
+          "product_name": "Coop Kuivatatud ploomid 200g",
+          "display_price": 2.19
+        },
+        {
+          "store": "SELVER",
+          "price": 17.95,
+          "product_name": "Kuivatatud ploomid kivideta, SEEBERGER, 200g",
+          "display_price": 3.59
+        }
       ]
     },
     "shokolaad": {
@@ -298,13 +878,51 @@
       "unit": "kg",
       "display_unit": "100g plaat",
       "stores": [
-        { "store": "PRISMA", "price": 9.90, "product_name": "X-tra tume šokolaad 100g", "display_price": 0.99 },
-        { "store": "MAXIMA", "price": 11.90, "product_name": "Tume šokolaad MIO DELIZZI 100g", "display_price": 1.19 },
-        { "store": "RIMI", "price": 13.50, "product_name": "Tume šokolaad Poesia 100g", "display_price": 1.35 },
-        { "store": "HINNAPOMM", "price": 15.00, "product_name": "Milka Tume šokolaad 90g", "display_price": 1.35 },
-        { "store": "A1000", "price": 18.89, "product_name": "KALEV Tume šokolaad tervete mandlitega 190g", "display_price": 1.89, "note": "3.59€/190g" },
-        { "store": "KAUPMEES", "price": 20.21, "product_name": "KALEV Tume šokolaad tervete mandlitega 190g", "display_price": 2.02, "note": "3.84€/190g" },
-        { "store": "SELVER", "price": 26.16, "product_name": "KALEV Tume šokolaad tervete mandlitega 190g", "display_price": 2.62, "note": "4.97€/190g" }
+        {
+          "store": "PRISMA",
+          "price": 9.9,
+          "product_name": "X-tra tume šokolaad 100g",
+          "display_price": 0.99
+        },
+        {
+          "store": "MAXIMA",
+          "price": 11.9,
+          "product_name": "Tume šokolaad MIO DELIZZI 100g",
+          "display_price": 1.19
+        },
+        {
+          "store": "RIMI",
+          "price": 13.5,
+          "product_name": "Tume šokolaad Poesia 100g",
+          "display_price": 1.35
+        },
+        {
+          "store": "HINNAPOMM",
+          "price": 15.0,
+          "product_name": "Milka Tume šokolaad 90g",
+          "display_price": 1.35
+        },
+        {
+          "store": "A1000",
+          "price": 18.89,
+          "product_name": "KALEV Tume šokolaad tervete mandlitega 190g",
+          "display_price": 1.89,
+          "note": "3.59€/190g"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 20.21,
+          "product_name": "KALEV Tume šokolaad tervete mandlitega 190g",
+          "display_price": 2.02,
+          "note": "3.84€/190g"
+        },
+        {
+          "store": "SELVER",
+          "price": 26.16,
+          "product_name": "KALEV Tume šokolaad tervete mandlitega 190g",
+          "display_price": 2.62,
+          "note": "4.97€/190g"
+        }
       ]
     },
     "hakkliha": {
@@ -312,13 +930,45 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "A1000", "price": 5.31, "product_name": "Hakklihasegu kanafileest, RANNAMÕISA, 450g", "note": "2.39€/450g" },
-        { "store": "HINNAPOMM", "price": 5.48, "product_name": "Broileri hakkliha 1kg" },
-        { "store": "SELVER", "price": 6.64, "product_name": "Hakklihasegu kanafileest, RANNAMÕISA, 450g", "note": "2.99€/450g — varem puudus!" },
-        { "store": "KAUPMEES", "price": 6.78, "product_name": "RANNAMÕISA Broileri rinnafilee hakklihasegu 450g", "note": "3.05€/450g — korrigeeritud" },
-        { "store": "PRISMA", "price": 7.96, "product_name": "Rannamõisa Hakklihasegu Kanafileest 450g", "note": "3.58€/450g — korrigeeritud" },
-        { "store": "RIMI", "price": 7.48, "product_name": "Broilerikoiva hakkliha Rimi 400g" },
-        { "store": "MAXIMA", "price": 8.87, "product_name": "Broilerifilee hakklihamass KEKAVA, 450g" }
+        {
+          "store": "A1000",
+          "price": 5.31,
+          "product_name": "Hakklihasegu kanafileest, RANNAMÕISA, 450g",
+          "note": "2.39€/450g"
+        },
+        {
+          "store": "HINNAPOMM",
+          "price": 5.48,
+          "product_name": "Broileri hakkliha 1kg"
+        },
+        {
+          "store": "SELVER",
+          "price": 6.64,
+          "product_name": "Hakklihasegu kanafileest, RANNAMÕISA, 450g",
+          "note": "2.99€/450g — varem puudus!"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 6.78,
+          "product_name": "RANNAMÕISA Broileri rinnafilee hakklihasegu 450g",
+          "note": "3.05€/450g — korrigeeritud"
+        },
+        {
+          "store": "PRISMA",
+          "price": 7.96,
+          "product_name": "Rannamõisa Hakklihasegu Kanafileest 450g",
+          "note": "3.58€/450g — korrigeeritud"
+        },
+        {
+          "store": "RIMI",
+          "price": 7.48,
+          "product_name": "Broilerikoiva hakkliha Rimi 400g"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 8.87,
+          "product_name": "Broilerifilee hakklihamass KEKAVA, 450g"
+        }
       ]
     },
     "taispiim": {
@@ -327,13 +977,48 @@
       "display_unit": "l",
       "note": "Hinnad korrigeeritud — varasem andmes kõik poed valesti 0.94",
       "stores": [
-        { "store": "MAXIMA", "price": 0.93, "product_name": "Täispiim ALMA 3,6-4,2%, 1,5L", "note": "1.39€/1.5L" },
-        { "store": "A1000", "price": 0.95, "product_name": "Farmi Täispiim 3,6-4,2% 2L", "note": "1.89€/2L" },
-        { "store": "KAUPMEES", "price": 1.075, "product_name": "FARMI Täispiim 3,6%-4,2% 2L", "note": "2.15€/2L" },
-        { "store": "SELVER", "price": 1.075, "product_name": "Täispiim 3,6%-4,2% pure, FARMI, 2L", "note": "2.15€/2L" },
-        { "store": "COOP", "price": 1.095, "product_name": "Farmi täispiim 3.6-4.2% 2L pure", "note": "2.19€/2L" },
-        { "store": "PRISMA", "price": 1.14, "product_name": "Farmi Täispiim 3,6%-4,2%, 2L", "note": "2.28€/2L" },
-        { "store": "RIMI", "price": 1.145, "product_name": "Täispiim Farmi 3,8-4,2% 2L", "note": "2.29€/2L" }
+        {
+          "store": "MAXIMA",
+          "price": 0.93,
+          "product_name": "Täispiim ALMA 3,6-4,2%, 1,5L",
+          "note": "1.39€/1.5L"
+        },
+        {
+          "store": "A1000",
+          "price": 0.95,
+          "product_name": "Farmi Täispiim 3,6-4,2% 2L",
+          "note": "1.89€/2L"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 1.075,
+          "product_name": "FARMI Täispiim 3,6%-4,2% 2L",
+          "note": "2.15€/2L"
+        },
+        {
+          "store": "SELVER",
+          "price": 1.075,
+          "product_name": "Täispiim 3,6%-4,2% pure, FARMI, 2L",
+          "note": "2.15€/2L"
+        },
+        {
+          "store": "COOP",
+          "price": 1.095,
+          "product_name": "Farmi täispiim 3.6-4.2% 2L pure",
+          "note": "2.19€/2L"
+        },
+        {
+          "store": "PRISMA",
+          "price": 1.14,
+          "product_name": "Farmi Täispiim 3,6%-4,2%, 2L",
+          "note": "2.28€/2L"
+        },
+        {
+          "store": "RIMI",
+          "price": 1.145,
+          "product_name": "Täispiim Farmi 3,8-4,2% 2L",
+          "note": "2.29€/2L"
+        }
       ]
     },
     "vadakupulber": {
@@ -342,12 +1027,38 @@
       "display_unit": "kg",
       "note": "Odavam online: MyProtein ~13€/kg",
       "stores": [
-        { "store": "MyProtein", "price": 13.0, "product_name": "MyProtein Impact Whey Protein (sojavaba, online)" },
-        { "store": "PRISMA", "price": 23.79, "product_name": "Leader Whey Proteiinipulber šokolaadi 2kg" },
-        { "store": "A1000", "price": 24.99, "product_name": "Iconfit Whey Protein 80 – Vanilla 1kg" },
-        { "store": "SELVER", "price": 24.99, "product_name": "Iconfit Whey Protein 80 – Vanilla 1kg" },
-        { "store": "MAXIMA", "price": 29.89, "product_name": "Vadakuvalk ICONFIT Šokolaadimaits. 1kg", "note": "korrigeeritud — varem vale 22.99" },
-        { "store": "RIMI", "price": 32.99, "product_name": "Vadakuvalk 80 šokolaadi IconFit 1kg", "note": "korrigeeritud — varem vale 22.99" }
+        {
+          "store": "MyProtein",
+          "price": 13.0,
+          "product_name": "MyProtein Impact Whey Protein (sojavaba, online)"
+        },
+        {
+          "store": "PRISMA",
+          "price": 23.79,
+          "product_name": "Leader Whey Proteiinipulber šokolaadi 2kg"
+        },
+        {
+          "store": "A1000",
+          "price": 24.99,
+          "product_name": "Iconfit Whey Protein 80 – Vanilla 1kg"
+        },
+        {
+          "store": "SELVER",
+          "price": 24.99,
+          "product_name": "Iconfit Whey Protein 80 – Vanilla 1kg"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 29.89,
+          "product_name": "Vadakuvalk ICONFIT Šokolaadimaits. 1kg",
+          "note": "korrigeeritud — varem vale 22.99"
+        },
+        {
+          "store": "RIMI",
+          "price": 32.99,
+          "product_name": "Vadakuvalk 80 šokolaadi IconFit 1kg",
+          "note": "korrigeeritud — varem vale 22.99"
+        }
       ]
     },
     "mesi": {
@@ -355,12 +1066,36 @@
       "unit": "kg",
       "display_unit": "kg",
       "stores": [
-        { "store": "PRISMA", "price": 4.58, "product_name": "Xtra mesi 650g" },
-        { "store": "KAUPMEES", "price": 6.04, "product_name": "KORIO Mesi 4,5kg" },
-        { "store": "RIMI", "price": 6.99, "product_name": "Mesi erinevate lillede Rimi Basic 1kg" },
-        { "store": "SELVER", "price": 8.25, "product_name": "Eesti Õiemesi, SELVER, 1 kg" },
-        { "store": "SUMENA", "price": 8.30, "product_name": "Erinevate lillede mesi, VINNIS, 300g" },
-        { "store": "MAXIMA", "price": 8.49, "product_name": "Kodu Mesi SP MESILA 1kg" }
+        {
+          "store": "PRISMA",
+          "price": 4.58,
+          "product_name": "Xtra mesi 650g"
+        },
+        {
+          "store": "KAUPMEES",
+          "price": 6.04,
+          "product_name": "KORIO Mesi 4,5kg"
+        },
+        {
+          "store": "RIMI",
+          "price": 6.99,
+          "product_name": "Mesi erinevate lillede Rimi Basic 1kg"
+        },
+        {
+          "store": "SELVER",
+          "price": 8.25,
+          "product_name": "Eesti Õiemesi, SELVER, 1 kg"
+        },
+        {
+          "store": "SUMENA",
+          "price": 8.3,
+          "product_name": "Erinevate lillede mesi, VINNIS, 300g"
+        },
+        {
+          "store": "MAXIMA",
+          "price": 8.49,
+          "product_name": "Kodu Mesi SP MESILA 1kg"
+        }
       ]
     }
   }
