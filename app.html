@@ -2819,42 +2819,39 @@ function doResetAllLogs() {
 function renderBackupCard() {
   const el = document.getElementById('backup-card');
   if (!el) return;
-  loadDirHandle().then(dir => {
-    if (dir) {
-      el.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--sp-sm) var(--sp-md);border-bottom:0.5px solid var(--border);">
-          <span style="font-size:14px;font-weight:700;">💾 Automaatne varundus</span>
-          <span style="font-size:11px;color:var(--green);font-weight:600;">✓ Aktiivne</span>
-        </div>
-        <div style="padding:var(--sp-sm) var(--sp-md);">
-          <div style="font-size:12px;color:var(--text-2);margin-bottom:4px;">Kaust: <strong>${dir.name}</strong></div>
-          <div style="font-size:12px;color:var(--text-2);">Viimane salvestus: <span id="backup-last">—</span></div>
-        </div>
-        <div style="display:flex;gap:8px;padding:0 var(--sp-md) var(--sp-sm);">
-          <button class="btn-sm" onclick="pickBackupFolder()" style="flex:1;">📁 Muuda kausta</button>
-          <button class="btn-sm" onclick="restoreBackup()" style="flex:1;">↩️ Taasta</button>
-        </div>
-        <div style="padding:0 var(--sp-md) var(--sp-sm);">
-          <button class="btn-sm" onclick="resetAllLogs()" style="width:100%;color:var(--red);border-color:var(--red);">🗑 Lähtesta kõik logid</button>
-        </div>`;
-      dir.getFileHandle('backup.json').then(fh => fh.getFile()).then(f => {
-        f.text().then(txt => {
-          try { updateBackupStatus(JSON.parse(txt)['_backup_date']); } catch {}
-        });
-      }).catch(() => {});
-    } else {
-      el.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--sp-sm) var(--sp-md);border-bottom:0.5px solid var(--border);">
-          <span style="font-size:14px;font-weight:700;">💾 Automaatne varundus</span>
-          <span style="font-size:11px;color:var(--text-3);">Seadistamata</span>
-        </div>
-        <div style="padding:var(--sp-sm) var(--sp-md);">
-          <p style="font-size:12px;color:var(--text-2);margin:0 0 10px 0;">Vali kaust arvutist — äpp salvestab sinna automaatselt kõik sinu progressiandmed (treeningud, kaal, toitumine).</p>
-          <button class="btn-primary" onclick="pickBackupFolder()" style="width:100%;">📁 Vali varunduse kaust</button>
-          <button class="btn-sm" onclick="resetAllLogs()" style="width:100%;margin-top:8px;color:var(--red);border-color:var(--red);">🗑 Lähtesta kõik logid</button>
-        </div>`;
-    }
-  });
+  const exportBtn = FB_USER
+    ? `<button class="btn-primary" onclick="exportFromFirestore()" style="width:100%;">⬇️ Laadi alla Firestorest</button>`
+    : `<p style="font-size:12px;color:var(--text-2);margin:0 0 10px 0;">Logi sisse Google'iga (üleval nurgas) et saada pilvevarundus.</p>`;
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--sp-sm) var(--sp-md);border-bottom:0.5px solid var(--border);">
+      <span style="font-size:14px;font-weight:700;">💾 Varundus</span>
+      <span style="font-size:11px;color:${FB_USER ? 'var(--green)' : 'var(--text-3)'};font-weight:600;">${FB_USER ? '● Pilv aktiivne' : 'Välja logitud'}</span>
+    </div>
+    <div style="padding:var(--sp-sm) var(--sp-md);">
+      ${exportBtn}
+      <button class="btn-sm" onclick="restoreFromFile()" style="width:100%;margin-top:8px;">↩️ Taasta failist</button>
+      <button class="btn-sm" onclick="resetAllLogs()" style="width:100%;margin-top:8px;color:var(--red);border-color:var(--red);">🗑 Lähtesta kõik logid</button>
+    </div>`;
+}
+
+async function exportFromFirestore() {
+  if (!FB_USER || !_fbDb) { showToast('❌ Logi esmalt sisse'); return; }
+  try {
+    showToast('⏳ Laen andmeid...');
+    const snap = await _fbDb.collection('users').doc(FB_USER.uid).collection('kv').get();
+    const data = { _backup_date: new Date().toISOString(), _source: 'firestore' };
+    snap.forEach(doc => { data['ttm_' + doc.id] = doc.data().v; });
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ttm-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast(`✓ Backup allalaaditud (${snap.size} kirjet)`);
+  } catch (e) {
+    showToast('❌ Eksport ebaõnnestus');
+    log('exportFromFirestore viga: ' + e.message, 'dbg-err');
+  }
 }
 
 /* ============================================================
