@@ -1,0 +1,139 @@
+{
+  "version": "2.0",
+  "updated": "2026-06-22",
+  "calories_base": 3300,
+  "calories_training_day": 3500,
+  "training_day_note": "Treeningutel lisa 200 kcal — trennijook M08 loendatakse eraldi",
+  "slots": [
+    {
+      "id": "S01",
+      "name": "Hommikusöök",
+      "emoji": "🌅",
+      "time": "08:00",
+      "kcal_target": 900,
+      "protein_g": 55,
+      "carbs_g": 100,
+      "fat_g": 28,
+      "method_ids": ["M03", "M04", "M09", "M10", "M12", "M13", "M14", "M15", "M16", "M17"],
+      "note": "Ankur — tehakse alati, ka kaootilisel päeval. BtB hommikusöögid on suuremad (~800–1100 kcal)."
+    },
+    {
+      "id": "S02",
+      "name": "Vahepala 1",
+      "emoji": "🍎",
+      "time": "10:30",
+      "kcal_target": 450,
+      "protein_g": 28,
+      "carbs_g": 40,
+      "fat_g": 17,
+      "method_ids": ["M04", "M07"]
+    },
+    {
+      "id": "S03",
+      "name": "Lõuna",
+      "emoji": "🍽️",
+      "time": "13:00",
+      "kcal_target": 800,
+      "protein_g": 50,
+      "carbs_g": 90,
+      "fat_g": 22,
+      "method_ids": ["M01", "M02", "M11"]
+    },
+    {
+      "id": "S04",
+      "name": "Vahepala 2",
+      "emoji": "🥜",
+      "time": "16:00",
+      "kcal_target": 400,
+      "protein_g": 18,
+      "carbs_g": 35,
+      "fat_g": 20,
+      "method_ids": ["M04"],
+      "fixed": true,
+      "fixed_note": "Energiapallid × 3 — valmistatud pühapäeval"
+    },
+    {
+      "id": "S05",
+      "name": "Õhtusöök",
+      "emoji": "🌙",
+      "time": "19:00",
+      "kcal_target": 750,
+      "protein_g": 50,
+      "carbs_g": 85,
+      "fat_g": 22,
+      "method_ids": ["M01", "M05", "M02", "M11"]
+    },
+    {
+      "id": "S06",
+      "name": "Trennijook",
+      "emoji": "💪",
+      "time": "trennipäevad",
+      "kcal_target": 450,
+      "protein_g": 30,
+      "carbs_g": 76,
+      "fat_g": 1,
+      "method_ids": ["M08"],
+      "training_only": true,
+      "note": "Ainult treeningutel. Dekstroos 76g + vadakupulber 38g + glutamiin 15g. Joo enne/ajal/pärast treeningut."
+    }
+  ],
+  "weekly_menu": {
+    "1": {
+      "S01": { "name": "Strongman Cereal", "desc": "Muesli 150g + piim 1.5 tassi + külmutatud marjad ¾ tassi + tume šokolaad 30g", "method_id": "M09", "kcal": 800 },
+      "S02": { "name": "Keedetud munad + pähklid", "desc": "Keedetud munad ×3 + cashew 30g + banaan", "method_id": "M07", "kcal": 450 },
+      "S03": { "name": "Kana riisiga", "desc": "Kana rinnatükk 200g + riis 200g (keedetud) + herned 100g + oliiviõli 1 spl", "method_id": "M01", "kcal": 800 },
+      "S04": { "name": "Energiapallid", "desc": "Energiapallid ×3 (~345 kcal) + banaan", "method_id": "M04", "kcal": 400 },
+      "S05": { "name": "Hakkliha pasta", "desc": "Hakkliha 200g + makaronid 200g (keedetud) + tomatikaste + juust 30g", "method_id": "M05", "kcal": 750 }
+    },
+    "2": {
+      "S01": { "name": "The Buff Teacher (smuuti)", "desc": "Vadakupulber + 2 muna + banaan + virsik + vaarikad + piim 2dl + jogurt 1dl + mandlivõi 1 spl", "method_id": "M12", "kcal": 950 },
+      "S02": { "name": "Kodujuust marjadega", "desc": "Kodujuust 200g + mustikad 100g + mesi 1 spl", "method_id": "M04", "kcal": 420 },
+      "S03": { "name": "Kana kartulitega", "desc": "Kana reietükk 200g + kartul 250g (keedetud) + spinat 100g + oliiviõli 1 spl", "method_id": "M01", "kcal": 800 },
+      "S04": { "name": "Energiapallid", "desc": "Energiapallid ×3 (~345 kcal) + banaan", "method_id": "M04", "kcal": 400 },
+      "S05": { "name": "Lõhe riisiga", "desc": "Lõhefileed 200g + riis 200g (keedetud) + brokkoli 100g + oliiviõli 1 spl", "method_id": "M01", "kcal": 750 }
+    },
+    "3": {
+      "S01": { "name": "Musclenog", "desc": "Täispiim 500ml + 3 muna + mesi 2 spl + vanilj + vürtsid, blenderis", "method_id": "M10", "kcal": 730 },
+      "S02": { "name": "Munad leibaga", "desc": "Keedetud munad ×3 + täisteraleib 2 viilu + või 10g", "method_id": "M07", "kcal": 430 },
+      "S03": { "name": "Sunday Night Chili", "desc": "Eelmisel nädalal tehtud chili (1 portsjon) + riis 200g", "method_id": "M11", "kcal": 850 },
+      "S04": { "name": "Energiapallid", "desc": "Energiapallid ×3 (~345 kcal) + banaan", "method_id": "M04", "kcal": 400 },
+      "S05": { "name": "Kana pasta", "desc": "Kana rinnatükk 200g + makaronid 200g (keedetud) + tomatikaste + juust 30g", "method_id": "M01", "kcal": 750 }
+    },
+    "4": {
+      "S01": { "name": "The Fit Frenchman (omlett)", "desc": "4 muna omlett mozzarella + spinat + sibul + habanero, kõrval jogurt + virsik", "method_id": "M13", "kcal": 775 },
+      "S02": { "name": "Kreeka jogurt granolaga", "desc": "Kreeka jogurt 10% 250g + mustikad 80g + granola 30g", "method_id": "M04", "kcal": 430 },
+      "S03": { "name": "Veiseliha kartulitega", "desc": "Veiseliha 200g + kartul 250g (keedetud) + herned 100g + oliiviõli 1 spl", "method_id": "M01", "kcal": 820 },
+      "S04": { "name": "Leib maapähklivõiga", "desc": "Täisteraleib 2 viilu + maapähklivõi 2 spl", "method_id": null, "kcal": 400 },
+      "S05": { "name": "Kana riisiga", "desc": "Kana rinnatükk 200g + riis 200g (keedetud) + brokkoli 100g + oliiviõli 1 spl", "method_id": "M01", "kcal": 750 }
+    },
+    "5": {
+      "S01": { "name": "Kaeraporridge", "desc": "Kaer 80g + täispiim 2dl + vadakupulber 30g + banaan + maapähklivõi 2 spl", "method_id": "M04", "kcal": 880 },
+      "S02": { "name": "Tuunikala leibaga", "desc": "Tuunikala konserv 185g + täisteraleib 2 viilu + mayo 1 spl", "method_id": null, "kcal": 430 },
+      "S03": { "name": "Hakkliha pasta", "desc": "Hakkliha 200g + makaronid 200g (keedetud) + tomatikaste", "method_id": "M05", "kcal": 800 },
+      "S04": { "name": "Energiapallid", "desc": "Energiapallid ×3 (~345 kcal) + banaan", "method_id": "M04", "kcal": 400 },
+      "S05": { "name": "Lõhe kartulitega", "desc": "Lõhefileed 200g + kartul 250g (keedetud) + spinat 100g + oliiviõli 1 spl", "method_id": "M01", "kcal": 750 }
+    },
+    "6": {
+      "S01": { "name": "The Powerhouse", "desc": "3 kalkunivorsti + 3 praetud muna (paprika/cayenne) + puuviljasalat + piim 1 klaas", "method_id": "M14", "kcal": 1000 },
+      "S02": { "name": "Kodujuust meega", "desc": "Kodujuust 200g + mesi 1 spl + mustikad 80g", "method_id": "M04", "kcal": 400 },
+      "S03": { "name": "Vaba söögikord", "desc": "Vaba söögikord — nt restoranist. Eesmärk ~900 kcal.", "method_id": null, "kcal": 900 },
+      "S04": { "name": "Pähklid + banaan", "desc": "Kreeka pähklid 40g + banaan + mesi", "method_id": null, "kcal": 350 },
+      "S05": { "name": "Kana riisiga", "desc": "Kana rinnatükk 200g + riis 200g (keedetud) + kaste", "method_id": "M01", "kcal": 750 }
+    },
+    "7": {
+      "S01": { "name": "Brunch With the Boys", "desc": "Steak/vorstid + 3 praetud muna + kodukartulid + puuviljasalat + piim", "method_id": "M17", "kcal": 1100 },
+      "S02": null,
+      "S03": { "name": "Sunday Night Chili — TEE BATCH", "desc": "Tee 7 portsjonit chili korraga — 2 nädala lõunad eest. Serveeri riisiga.", "method_id": "M11", "kcal": 850 },
+      "S04": { "name": "Energiapallid — TEE BATCH", "desc": "Tee energiapallid nädalaks. Kuni 20 palli. 2 spl maapähklivõi + 2 spl mesi + 1 tassi kaerahelbed + valg.pulber", "method_id": "M04", "kcal": 400 },
+      "S05": { "name": "Batch-cooking õhtusöök", "desc": "Batch-cooked liha + tärklist — ette tehtud nädalaks", "method_id": "M01", "kcal": 750 }
+    }
+  },
+  "water_schedule": [
+    { "time": "07:45", "note": "Enne hommikusööki", "ml": 500 },
+    { "time": "10:00", "note": "Enne vahepalat", "ml": 250 },
+    { "time": "12:30", "note": "Enne lõunat", "ml": 500 },
+    { "time": "15:30", "note": "Enne vahepalat 2", "ml": 250 },
+    { "time": "18:30", "note": "Enne õhtusööki", "ml": 500 },
+    { "time": "21:00", "note": "Õhtul (koos magneesiumiga)", "ml": 250 }
+  ]
+}
