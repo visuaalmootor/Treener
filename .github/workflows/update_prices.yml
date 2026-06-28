@@ -1,0 +1,37 @@
+name: Uuenda hinnad
+
+on:
+  schedule:
+    # Iga päev kell 07:00 UTC (= 10:00 Eesti suveaeg)
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+    # Lubab käivitada ka käsitsi GitHub UI-st (nupp "Run workflow")
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Seadista Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Paigalda sõltuvused
+        run: pip install requests
+
+      - name: Jooksuta hinnauuendus
+        run: python scripts/update_prices.py
+
+      - name: Commit ja push (kui midagi muutus)
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/prices.json
+          git diff --staged --quiet || git commit -m "auto: uuenda hinnad $(date -u '+%Y-%m-%d')"
+          git push
