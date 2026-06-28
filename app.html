@@ -599,6 +599,93 @@
     .off-result-arrow { font-size: 14px; color: var(--text-3); flex-shrink: 0; }
     .off-status { font-size: 12px; color: var(--text-2); padding: 6px 0; text-align: center; }
 
+    /* Barkoodiskänner */
+    .btn-barcode-scan {
+      display: flex; align-items: center; gap: 6px;
+      width: 100%; padding: 8px 10px;
+      background: none; border: 0.5px dashed var(--border);
+      border-radius: var(--r-sm); margin-bottom: var(--sp-sm);
+      font-size: 13px; color: var(--text-2); cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-barcode-scan:active { border-color: var(--accent); color: var(--accent); }
+    .barcode-or-divider {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: var(--sp-sm); color: var(--text-3); font-size: 11px;
+    }
+    .barcode-or-divider::before, .barcode-or-divider::after {
+      content: ''; flex: 1; height: 0.5px; background: var(--border);
+    }
+    #barcode-overlay {
+      position: fixed; inset: 0; z-index: 9000;
+      background: rgba(0,0,0,0.88);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .barcode-modal {
+      background: var(--bg); border-radius: var(--r-md);
+      width: min(92vw, 400px); overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .barcode-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px var(--sp-md);
+      border-bottom: 0.5px solid var(--border);
+      font-size: 14px; font-weight: 600;
+    }
+    .barcode-close-btn {
+      background: none; border: none; font-size: 20px;
+      cursor: pointer; color: var(--text-2); line-height: 1;
+    }
+    .barcode-viewport {
+      position: relative; aspect-ratio: 4/3;
+      background: #000; overflow: hidden;
+    }
+    #barcode-video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .barcode-guide {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .barcode-guide-inner {
+      width: 72%; border: 2px solid rgba(255,255,255,0.6);
+      border-radius: 6px; aspect-ratio: 3/1;
+      position: relative; overflow: hidden;
+    }
+    .barcode-scan-line {
+      position: absolute; left: 0; right: 0; height: 2px;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: barcode-scan 1.6s ease-in-out infinite alternate;
+    }
+    @keyframes barcode-scan {
+      from { top: 10%; } to { top: 85%; }
+    }
+    .barcode-status {
+      padding: 10px var(--sp-md);
+      font-size: 13px; color: var(--text-2); text-align: center;
+    }
+    .btn-ean-manual-fallback {
+      margin: 0 var(--sp-md) var(--sp-md);
+      background: none; border: 0.5px solid var(--border);
+      border-radius: var(--r-sm); padding: 9px;
+      font-size: 12px; color: var(--text-2); cursor: pointer; width: calc(100% - 32px);
+    }
+    .ean-manual-row {
+      display: flex; gap: 8px; align-items: center; margin-bottom: 6px;
+    }
+    .ean-manual-row input {
+      flex: 1; padding: 8px; border: 0.5px solid var(--border);
+      border-radius: var(--r-sm); font-size: 13px;
+      background: var(--surface); color: var(--text-1);
+      font-family: var(--font); -webkit-appearance: none;
+    }
+    .ean-manual-row input:focus { outline: none; border-color: var(--accent); }
+    .ean-manual-row button {
+      padding: 8px 12px; background: var(--accent);
+      color: white; border: none; border-radius: var(--r-sm);
+      font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0;
+    }
+
     /* Edamam retseptisoovitused */
     .recipe-suggestions { margin-top: var(--sp-sm); }
     .recipe-suggestions-title {
@@ -1762,7 +1849,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.7.6</span>
+  <span id="version-label">v0.8.5</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1781,7 +1868,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.8.0';
+const APP_VERSION  = '0.8.5';
 const APP_START    = Date.now();
 const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/OWNER/REPO/main/data/';
 
@@ -3913,6 +4000,156 @@ function cancelConfirmation() {
    OPEN FOOD FACTS — toidu otsing kalorite auto-täitmiseks
 ============================================================ */
 
+/* ===== Barkoodiskänner ===== */
+let _barcodeStream = null;
+
+async function scanBarcode() {
+  const hasCamera   = !!(navigator.mediaDevices?.getUserMedia);
+  const hasDetector = ('BarcodeDetector' in window);
+
+  if (!hasCamera) {
+    showEanInput('Kaamera pole saadaval —');
+    return;
+  }
+  if (!hasDetector) {
+    showEanInput('Sinu brauser ei toeta automaatset skaneerimist —');
+    return;
+  }
+
+  // Loo overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'barcode-overlay';
+  overlay.innerHTML = `
+    <div class="barcode-modal">
+      <div class="barcode-header">
+        <span>📷 Suuna kaamera barkoodile</span>
+        <button class="barcode-close-btn" onclick="closeBarcodeScanner()">✕</button>
+      </div>
+      <div class="barcode-viewport">
+        <video id="barcode-video" autoplay muted playsinline></video>
+        <div class="barcode-guide">
+          <div class="barcode-guide-inner">
+            <div class="barcode-scan-line"></div>
+          </div>
+        </div>
+      </div>
+      <div class="barcode-status" id="barcode-status">Otsin barkood...</div>
+      <button class="btn-ean-manual-fallback"
+        onclick="closeBarcodeScanner(); showEanInput('Sisesta EAN kood käsitsi:');">
+        ✏️ Sisesta kood käsitsi
+      </button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  try {
+    _barcodeStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    const video = document.getElementById('barcode-video');
+    if (!video) { closeBarcodeScanner(); return; }
+    video.srcObject = _barcodeStream;
+    await video.play();
+
+    const detector = new BarcodeDetector({
+      formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'qr_code']
+    });
+
+    const scan = async () => {
+      if (!document.getElementById('barcode-overlay')) return; // suletud
+      try {
+        const found = await detector.detect(video);
+        if (found.length > 0) {
+          const code = found[0].rawValue;
+          const statusEl = document.getElementById('barcode-status');
+          if (statusEl) statusEl.textContent = `✅ Leitud: ${code}`;
+          setTimeout(() => { closeBarcodeScanner(); lookupEAN(code); }, 400);
+          return;
+        }
+      } catch(e) { /* jätka */ }
+      requestAnimationFrame(scan);
+    };
+    requestAnimationFrame(scan);
+
+  } catch(e) {
+    closeBarcodeScanner();
+    showEanInput('Kaamera juurdepääs keelatud —');
+  }
+}
+
+function closeBarcodeScanner() {
+  if (_barcodeStream) {
+    _barcodeStream.getTracks().forEach(t => t.stop());
+    _barcodeStream = null;
+  }
+  document.getElementById('barcode-overlay')?.remove();
+}
+
+function showEanInput(prefixMsg) {
+  const resultsEl = document.getElementById('custom-off-results');
+  if (!resultsEl) return;
+  const msg = prefixMsg ? `<div class="off-status" style="text-align:left;padding-bottom:4px;">${prefixMsg}</div>` : '';
+  resultsEl.innerHTML = `
+    ${msg}
+    <div class="ean-manual-row">
+      <input id="ean-manual-input" type="text" inputmode="numeric"
+        placeholder="EAN kood (nt 4740098050208)" maxlength="14"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();lookupEAN(this.value.trim());}">
+      <button onclick="lookupEAN(document.getElementById('ean-manual-input').value.trim())">Otsi</button>
+    </div>`;
+  setTimeout(() => document.getElementById('ean-manual-input')?.focus(), 50);
+}
+
+async function lookupEAN(ean) {
+  if (!ean || ean.length < 8) {
+    const el = document.getElementById('custom-off-results');
+    if (el) el.innerHTML = `<div class="off-status">Sisesta vähemalt 8-kohaline EAN kood</div>`;
+    return;
+  }
+  const resultsEl = document.getElementById('custom-off-results');
+  if (resultsEl) resultsEl.innerHTML = `<div class="off-status">🔍 Otsin koodiga ${ean}...</div>`;
+
+  try {
+    const url = `https://world.openfoodfacts.org/api/v0/product/${encodeURIComponent(ean)}.json?fields=product_name,product_name_en,brands,nutriments`;
+    const r   = await fetch(url);
+    const data = await r.json();
+
+    if (data.status !== 1 || !data.product) {
+      if (resultsEl) resultsEl.innerHTML =
+        `<div class="off-status">Toodet ei leitud (${ean}) — sisesta kalorid käsitsi</div>`;
+      return;
+    }
+
+    const p = data.product;
+    const kcal100 = Math.round(p.nutriments?.['energy-kcal_100g'] || 0);
+    if (!kcal100) {
+      if (resultsEl) resultsEl.innerHTML =
+        `<div class="off-status">Toode leitud, kuid kalorid puuduvad — sisesta käsitsi</div>`;
+      return;
+    }
+
+    const rawName = p.product_name || p.product_name_en || '';
+    const brand   = p.brands ? p.brands.split(',')[0].trim() : '';
+    const name    = rawName + (brand && !rawName.toLowerCase().includes(brand.toLowerCase()) ? ` (${brand})` : '');
+
+    // Täida vorm sama loogikaga nagu selectOFFResult
+    const grams = parseFloat(document.getElementById('custom-inp-grams')?.value) || 100;
+    const mult  = grams / 100;
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    set('custom-inp-name',    name);
+    set('custom-inp-kcal',    Math.round(kcal100 * mult));
+    set('custom-inp-protein', ((p.nutriments?.['proteins_100g']        || 0) * mult).toFixed(1));
+    set('custom-inp-carbs',   ((p.nutriments?.['carbohydrates_100g']   || 0) * mult).toFixed(1));
+    set('custom-inp-fat',     ((p.nutriments?.['fat_100g']             || 0) * mult).toFixed(1));
+
+    if (resultsEl) resultsEl.innerHTML =
+      `<div class="off-status" style="color:var(--green);">✅ ${name || 'Toode'} — ${kcal100} kcal/100g</div>`;
+
+  } catch(e) {
+    if (resultsEl) resultsEl.innerHTML =
+      `<div class="off-status">Ühendus ebaõnnestus — sisesta käsitsi</div>`;
+  }
+}
+
 async function searchOFF() {
   const nameInput = document.getElementById('custom-inp-name');
   const query = nameInput?.value?.trim();
@@ -5198,7 +5435,11 @@ function renderToitumine() {
       }).join('');
       const formHtml = STATE.showCustomForm ? `
         <div class="custom-add-form">
-          <div style="font-size:11px;color:var(--text-2);margin-bottom:5px;">Otsi toidubaasist (täidab kalorid automaatselt):</div>
+          <button class="btn-barcode-scan" onclick="scanBarcode()">
+            📷 Skänni barkood
+            <span style="font-size:11px;color:var(--text-3);margin-left:auto;">EAN → makrod automaatselt</span>
+          </button>
+          <div class="barcode-or-divider">või otsi nimega</div>
           <div class="off-search-row">
             <input id="custom-inp-name" type="text" placeholder="nt šokolaad, pitsa, burger..." autocomplete="off"
               onkeydown="if(event.key==='Enter'){event.preventDefault();searchOFF();}">
