@@ -1,0 +1,34 @@
+{
+  "version": "1.0",
+  "updated": "2026-06-22",
+  "note": "Isiklik retseptikogu. Lisa retsepte Claude chatist — kleebi retsept chatti ja Claude lisab siia.",
+  "recipes": [
+    {
+      "id": "CR001",
+      "name": "Kana-riisi toiduvalmistaja",
+      "source": "Bony to Beastly",
+      "kcal": 810,
+      "protein_g": 58,
+      "carbs_g": 95,
+      "fat_g": 18,
+      "time_min": 35,
+      "servings": 1,
+      "tags": ["lõuna", "õhtusöök", "batch"],
+      "ingredients": [
+        "220g kana rinnatükk",
+        "180g riis (kuivalt)",
+        "100g brokkoli",
+        "1 spl oliiviõli",
+        "küüslauk, sool, pipar, paprika"
+      ],
+      "steps": [
+        "Kuumuta ahi 200°C.",
+        "Maitsesta kana oliiviõli, küüslaugu, soola, pipra ja paprikaga.",
+        "Küpseta kana ahjus 35–38 min kuni sisetemperatuur 74°C.",
+        "Keeda riis 1:2 veega 18 min madalal kuumusel, kaanega.",
+        "Auruta brokkoli 5 min kuni pehmeks kuid veel roheliseks.",
+        "Serveeri koos — lisa vajadusel oliiviõli peale."
+      ]
+    }
+  ]
+}
