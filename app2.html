@@ -1316,13 +1316,14 @@
     .kodu-wrap {
       display: flex;
       flex-direction: column;
-      gap: var(--sp-sm);
+      gap: 13px;
     }
     .kodu-card {
       background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--r-md);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
       padding: var(--sp-md);
+      box-shadow: var(--shadow);
     }
     .kodu-card-clickable {
       cursor: pointer;
@@ -1892,7 +1893,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.3.0</span>
+  <span id="version-label">v0.9.3.1</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1911,7 +1912,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.3.0';
+const APP_VERSION  = '0.9.3.1';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -3419,35 +3420,44 @@ function renderKodu() {
     `<span style="color:var(--text-2);font-size:13px;">→ muutus puudub</span>`;
   const progressToGoal = Math.max(0, Math.min(100, Math.round((curKg - startKg) / (goalKg - startKg) * 100)));
 
-  /* ---- JÄRGMINE EINE ---- */
-  let nextMealBlock = `<div style="color:var(--text-2);font-size:13px;">Kõik eined täna söödud 🎉</div>`;
-  if (STATE.nutrition) {
-    const slots    = STATE.nutrition.slots ?? [];
-    const fullMenu = generateMenuFromCart();
-    const menu     = fullMenu[String(todayNum)] ?? {};
-    const selDate  = getDateForDayNum(todayNum);
-    const log      = getNutritionLogForDate(selDate);
-    const now      = new Date();
-    const nowMin   = now.getHours() * 60 + now.getMinutes();
-    const nextSlot = slots.find(s => {
-      if (log[s.id] === 'eaten' || log[s.id] === 'skipped') return false;
-      const [h, m] = (s.time || '00:00').split(':').map(Number);
-      return (h * 60 + m) > nowMin;
-    });
-    if (nextSlot && menu[nextSlot.id]) {
-      nextMealBlock = `
-        <div style="display:flex;align-items:center;justify-content:space-between;" onclick="switchTab('toitumine')" style="cursor:pointer;">
-          <div>
-            <div style="font-size:18px;font-weight:700;letter-spacing:-0.3px;">${nextSlot.emoji} ${menu[nextSlot.id].name}</div>
-            <div style="font-size:12px;color:var(--text-2);margin-top:2px;">kell ${nextSlot.time} · ${nextSlot.name} · ${menu[nextSlot.id].kcal ?? '?'} kcal</div>
-          </div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </div>`;
-    } else if (!nextSlot) {
-      // kontrollime kas on üldse homme esimene slots
-      nextMealBlock = `<div style="color:var(--text-2);font-size:13px;">Kõik tänased eined on täidetud 👌</div>`;
+  /* ---- JÄRGMINE EINE (loeb ttm_meal_plan-ist, fallback nutrition slots) ---- */
+  let nextMeal = null; // { name, time, kcal } | 'done'
+  {
+    const planDay = (lsGet('meal_plan') ?? {})[today] ?? null;
+    const log     = getNutritionLogForDate(today);
+    const now     = new Date();
+    const nowMin  = now.getHours() * 60 + now.getMinutes();
+    if (planDay) {
+      const sids = Object.keys(planDay).filter(s => s !== 'S06').sort();
+      const pending = sids.filter(sid => log[sid] !== 'eaten' && log[sid] !== 'skipped');
+      const upcoming = pending.find(sid => {
+        const [h, m] = (MP_SLOT_TIMES[sid] || '00:00').split(':').map(Number);
+        return (h * 60 + (m || 0)) > nowMin;
+      }) ?? pending[0];
+      if (upcoming && planDay[upcoming]) {
+        nextMeal = {
+          name: planDay[upcoming].name ?? MP_SLOT_LABELS[upcoming],
+          slot: MP_SLOT_LABELS[upcoming] ?? '',
+          time: MP_SLOT_TIMES[upcoming] ?? '',
+          kcal: planDay[upcoming].kcal ?? null,
+        };
+      } else if (sids.length) {
+        nextMeal = 'done';
+      }
+    } else if (STATE.nutrition) {
+      const slots    = STATE.nutrition.slots ?? [];
+      const fullMenu = generateMenuFromCart();
+      const menu     = fullMenu[String(todayNum)] ?? {};
+      const nextSlot = slots.find(s => {
+        if (log[s.id] === 'eaten' || log[s.id] === 'skipped') return false;
+        const [h, m] = (s.time || '00:00').split(':').map(Number);
+        return (h * 60 + m) > nowMin;
+      });
+      if (nextSlot && menu[nextSlot.id]) {
+        nextMeal = { name: menu[nextSlot.id].name, slot: nextSlot.name ?? '', time: nextSlot.time ?? '', kcal: menu[nextSlot.id].kcal ?? null };
+      } else if (!nextSlot) {
+        nextMeal = 'done';
+      }
     }
   }
 
@@ -3570,88 +3580,252 @@ function renderKodu() {
     motivMsg += ' 🍺 ' + _alkWeekCount + ' jook' + (_alkWeekCount === 1 ? '' : 'i') + ' sel nädalal logitud.';
   }
 
-  /* ---- HTML ---- */
+  /* ---- TERVITUS (Quiet Data) ---- */
+  const DAYS_ET   = ['Pühapäev','Esmaspäev','Teisipäev','Kolmapäev','Neljapäev','Reede','Laupäev'];
+  const MONTHS_ET = ['jaanuar','veebruar','märts','aprill','mai','juuni','juuli','august','september','oktoober','november','detsember'];
+  const _now      = new Date();
+  const userName  = STATE.user?.name ?? 'Ingmar';
+  const dateStr   = `${DAYS_ET[_now.getDay()]} · ${_now.getDate()}. ${MONTHS_ET[_now.getMonth()]}`;
+
+  /* ---- NÄDALA KAALUDELTA (badge) ---- */
+  let weekDelta = null;
+  if (weightLog.length >= 2) {
+    const lastE   = weightLog[weightLog.length - 1];
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+    let refE = weightLog[0];
+    for (const e of weightLog) { if (e.date <= weekAgo) refE = e; }
+    if (refE !== lastE) weekDelta = (lastE.weight ?? lastE.weight_kg) - (refE.weight ?? refE.weight_kg);
+  }
+  const deltaBadge = weekDelta === null
+    ? `<div style="background:var(--track);border-radius:9px;padding:6px 10px;font:700 12px/1 var(--font-mono);color:var(--text-3);">—</div>`
+    : weekDelta >= 0
+    ? `<div style="background:var(--accent-bg);border-radius:9px;padding:6px 10px;font:700 12px/1 var(--font-mono);color:var(--accent);">↗ +${weekDelta.toFixed(1)} kg</div>`
+    : `<div style="background:#FBEAE8;border-radius:9px;padding:6px 10px;font:700 12px/1 var(--font-mono);color:var(--red);">↘ ${weekDelta.toFixed(1)} kg</div>`;
+
+  /* ---- KAALUGRAAFIK (hero, marker igal punktil) ---- */
+  const wPts = weightLog.map(e => ({ d: e.date, kg: e.weight ?? e.weight_kg })).filter(p => p.kg).slice(-10);
+  let weightChartHtml = `<div style="font-size:11px;color:var(--text-3);padding:10px 0;">Lisa kaalumõõtmisi (Mina tab) — trendigraafik ilmub siia.</div>`;
+  if (wPts.length >= 2) {
+    const W = 332, H = 76;
+    const kgs = wPts.map(p => p.kg);
+    let mn = Math.min(...kgs), mx = Math.max(...kgs);
+    if (mx - mn < 0.8) { const c = (mn + mx) / 2; mn = c - 0.4; mx = c + 0.4; }
+    const X = i => Math.round(i / (wPts.length - 1) * W);
+    const Y = v => Math.round(10 + (1 - (v - mn) / (mx - mn)) * (H - 20));
+    const linePts = wPts.map((p, i) => `${X(i)},${Y(p.kg)}`).join(' ');
+    const goalLine = (goalKg >= mn && goalKg <= mx)
+      ? `<line x1="0" y1="${Y(goalKg)}" x2="${W}" y2="${Y(goalKg)}" style="stroke:#C9D7F6;stroke-width:1;stroke-dasharray:3 4"/>` : '';
+    const circles = wPts.map((p, i) =>
+      `<circle cx="${X(i)}" cy="${Y(p.kg)}" r="${i === wPts.length - 1 ? 4 : 3}" style="fill:var(--accent);stroke:#fff;stroke-width:${i === wPts.length - 1 ? 2 : 1.5}"/>`).join('');
+    const fmtD = d => { const dt = new Date(d); return `${dt.getDate()}.${String(dt.getMonth() + 1).padStart(2, '0')}`; };
+    const lblIdx = wPts.length <= 5 ? wPts.map((_, i) => i) : [0, Math.floor((wPts.length - 1) / 2), wPts.length - 1];
+    const axisLbls = lblIdx.map(i => `<span style="font:500 8.5px/1 var(--font-mono);color:var(--text-3);">${fmtD(wPts[i].d)}</span>`).join('');
+    weightChartHtml = `
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;display:block;overflow:visible;">
+        ${goalLine}
+        <polygon points="${linePts} ${W},${H} 0,${H}" style="fill:var(--accent-bg);"/>
+        <polyline points="${linePts}" style="fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;"/>
+        ${circles}
+      </svg>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;">${axisLbls}</div>`;
+  }
+
+  /* ---- SÖÖDUD MAKROD (meal_plan + custom) ---- */
+  const macroT = STATE.user?.macros ?? { protein_g: 208, carbs_g: 371, fat_g: 109 };
+  let eatP = 0, eatC = 0, eatF = 0, mealsEaten = 0, mealsTotal = 0;
+  {
+    const planDay = (lsGet('meal_plan') ?? {})[today] ?? {};
+    const log     = getNutritionLogForDate(today);
+    Object.entries(planDay).forEach(([sid, m]) => {
+      if (sid === 'S06') return;
+      mealsTotal++;
+      if (log[sid] === 'eaten' && m) { mealsEaten++; eatP += m.protein ?? 0; eatC += m.carbs ?? 0; eatF += m.fat ?? 0; }
+    });
+    (log._custom || []).forEach(e => { eatP += e.protein ?? e.protein_g ?? 0; eatC += e.carbs ?? e.carbs_g ?? 0; eatF += e.fat ?? e.fat_g ?? 0; });
+  }
+  const macroRow = (lbl, val, target) => {
+    const pct = Math.min(100, Math.round(val / target * 100));
+    const fill = pct >= 95 ? 'var(--green)' : pct >= 60 ? 'var(--accent)' : pct >= 30 ? 'var(--amber)' : pct > 0 ? 'var(--red)' : 'var(--track)';
+    return `
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="width:62px;font:500 11px/1 var(--font);color:var(--text-2);">${lbl}</span>
+        <div style="flex:1;height:7px;background:var(--track);border-radius:4px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${fill};border-radius:4px;"></div></div>
+        <span style="width:62px;text-align:right;font:600 11px/1 var(--font-mono);color:var(--text-1);">${Math.round(val)}<span style="color:var(--text-3);">/${target}</span></span>
+      </div>`;
+  };
+
+  /* ---- NÄDALA ÜLEVAADE (E–P kcal tulbad, gradient) ---- */
+  const weekDays = mpWeekDays();
+  const weekData = weekDays.map(d => {
+    const kc = d <= today ? calcEatenKcal(d) : 0;
+    return { d, kc, pct: Math.round(kc / kcalTarget * 100), isToday: d === today, isFuture: d > today };
+  });
+  const daysWithData = weekData.filter(w => w.kc > 0);
+  const weekAvg = daysWithData.length ? Math.round(daysWithData.reduce((s, w) => s + w.kc, 0) / daysWithData.length) : 0;
+  const weekTrainDone = (lsGet('training_log') ?? []).filter(e => e.done && weekDays.includes(e.date)).length;
+  const weekBars = weekData.map((w, i) => {
+    const h = w.isFuture || w.kc === 0 ? 8 : Math.max(10, Math.min(100, w.pct));
+    const fill = w.isFuture || w.kc === 0 ? 'var(--track)'
+      : w.pct >= 95 ? 'var(--green)' : w.pct >= 70 ? 'var(--amber)' : 'var(--red)';
+    const lblC = w.isToday ? 'color:var(--accent);font-weight:700;' : 'color:var(--text-3);';
+    return `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;">
+        <div style="width:100%;background:${fill};border-radius:3px 3px 0 0;height:${h}%;${w.isToday ? 'outline:1.5px solid var(--accent);outline-offset:1px;' : ''}"></div>
+        <span style="font:500 8px/1 var(--font-mono);${lblC}">${['E','T','K','N','R','L','P'][i]}</span>
+      </div>`;
+  }).join('');
+
+  /* ---- STREAK + PROGNOOS ---- */
+  let streak = 0;
+  {
+    const thr = kcalTarget * 0.7;
+    if (calcEatenKcal(today) >= thr) streak++;
+    for (let i = 1; i <= 90; i++) {
+      const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      if (calcEatenKcal(d) >= thr) streak++; else break;
+    }
+  }
+  let projection = 'Logi kaalu kord nädalas — sihtkaalu prognoos ilmub siia.';
+  if (weightLog.length >= 2 && kgToGoal > 0) {
+    const lastE  = weightLog[weightLog.length - 1];
+    const cutoff = new Date(Date.now() - 28 * 86400000).toISOString().slice(0, 10);
+    const refE   = weightLog.find(e => e.date >= cutoff) ?? weightLog[0];
+    const days   = Math.round((new Date(lastE.date) - new Date(refE.date)) / 86400000);
+    if (days >= 5) {
+      const rate = ((lastE.weight ?? lastE.weight_kg) - (refE.weight ?? refE.weight_kg)) / (days / 7);
+      if (rate > 0.05) projection = `Sel tempol jõuad sihtkaaluni ~${Math.ceil(kgToGoal / rate)} nädalaga`;
+      else projection = 'Kaal ei tõuse — lisa ~300 kcal päevas, prognoos uueneb.';
+    }
+  }
+  const streakTitle = streak >= 2
+    ? `Püsi kursil — ${streak} päeva järjest sihis`
+    : (streak === 1 ? 'Hea algus — täna on sihis! Hoia seeria käimas' : 'Alusta seeriat — söö täna vähemalt 70% sihist');
+
+  /* ---- HTML (Quiet Data, v0.9.3.1) ---- */
+  const kcalFill = kcalPct >= 95 ? 'var(--green)' : kcalPct >= 60 ? 'var(--accent)' : kcalPct >= 30 ? 'var(--amber)' : kcalPct > 0 ? 'var(--red)' : 'var(--track)';
+  const waterFill = waterPct >= 95 ? 'var(--green)' : waterPct >= 60 ? 'var(--accent)' : waterPct > 0 ? 'var(--amber)' : 'var(--track)';
+  const nextMealHtml = nextMeal === 'done'
+    ? `<div style="font:700 14px/1.2 var(--font);color:var(--text-1);">Kõik söödud 👌</div>
+       <div style="font:500 9.5px/1 var(--font-mono);color:var(--text-3);">tänased eined täidetud</div>`
+    : nextMeal
+    ? `<div style="font:700 14px/1.2 var(--font);color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${nextMeal.name}</div>
+       <div style="font:500 9.5px/1 var(--font-mono);color:var(--accent);">${nextMeal.time}${nextMeal.kcal ? ' · ~' + nextMeal.kcal + ' kcal' : ''}</div>`
+    : `<div style="font:700 14px/1.2 var(--font);color:var(--text-1);">Plaan puudub</div>
+       <div style="font:500 9.5px/1 var(--font-mono);color:var(--text-3);">genereeri Meal Prepis</div>`;
+  const todayStatus = trainDone ? 'Treening tehtud ✓' : isTrainDay ? 'Treeningupäev' : 'Puhkepäev';
+  const todaySub = trainDone || isTrainDay
+    ? `Treening ${STATE.currentTraining ?? 'A'} · ${STATE.trainingPlan?.plans?.[STATE.activePlan ?? 'B']?.name ?? 'Full Body'}`
+    : 'Keha taastub ja kasvab';
+
   return `
 <div class="kodu-wrap">
 
-  <!-- Motivatsioon -->
-  <div class="kodu-section-label">💬 Motivatsioon</div>
-  <div class="kodu-card" style="background:var(--accent);color:white;">
-    <div style="font-size:13px;line-height:1.6;font-style:italic;">${motivMsg}</div>
-    <div style="font-size:11px;margin-top:8px;opacity:0.7;">— Claude × Bony to Beastly · Faas ${btbPhase}, Nädal ${btbWeek}</div>
+  <!-- Tervitus -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 2px 0;">
+    <div>
+      <div style="font:600 19px/1.1 var(--font);color:var(--text-1);">Tere, ${userName}</div>
+      <div style="font:500 11px/1 var(--font-mono);color:var(--text-3);margin-top:4px;letter-spacing:0.3px;">${dateStr}</div>
+    </div>
+    <div style="width:38px;height:38px;border-radius:50%;background:var(--accent-bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font:700 13px/1 var(--font);color:var(--accent);" onclick="switchTab('mina')">${userName.charAt(0).toUpperCase()}</div>
+  </div>
+
+  <!-- Täna-riba: treening + järgmine söök -->
+  <div class="card" style="display:flex;padding:0;margin-bottom:0;overflow:hidden;border-radius:var(--r-lg);">
+    <div style="flex:1;padding:13px 15px;display:flex;flex-direction:column;gap:7px;cursor:pointer;" onclick="switchTab('trenn')">
+      <div style="display:flex;align-items:center;gap:6px;"><span style="width:7px;height:7px;border-radius:50%;background:${trainDone ? 'var(--green)' : isTrainDay ? 'var(--accent)' : 'var(--text-3)'};"></span><span style="font:600 8.5px/1 var(--font);letter-spacing:0.6px;color:var(--text-3);text-transform:uppercase;">Täna</span></div>
+      <div style="font:700 14px/1.2 var(--font);color:${trainDone ? 'var(--green)' : 'var(--text-1)'};">${todayStatus}</div>
+      <div style="font:500 9.5px/1 var(--font-mono);color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${todaySub}</div>
+    </div>
+    <div style="width:1px;background:var(--border);"></div>
+    <div style="flex:1;padding:13px 15px;display:flex;flex-direction:column;gap:7px;cursor:pointer;" onclick="switchTab('toitumine')">
+      <div style="font:600 8.5px/1 var(--font);letter-spacing:0.6px;color:var(--text-3);text-transform:uppercase;">Järgmine söök</div>
+      ${nextMealHtml}
+    </div>
   </div>
 
   <!-- Anaboliline aken (kui treening just tehtud) -->
   ${renderAnabolicWindowCard()}
 
-  <!-- Tervitus + kaal -->
-  <div class="kodu-card" onclick="switchTab('mina')">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+  <!-- Kaalu hero -->
+  <div class="card" style="border-radius:var(--r-lg);padding:16px 16px 14px;margin-bottom:0;box-shadow:var(--shadow),0 10px 26px rgba(40,30,10,.05);display:flex;flex-direction:column;gap:13px;cursor:pointer;" onclick="switchTab('mina')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
       <div>
-        <div class="kodu-label">Hetke kehakaal</div>
-        <div style="display:flex;align-items:baseline;gap:6px;margin-top:2px;">
-          <span style="font-size:32px;font-weight:700;letter-spacing:-1px;">${curKg.toFixed(1)}</span>
-          <span style="font-size:15px;color:var(--text-2);">kg</span>
-          ${weightTrend}
-        </div>
-        <div style="font-size:12px;color:var(--text-2);margin-top:4px;">Eesmärk: ${goalKg} kg · ${kgToGoal.toFixed(1)} kg jäänud</div>
+        <div style="font:600 10px/1 var(--font);letter-spacing:0.6px;color:var(--text-3);text-transform:uppercase;">Kehakaal</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-top:9px;"><span style="font:700 38px/1 var(--font-mono);color:var(--text-1);letter-spacing:-1.5px;">${curKg.toFixed(1)}</span><span style="font:500 13px/1 var(--font-mono);color:var(--text-3);">kg</span></div>
       </div>
-      <div style="text-align:right;min-width:60px;">
-        <div style="font-size:22px;font-weight:700;color:var(--accent);">${progressToGoal}%</div>
-        <div style="font-size:11px;color:var(--text-3);">eesmärgist</div>
+      <div style="text-align:right;">
+        ${deltaBadge}
+        <div style="font:500 9px/1 var(--font);color:var(--text-3);margin-top:6px;">sel nädalal</div>
       </div>
     </div>
-    <div style="margin-top:10px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
-      <div style="height:100%;width:${progressToGoal}%;background:var(--accent);border-radius:3px;transition:width 0.4s;"></div>
+    ${weightChartHtml}
+    <div style="display:flex;justify-content:space-between;border-top:1px solid var(--track);padding-top:11px;">
+      <div style="display:flex;flex-direction:column;gap:5px;"><span style="font:500 9px/1 var(--font);color:var(--text-3);">Algkaal</span><span style="font:700 13px/1 var(--font-mono);color:var(--text-1);">${startKg}<span style="font-size:9px;color:var(--text-3);font-weight:500;"> kg</span></span></div>
+      <div style="display:flex;flex-direction:column;gap:5px;"><span style="font:500 9px/1 var(--font);color:var(--text-3);">Siht</span><span style="font:700 13px/1 var(--font-mono);color:var(--text-1);">${goalKg}<span style="font-size:9px;color:var(--text-3);font-weight:500;"> kg</span></span></div>
+      <div style="display:flex;flex-direction:column;gap:5px;"><span style="font:500 9px/1 var(--font);color:var(--text-3);">Edenemine</span><span style="font:700 13px/1 var(--font-mono);color:var(--accent);">${progressToGoal}%</span></div>
     </div>
   </div>
 
-  <!-- Järgmine eine -->
-  <div class="kodu-section-label">🍽 Järgmine eine</div>
-  <div class="kodu-card kodu-card-clickable" onclick="switchTab('toitumine')">
-    ${nextMealBlock}
-  </div>
-
-  <!-- Tänane treening -->
-  <div class="kodu-section-label">🏋️ Tänane treening</div>
-  <div class="kodu-card ${isTrainDay && !trainDone ? 'kodu-card-clickable' : ''}" ${isTrainDay && !trainDone ? 'onclick="switchTab(\'trenn\')"' : ''}>
-    ${trainBlock}
-  </div>
-
-  <!-- Kalorid + Vesi kõrvuti -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-sm);">
-
-    <div class="kodu-card kodu-card-clickable" onclick="switchTab('toitumine')">
-      <div class="kodu-label">🔥 Kalorid</div>
-      <div style="margin-top:6px;display:flex;align-items:baseline;gap:3px;">
-        <span style="font-size:20px;font-weight:700;">${kcalEaten}</span>
-        <span style="font-size:11px;color:var(--text-2);">/ ${kcalTarget}</span>
+  <!-- Toitumine: energia + makrod + vedelikud (ÜKS kaart) -->
+  <div class="card" style="border-radius:var(--r-lg);padding:15px 16px;margin-bottom:0;box-shadow:var(--shadow),0 10px 26px rgba(40,30,10,.05);display:flex;flex-direction:column;gap:13px;cursor:pointer;" onclick="switchTab('toitumine')">
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <span style="font:600 13px/1 var(--font);color:var(--text-1);">Energia</span>
+        <span style="font:600 13px/1 var(--font-mono);color:var(--text-1);">${kcalEaten} <span style="color:var(--text-3);font-weight:500;">/ ${kcalTarget} kcal</span></span>
       </div>
-      <div style="margin-top:6px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
-        <div style="height:100%;width:${kcalPct}%;background:${kcalColor};border-radius:3px;transition:width 0.4s;"></div>
+      <div style="height:9px;background:var(--track);border-radius:5px;overflow:hidden;"><div style="height:100%;width:${kcalPct}%;background:${kcalFill};border-radius:5px;"></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="background:var(--accent-bg);color:var(--accent);border-radius:8px;padding:5px 9px;font:600 10px/1 var(--font-mono);">${kcalLeft > 0 ? kcalLeft + ' kcal puudu' : 'Eesmärk täidetud ✓'}</span>
+        <span style="font:500 10px/1 var(--font);color:var(--text-3);">Söögid ${mealsEaten} / ${mealsTotal || 5}</span>
       </div>
-      <div style="font-size:11px;color:var(--text-2);margin-top:4px;">${kcalPct < 100 ? kcalLeft + ' kcal jäänud' : 'Eesmärk täidetud! 🎉'}</div>
     </div>
-
-    <div class="kodu-card kodu-card-clickable" onclick="switchTab('toitumine')">
-      <div class="kodu-label">💧 Vesi</div>
-      <div style="margin-top:6px;display:flex;align-items:baseline;gap:3px;">
-        <span style="font-size:20px;font-weight:700;">${totalLStr}</span>
-        <span style="font-size:11px;color:var(--text-2);">/ ${waterTLStr} L</span>
-      </div>
-      <div style="margin-top:6px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
-        <div style="height:100%;width:${waterPct}%;background:${waterColor};border-radius:3px;transition:width 0.4s;"></div>
-      </div>
-      <div style="font-size:11px;color:var(--text-2);margin-top:4px;">${waterPct < 100 ? waterLeftL + ' L jäänud' : 'Piisavalt joodud! 💧'}</div>
+    <div style="height:1px;background:var(--track);"></div>
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font:600 11px/1 var(--font);letter-spacing:0.4px;color:var(--text-3);text-transform:uppercase;">Makrod</span><span style="font:500 9.5px/1 var(--font-mono);color:var(--text-3);">grammides</span></div>
+      ${macroRow('Valk', eatP, macroT.protein_g)}
+      ${macroRow('Süsivesik', eatC, macroT.carbs_g)}
+      ${macroRow('Rasv', eatF, macroT.fat_g)}
     </div>
-
+    <div style="height:1px;background:var(--track);"></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="width:48px;font:600 11px/1 var(--font);letter-spacing:0.4px;color:var(--text-3);text-transform:uppercase;">Vesi</span>
+      <div style="flex:1;height:8px;background:var(--track);border-radius:5px;overflow:hidden;"><div style="height:100%;width:${waterPct}%;background:${waterFill};border-radius:5px;"></div></div>
+      <span style="text-align:right;white-space:nowrap;font:600 11px/1 var(--font-mono);color:var(--text-1);">${totalLStr}<span style="color:var(--text-3);font-weight:500;"> / ${waterTLStr} L</span></span>
+    </div>
   </div>
 
-  <!-- Nädalane kaaluprogress -->
+  <!-- Nädala ülevaade -->
+  <div class="card" style="border-radius:var(--r-lg);padding:15px 16px;margin-bottom:0;display:flex;flex-direction:column;gap:13px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font:600 13px/1 var(--font);color:var(--text-1);">Nädala analüüs</span><span style="font:600 9.5px/1 var(--font-mono);color:var(--accent);letter-spacing:0.5px;cursor:pointer;" onclick="switchTab('mina')">VAATA →</span></div>
+    <div style="display:flex;align-items:flex-end;gap:7px;height:58px;">${weekBars}</div>
+    <div style="display:flex;justify-content:space-between;border-top:1px solid var(--track);padding-top:12px;">
+      <div style="display:flex;flex-direction:column;gap:5px;"><span style="font:500 9px/1 var(--font);color:var(--text-3);">Keskmine</span><span style="font:700 14px/1 var(--font-mono);color:var(--text-1);">${weekAvg}<span style="font-size:9px;color:var(--text-3);font-weight:500;"> kcal</span></span></div>
+      <div style="display:flex;flex-direction:column;gap:5px;"><span style="font:500 9px/1 var(--font);color:var(--text-3);">Trennid</span><span style="font:700 14px/1 var(--font-mono);color:var(--text-1);">${weekTrainDone}<span style="font-size:9px;color:var(--text-3);font-weight:500;"> / ${trainSched.length}</span></span></div>
+      <div style="display:flex;flex-direction:column;gap:5px;"><span style="font:500 9px/1 var(--font);color:var(--text-3);">Kaal</span><span style="font:700 14px/1 var(--font-mono);color:var(--accent);">${weekDelta === null ? '—' : (weekDelta >= 0 ? '+' : '') + weekDelta.toFixed(1)}<span style="font-size:9px;color:var(--text-3);font-weight:500;"> kg</span></span></div>
+    </div>
+  </div>
+
+  <!-- Nädalane kaaluprogress (BtB kuldne tsoon) -->
   ${renderWeeklyWeightFeedback()}
 
-  <!-- Nädalaanalüüs -->
+  <!-- Nädalaanalüüs (reegel-põhine) -->
   ${renderRuleBasedAnalysis()}
+
+  <!-- Streak + motivatsioon (tume kaart) -->
+  <div class="card-dark" style="display:flex;flex-direction:column;gap:12px;margin-bottom:0;">
+    <div style="display:flex;align-items:center;gap:13px;">
+      <span style="width:36px;height:36px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;font:700 14px/1 var(--font-mono);color:#fff;flex-shrink:0;">${streak}</span>
+      <div>
+        <div style="font:700 12px/1.3 var(--font);color:#fff;">${streakTitle}</div>
+        <div style="font:500 9.5px/1.3 var(--font-mono);color:var(--dark-text-2);margin-top:5px;">${projection}</div>
+      </div>
+    </div>
+    <div style="height:1px;background:var(--dark-2);"></div>
+    <div>
+      <div style="font-size:12px;line-height:1.6;font-style:italic;color:#E8E2D6;">${motivMsg}</div>
+      <div style="font:500 9.5px/1 var(--font-mono);color:var(--dark-text-2);margin-top:8px;">— Claude × Bony to Beastly · Faas ${btbPhase} · Nädal ${btbWeek}</div>
+    </div>
+  </div>
 
 </div>`;
 }
