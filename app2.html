@@ -5415,7 +5415,10 @@ function mpRecipeDetail(recipeId) {
   if (recipe.ingredients?.length) {
     html += `<div style="font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);margin-bottom:4px;">Koostisained</div>`;
     html += `<ul style="margin:0 0 var(--sp-sm);padding-left:16px;font-size:13px;color:var(--text-2);">`;
-    recipe.ingredients.forEach(ing => { html += `<li>${ing.qty} ${ing.name}</li>`; });
+    recipe.ingredients.forEach(ing => {
+      const qty = ing.qty ?? ing.amount ?? '';
+      html += `<li>${qty ? qty + ' ' : ''}${ing.name}${ing.sub ? ` <span style="color:var(--text-3);">(asendus: ${ing.sub})</span>` : ''}</li>`;
+    });
     html += `</ul>`;
   }
 
@@ -5518,6 +5521,11 @@ function renderMpExtraList(plan, days) {
    Vana app.html ignoreerib seda võtit — ei mõjuta jagatud andmeid. */
 function mpWeekKey() { return mpWeekDays()[0]; }
 function mpPrepDone() { return (lsGet('mp_prep_done') ?? {})[mpWeekKey()] ?? {}; }
+function mpTogglePrepRecipe(rid) {
+  STATE.mpPrepExpanded = STATE.mpPrepExpanded === rid ? null : rid;
+  renderTab('mealprep');
+}
+
 function mpTogglePrepDone(rid) {
   const all = lsGet('mp_prep_done') ?? {};
   const wk = mpWeekKey();
@@ -5656,14 +5664,16 @@ function renderMealPrep() {
     const done = !!prepDone[b.recipe_id];
     const isNext = i === nextIdx;
     const uses = usage[b.recipe_id]?.length ?? 0;
+    const isExp = STATE.mpPrepExpanded === b.recipe_id;
     return `
     <div class="card" style="margin-bottom:8px;${done ? 'opacity:0.65;' : ''}${isNext ? 'border-color:var(--accent);' : ''}">
       <div style="display:flex;align-items:flex-start;gap:11px;">
         <div onclick="mpTogglePrepDone('${b.recipe_id}')" style="width:22px;height:22px;border-radius:7px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;${done ? 'background:var(--accent);color:#fff;' : 'background:var(--surface);border:1.5px solid var(--border-strong);color:transparent;'}font:700 12px/1 var(--font-mono);">✓</div>
-        <div style="flex:1;min-width:0;">
+        <div style="flex:1;min-width:0;cursor:pointer;" onclick="mpTogglePrepRecipe('${b.recipe_id}')">
           <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
             <span style="font:600 13.5px/1.2 var(--font);color:var(--text-1);${done ? 'text-decoration:line-through;color:var(--text-3);' : ''}">${b.emoji} ${b.name}</span>
             ${isNext && !done ? `<span style="background:var(--accent-bg);color:var(--accent);border-radius:7px;padding:3px 7px;font:600 9px/1 var(--font);letter-spacing:0.4px;text-transform:uppercase;">Järgmine</span>` : ''}
+            <span style="margin-left:auto;color:var(--text-3);font-size:11px;flex-shrink:0;">${isExp ? '▲' : '▼ retsept'}</span>
           </div>
           <div style="font:500 10px/1.4 var(--font-mono);color:var(--text-3);margin-top:3px;">${uses
             ? `Tee valmis ${uses} ${uses === 1 ? 'portsjon' : 'portsjonit'}${b.recipe_id === 'snack_energiapall' ? ' (1 ports = 3 palli)' : ''} (nädalaplaani järgi)${storSplit[b.recipe_id]?.freezer ? ` — külmkappi ${storSplit[b.recipe_id].fridge}, sügavkülma ${storSplit[b.recipe_id].freezer}` : ' — kõik külmkappi'}`
@@ -5675,6 +5685,7 @@ function renderMealPrep() {
           </div>
         </div>
       </div>
+      ${isExp ? `<div style="border-top:1px solid var(--track);margin-top:11px;padding-top:11px;">${mpRecipeDetail(b.recipe_id) || '<div style="font-size:12px;color:var(--text-3);">Retsepti detailid puuduvad.</div>'}</div>` : ''}
     </div>`;
   }).join('');
 
