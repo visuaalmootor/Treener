@@ -5271,7 +5271,7 @@ const MP_MEALS = {
   'M14': { name: 'BtB täishommik',            kcal:1000,  protein: 55, carbs: 85, fat: 32, slot_type: 'hommik',     emoji: '🍽', batch: false, satiety: 'high' },
   'M15': { name: 'BtB kiireimhommik',         kcal: 850,  protein: 48, carbs: 95, fat: 20, slot_type: 'hommik',     emoji: '⚡', batch: false, satiety: 'medium' },
   // PEAROOG (~500–750 kcal, slot_type: 'pearoog')
-  'M01': { name: 'Liha/kala ahjus + tärklis', kcal: 600,  protein: 45, carbs: 55, fat: 14, slot_type: 'pearoog',    emoji: '🍗', batch: false, satiety: 'medium' },
+  'M01': { name: 'Liha/kala ahjus + tärklis', kcal: 600,  protein: 45, carbs: 55, fat: 14, slot_type: 'pearoog',    emoji: '🍗', batch: true,  batch_note: 'Küpseta pühapäeval mitu portsjonit korraga — jaga karpidesse', satiety: 'medium' },
   'M05': { name: 'Praetud hakkliha + munad',  kcal: 550,  protein: 42, carbs: 30, fat: 28, slot_type: 'pearoog',    emoji: '🥩', batch: false, satiety: 'medium' },
   'M11': { name: 'Sunday Night Chili',        kcal: 620,  protein: 40, carbs: 60, fat: 16, slot_type: 'pearoog',    emoji: '🫕', batch: true,  batch_note: 'Tee 7 portsjonit pühapäeval', satiety: 'high' },
   'M16': { name: 'BtB omlett kikerhernetega', kcal: 700,  protein: 42, carbs: 55, fat: 26, slot_type: 'pearoog',    emoji: '🫘', batch: false, satiety: 'high' },
@@ -5280,7 +5280,7 @@ const MP_MEALS = {
   'snack_banana_pb':  { name: 'Banaan + maapähklivõi',       kcal: 350, protein: 10, carbs: 45, fat: 14, slot_type: 'vahepala', emoji: '🍌', batch: false, satiety: 'low' },
   'snack_trail':      { name: 'Pähklid + kuivatatud puuviljad', kcal: 300, protein: 8, carbs: 30, fat: 18, slot_type: 'vahepala', emoji: '🥜', batch: false, satiety: 'low' },
   'snack_kodujuust':  { name: 'Kodujuust + marjad',          kcal: 250, protein: 20, carbs: 22, fat:  6, slot_type: 'vahepala', emoji: '🍓', batch: false, satiety: 'high' },
-  'snack_energiapall':{ name: 'Energiapallid × 3',           kcal: 345, protein: 12, carbs: 40, fat: 14, slot_type: 'vahepala', emoji: '🍫', batch: false, satiety: 'low' },
+  'snack_energiapall':{ name: 'Energiapallid × 3',           kcal: 345, protein: 12, carbs: 40, fat: 14, slot_type: 'vahepala', emoji: '🍫', batch: true,  batch_note: 'Tee pühapäeval ~15 palli — snäkid kogu nädalaks', satiety: 'low' },
   // TRENNIJOOK (slot_type: 'trennijook')
   'M08': { name: 'Trennijook',                kcal: 300,  protein: 25, carbs: 35, fat:  4, slot_type: 'trennijook', emoji: '💪', batch: false, satiety: 'low' },
 };
@@ -5368,6 +5368,11 @@ function mpSwapSlot(dateStr, slotId) {
   renderTab('mealprep');
 }
 
+/* Kas retsept on batch-tüüpi? Loeb NII MP_MEALS lipust KUI recipes.json meetodist */
+function mpIsBatch(recipeId) {
+  return !!(MP_MEALS[recipeId]?.batch || STATE.recipes?.methods?.[recipeId]?.batch);
+}
+
 function mpRecipeDetail(recipeId) {
   const def = MP_MEALS[recipeId];
   const recipe = STATE.recipes?.methods?.[recipeId];
@@ -5380,7 +5385,27 @@ function mpRecipeDetail(recipeId) {
       if (recipeId === 'snack_banana_pb')    html += `<div style="font-size:13px;color:var(--text-2);">1 banaan + 2 spl maapähklivõid. Kiire vahepala, ei vaja valmistamist.</div>`;
       if (recipeId === 'snack_trail')        html += `<div style="font-size:13px;color:var(--text-2);">Peotäis segapähkleid + kuivatatud puuvilju. Võta kotiga kaasa.</div>`;
       if (recipeId === 'snack_kodujuust')    html += `<div style="font-size:13px;color:var(--text-2);">200g kodujuustu + 1 spl maasikamoosi. Sega kausis, söö kohe.</div>`;
-      if (recipeId === 'snack_energiapall')  html += `<div style="font-size:13px;color:var(--text-2);">3 kodutehtud energiapalli (M12 retsept). Tee pühapäeval 10–12 palli nädalaks.</div>`;
+      if (recipeId === 'snack_energiapall') {
+        // Päris retsept elab recipes.json M04 (Külmvalmistamine) variandina
+        const v = STATE.recipes?.methods?.M04?.variants?.energiapallid;
+        if (v) {
+          html += `<div style="font-size:13px;color:var(--text-2);margin-bottom:var(--sp-sm);">1 vahepala = 3 palli (à ~30g). ${v.batch_note ?? ''}</div>`;
+          if (v.ingredients?.length) {
+            html += `<div style="font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);margin-bottom:4px;">Koostisained (~15 palli)</div>`;
+            html += `<ul style="margin:0 0 var(--sp-sm);padding-left:16px;font-size:13px;color:var(--text-2);">`;
+            v.ingredients.forEach(ing => { html += `<li>${ing.amount ?? ''} ${ing.name}${ing.sub ? ` <span style="color:var(--text-3);">(asendus: ${ing.sub})</span>` : ''}</li>`; });
+            html += `</ul>`;
+          }
+          if (v.steps?.length) {
+            html += `<div style="font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);margin-bottom:4px;">Valmistamine</div>`;
+            html += `<ol style="margin:0;padding-left:16px;font-size:13px;color:var(--text-2);">`;
+            v.steps.forEach(s => { html += `<li style="margin-bottom:4px;">${s}</li>`; });
+            html += `</ol>`;
+          }
+        } else {
+          html += `<div style="font-size:13px;color:var(--text-2);">3 kodutehtud energiapalli. Tee pühapäeval ~15 palli nädalaks (kaerahelbed + maapähklivõi + mesi + vadakupulber, vooli 30g pallid, hoia külmkapis).</div>`;
+        }
+      }
     }
     return html;
   }
@@ -5535,9 +5560,9 @@ function renderMealPrep() {
   const dayPlan = plan[selDay] ?? {};
   const slots = ['S01','S02','S03','S04','S05','S06'].filter(sid => dayPlan[sid]);
 
-  // Batch-cooking nimekiri
+  // Batch-cooking nimekiri (MP_MEALS lipp VÕI recipes.json meetodi batch-lipp)
   const batchItems = Object.entries(MP_MEALS)
-    .filter(([id, m]) => m.batch)
+    .filter(([id, m]) => mpIsBatch(id))
     .map(([id, m]) => ({ ...m, recipe_id: id }));
 
   // Mitmekülgsuse kontroll (sama retsept >2x nädalas)
@@ -5569,7 +5594,7 @@ function renderMealPrep() {
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
             <span style="font-weight:600;font-size:14px;">${MP_SLOT_LABELS[sid] || sid}</span>
             <span style="font-size:11px;color:var(--text-3);">${MP_SLOT_TIMES[sid] || ''}</span>
-            ${def.batch ? `<span style="font-size:10px;background:var(--accent-bg);color:var(--accent);padding:1px 6px;border-radius:10px;">🍱 batch</span>` : ''}
+            ${mpIsBatch(m.recipe_id) ? `<span style="font-size:10px;background:var(--accent-bg);color:var(--accent);padding:1px 6px;border-radius:10px;">🍱 batch</span>` : ''}
             ${sid === 'S06' ? `<span style="font-size:10px;background:#fef9c3;color:#854d0e;padding:1px 6px;border-radius:10px;">ainult trennipäevadel</span>` : ''}
           </div>
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px;"><span style="font-size:13px;color:var(--text-2);">${m.name}</span>${def.satiety==='low'?'<span style="font-size:10px;background:#dcfce7;color:#166534;padding:1px 5px;border-radius:8px;">🟢 kergesti söödav</span>':def.satiety==='high'?'<span style="font-size:10px;background:#fee2e2;color:#dc2626;padding:1px 5px;border-radius:8px;">🔴 täitev</span>':''}</div>
@@ -5595,7 +5620,7 @@ function renderMealPrep() {
   const usage = {}; // recipe_id → [kuupäevad kus kasutusel]
   days.forEach(d => {
     Object.values(plan[d] ?? {}).forEach(m => {
-      if (m?.recipe_id && MP_MEALS[m.recipe_id]?.batch) {
+      if (m?.recipe_id && mpIsBatch(m.recipe_id)) {
         (usage[m.recipe_id] = usage[m.recipe_id] ?? []).push(d);
       }
     });
@@ -5641,7 +5666,7 @@ function renderMealPrep() {
             ${isNext && !done ? `<span style="background:var(--accent-bg);color:var(--accent);border-radius:7px;padding:3px 7px;font:600 9px/1 var(--font);letter-spacing:0.4px;text-transform:uppercase;">Järgmine</span>` : ''}
           </div>
           <div style="font:500 10px/1.4 var(--font-mono);color:var(--text-3);margin-top:3px;">${uses
-            ? `Tee valmis ${uses} ${uses === 1 ? 'portsjon' : 'portsjonit'} (nädalaplaani järgi)${storSplit[b.recipe_id]?.freezer ? ` — külmkappi ${storSplit[b.recipe_id].fridge}, sügavkülma ${storSplit[b.recipe_id].freezer}` : ' — kõik külmkappi'}`
+            ? `Tee valmis ${uses} ${uses === 1 ? 'portsjon' : 'portsjonit'}${b.recipe_id === 'snack_energiapall' ? ' (1 ports = 3 palli)' : ''} (nädalaplaani järgi)${storSplit[b.recipe_id]?.freezer ? ` — külmkappi ${storSplit[b.recipe_id].fridge}, sügavkülma ${storSplit[b.recipe_id].freezer}` : ' — kõik külmkappi'}`
             : (b.batch_note || '')}</div>
           <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;">${tagChips(b)}</div>
           <div style="display:flex;justify-content:space-between;border-top:1px solid var(--track);margin-top:9px;padding-top:8px;">
