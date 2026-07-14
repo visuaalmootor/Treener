@@ -1901,7 +1901,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.3.2</span>
+  <span id="version-label">v0.9.3.4</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1920,7 +1920,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.3.2';
+const APP_VERSION  = '0.9.3.4';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -3913,33 +3913,32 @@ function renderStoreRecommendation(checkedProducts, budgetClass) {
   if (!ranked.length) return '';
 
   const total = checkedProducts.length;
-  const topStore = ranked[0][0];
+  const [topStore, topStats] = ranked[0];
+  const others = ranked.slice(1);
 
-  const rows = ranked.map(([store, s], i) => {
-    const isTop = i === 0;
-    const barPct = Math.round(s.wins / total * 100);
-    return `
-      <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:${i < ranked.length - 1 ? '0.5px solid var(--border)' : 'none'};">
-        <div style="font-size:12px;font-weight:${isTop ? 700 : 500};color:${isTop ? 'var(--green)' : 'var(--text-2)'};min-width:90px;display:flex;align-items:center;gap:4px;">
-          ${isTop ? '★ ' : ''}${store}
-        </div>
-        <div style="flex:1;height:5px;background:var(--bg);border-radius:3px;overflow:hidden;">
-          <div style="height:100%;width:${barPct}%;background:${isTop ? 'var(--green)' : 'var(--border-strong)'};border-radius:3px;transition:width 0.3s;"></div>
-        </div>
-        <div style="font-size:11px;text-align:right;flex-shrink:0;">
-          <span style="color:${isTop ? 'var(--green)' : 'var(--text-2)'};">${s.wins}/${total}</span>
-          <span style="color:var(--text-3);margin-left:4px;">${s.winCost.toFixed(2).replace('.', ',')} €</span>
-        </div>
-      </div>`;
-  }).join('');
+  /* Quiet Data: tume kontrastkaart — hinnapõhine soovitus (kaugusi EI kuvata, Ingmari otsus) */
+  const otherRows = others.map(([store, s]) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;">
+      <span style="font:500 11px/1 var(--font);color:#C9C1B2;">${store}</span>
+      <span style="font:600 10.5px/1 var(--font-mono);color:var(--dark-text-2);">${s.wins}/${total} odavaim · ${s.winCost.toFixed(2).replace('.', ',')} €</span>
+    </div>`).join('');
 
   return `
-    <div style="background:var(--card-bg);border:0.5px solid var(--border);border-radius:var(--r-md);padding:var(--sp-sm);margin-bottom:var(--sp-sm);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div style="font-size:10px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;">Soovituslik pood</div>
-        <div style="font-size:10px;color:var(--text-3);">odavaim hind toote kohta</div>
+    <div class="card-dark" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font:600 8.5px/1 var(--font);letter-spacing:1px;color:var(--dark-text-2);text-transform:uppercase;">Soovituslik pood · odavaim hind toote kohta</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font:700 17px/1.1 var(--font);color:#fff;">★ ${topStore}</div>
+          <div style="font:500 10px/1 var(--font-mono);color:var(--dark-text-2);margin-top:5px;">${topStats.wins}/${total} toodet siin odavaim</div>
+        </div>
+        <div style="background:var(--dark-2);border-radius:9px;padding:7px 11px;font:700 13px/1 var(--font-mono);color:#fff;">${topStats.winCost.toFixed(2).replace('.', ',')} €</div>
       </div>
-      ${rows}
+      ${others.length ? `
+      <div style="height:1px;background:var(--dark-2);"></div>
+      <div>
+        <div style="font:600 8.5px/1 var(--font);letter-spacing:1px;color:var(--dark-text-2);text-transform:uppercase;margin-bottom:2px;">Muud poed</div>
+        ${otherRows}
+      </div>` : ''}
     </div>`;
 }
 
@@ -3967,31 +3966,40 @@ function renderOstukorvMetrics() {
     }
   });
 
-  const pctDay  = Math.round(kcal / kcalTarget * 100);
-  const pctWeek = Math.round(kcal * 7 / (kcalTarget * 7) * 100);
+  const pctDay = Math.round(kcal / kcalTarget * 100);
 
   const metricEl = document.getElementById('ostukorv-metrics');
   if (!metricEl) return;
 
+  /* Quiet Data: PÄEV primaarne, nädal sekundaarne (Ingmari otsus — ära pööra ümber) */
+  const dayFill = pctDay >= 95 ? 'var(--green)' : pctDay >= 60 ? 'var(--accent)' : pctDay >= 30 ? 'var(--amber)' : pctDay > 0 ? 'var(--red)' : 'var(--track)';
+  const mRow = (lbl, val, target) => {
+    const pct = target ? Math.min(100, Math.round(val / target * 100)) : 0;
+    const fill = pct >= 95 ? 'var(--green)' : pct >= 60 ? 'var(--accent)' : pct >= 30 ? 'var(--amber)' : pct > 0 ? 'var(--red)' : 'var(--track)';
+    return `
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="width:62px;font:500 11px/1 var(--font);color:var(--text-2);">${lbl}</span>
+        <div style="flex:1;height:7px;background:var(--track);border-radius:4px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${fill};border-radius:4px;"></div></div>
+        <span style="width:74px;text-align:right;white-space:nowrap;font:600 11px/1 var(--font-mono);color:var(--text-1);">${Math.round(val)}<span style="color:var(--text-3);">/${target}g</span></span>
+      </div>`;
+  };
+
   metricEl.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 2fr;gap:var(--sp-sm);margin-bottom:var(--sp-sm);">
-      <div class="metric">
-        <div class="metric-val" style="font-size:20px;">${totalCost > 0 ? totalCost.toFixed(2).replace('.', ',') + ' €' : '—'}</div>
-        <div class="metric-label">Kokku/näd</div>
+    <div class="card" style="border-radius:var(--r-lg);box-shadow:var(--shadow),0 10px 26px rgba(40,30,10,.05);display:flex;flex-direction:column;gap:12px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <span style="font:600 13px/1 var(--font);color:var(--text-1);">Päeva kogus ostukorvis</span>
+        <span style="font:600 13px/1 var(--font-mono);color:var(--text-1);">${kcal} <span style="color:var(--text-3);font-weight:500;">/ ${kcalTarget} kcal</span></span>
       </div>
-      <div class="metric">
-        <div class="metric-val" style="font-size:20px;">${kcal} <span style="font-size:13px;font-weight:400;color:var(--text-2)">/ ${kcalTarget} kcal</span></div>
-        <div class="metric-label" style="display:flex;justify-content:space-between;margin-top:4px;">
-          <span>Päev <span style="font-weight:700;color:${pctColor(pctDay)}">${pctDay}%</span></span>
-          <span style="color:var(--text-3)">Nädal ${pctWeek}%</span>
-        </div>
+      <div style="height:9px;background:var(--track);border-radius:5px;overflow:hidden;"><div style="height:100%;width:${Math.min(100, pctDay)}%;background:${dayFill};border-radius:5px;"></div></div>
+      ${mRow('Valk', protein, m.protein_g)}
+      ${mRow('Süsivesik', carbs, m.carbs_g)}
+      ${mRow('Rasv', fat, m.fat_g)}
+      ${mRow('Kiud', fiber, m.fiber_g ?? 30)}
+      <div style="height:1px;background:var(--track);"></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <span style="font:500 10px/1 var(--font);color:var(--text-3);">Nädala kogus: <span style="font:600 10px/1 var(--font-mono);color:var(--text-2);">${kcal * 7} kcal</span></span>
+        <span style="font:500 10px/1 var(--font);color:var(--text-3);">Kulu <span style="font:700 12px/1 var(--font-mono);color:var(--text-1);">${totalCost > 0 ? totalCost.toFixed(2).replace('.', ',') + ' €' : '—'}</span>/näd</span>
       </div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-sm);margin-bottom:var(--sp-sm);">
-      ${macroCard('Valk', protein, protein * 7, m.protein_g)}
-      ${macroCard('SV', carbs, carbs * 7, m.carbs_g)}
-      ${macroCard('Rasv', fat, fat * 7, m.fat_g)}
-      ${macroCard('Kiud', fiber, fiber * 7, m.fiber_g ?? 30)}
     </div>
     ${renderStoreRecommendation(checkedProducts, budgetClass)}
   `;
@@ -4186,7 +4194,7 @@ function renderProductRow(p, isChecked) {
     <div class="row" style="flex-wrap:wrap;align-items:flex-start;">
       <div style="display:flex;align-items:center;width:100%;">
         <div data-cb="${p.id}" onclick="toggleProduct('${p.id}')"
-          style="font-size:20px;margin-right:var(--sp-sm);color:var(--text-2);cursor:pointer;user-select:none;flex-shrink:0;padding-top:2px;">
+          style="font-size:20px;margin-right:var(--sp-sm);color:${isChecked ? 'var(--accent)' : 'var(--text-3)'};cursor:pointer;user-select:none;flex-shrink:0;padding-top:2px;">
           ${isChecked ? '☑' : '☐'}
         </div>
         <div class="row-main">
@@ -4197,8 +4205,8 @@ function renderProductRow(p, isChecked) {
         </div>
         <div class="row-actions">
           <div style="text-align:right;margin-right:6px;">
-            <div style="font-size:13px;font-weight:600;">${weeklyCost > 0 ? weeklyCost.toFixed(2).replace('.', ',') + ' €' : '—'}</div>
-            <div style="font-size:10px;color:var(--text-3);">${p.kcal_day} kcal/p</div>
+            <div style="font:700 13px/1.2 var(--font-mono);">${weeklyCost > 0 ? weeklyCost.toFixed(2).replace('.', ',') + ' €' : '—'}</div>
+            <div style="font:500 10px/1.2 var(--font-mono);color:var(--text-3);">${p.kcal_day} kcal/p</div>
           </div>
           <div class="btn-icon" onclick="togglePriceComparison('${p.id}')" title="Hinnavõrdlus"
             style="${isPriceOpen ? 'background:var(--accent-bg);color:var(--text-1);border-color:var(--border-strong);' : ''}">
@@ -4285,19 +4293,32 @@ function renderOstukorv() {
   // Kinnituse olek
   const confirmed = lsGet('shopping_confirmed');
   const confirmBtn = confirmed
-    ? `<div style="width:100%;padding:14px;background:var(--accent-bg);color:var(--text-2);
-         border:0.5px solid var(--border);border-radius:var(--r-md);font-size:15px;
+    ? `<div style="width:100%;padding:14px;background:var(--accent-bg);color:var(--accent);
+         border:1px solid var(--border);border-radius:var(--r-md);font-size:15px;
          font-weight:600;margin-top:var(--sp-sm);text-align:center;box-sizing:border-box;">
-         Kinnitatud ✓
+         Kinnitatud ✓ — saadetud Meal Prep'i
        </div>
        <div style="text-align:center;margin-top:4px;">
          <button onclick="cancelConfirmation()" style="font-size:12px;color:var(--text-2);
            background:none;border:none;cursor:pointer;padding:4px 8px;
            -webkit-tap-highlight-color:transparent;">muuda</button>
        </div>`
-    : `<button class="btn-primary" onclick="confirmShopping()">Kinnita ost ✓</button>`;
+    : `<button class="btn-primary" onclick="confirmShopping()">Kinnita ost → saada Meal Prep'i</button>`;
+
+  /* Quiet Data: pealkiri + valitud/kokku loendur */
+  const _allIds = STATE.shopping.sections.flatMap(s => [...(s.products ?? []), ...(s.more_products ?? [])]);
+  const _checkedCount = _allIds.filter(id => checked[id]).length;
+  const titleBlock = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:2px 2px 12px;">
+      <div>
+        <div style="font:700 23px/1.1 var(--font);color:var(--text-1);letter-spacing:-0.4px;">Ostukorv</div>
+        <div style="font:500 11px/1 var(--font-mono);color:var(--text-3);margin-top:5px;letter-spacing:0.3px;">Nädala toidukorv · ${_allIds.length} toodet</div>
+      </div>
+      <div style="background:var(--chip);border:1px solid var(--border);border-radius:9px;padding:6px 10px;font:700 12px/1 var(--font-mono);color:var(--text-1);white-space:nowrap;">${_checkedCount}<span style="color:var(--text-3);font-weight:500;">/${_allIds.length}</span></div>
+    </div>`;
 
   return `
+    ${titleBlock}
     <div id="ostukorv-metrics"></div>
     ${sectionsHtml}
     <div id="shopping-summary"></div>
@@ -5467,6 +5488,22 @@ function renderMpExtraList(plan, days) {
   </div>`;
 }
 
+/* ---- Prep-sessiooni jälgimine (v0.9.3.4, Quiet Data) ----
+   UUS localStorage võti ttm_mp_prep_done — { 'nädala-esmaspäev': { recipe_id: true } }.
+   Vana app.html ignoreerib seda võtit — ei mõjuta jagatud andmeid. */
+function mpWeekKey() { return mpWeekDays()[0]; }
+function mpPrepDone() { return (lsGet('mp_prep_done') ?? {})[mpWeekKey()] ?? {}; }
+function mpTogglePrepDone(rid) {
+  const all = lsGet('mp_prep_done') ?? {};
+  const wk = mpWeekKey();
+  all[wk] = all[wk] ?? {};
+  all[wk][rid] = !all[wk][rid];
+  // hoia max 6 nädalat
+  Object.keys(all).sort().slice(0, -6).forEach(k => delete all[k]);
+  lsSet('mp_prep_done', all);
+  renderTab('mealprep');
+}
+
 function renderMealPrep() {
   const today  = new Date().toISOString().slice(0, 10);
   const plan   = lsGet('meal_plan') ?? {};
@@ -5552,25 +5589,117 @@ function renderMealPrep() {
   // Päeva kcal kokku
   const dayKcal = slots.reduce((s, sid) => s + (dayPlan[sid]?.kcal ?? 0), 0);
 
-  // Batch-cooking sektsioon
-  const batchSection = batchItems.length ? `
-    <div class="card" style="margin-top:12px;">
-      <div style="font-weight:600;font-size:14px;margin-bottom:10px;">🍱 Pühapäeva batch-cooking</div>
-      <div style="font-size:12px;color:var(--text-2);margin-bottom:10px;">Tee need ette — katab kogu nädala:</div>
-      ${batchItems.map(b => `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:20px;">${b.emoji}</span>
-        <div><div style="font-size:13px;font-weight:500;">${b.name}</div><div style="font-size:12px;color:var(--text-2);">${b.batch_note || ''}</div></div>
-      </div>`).join('')}
+  /* ---- Prep-sessiooni tracker (Quiet Data) ----
+     Nimekirjas nädalaplaani kasutatud batch-retseptid (fallback: kõik batch-retseptid). */
+  const prepDone = mpPrepDone();
+  const usage = {}; // recipe_id → [kuupäevad kus kasutusel]
+  days.forEach(d => {
+    Object.values(plan[d] ?? {}).forEach(m => {
+      if (m?.recipe_id && MP_MEALS[m.recipe_id]?.batch) {
+        (usage[m.recipe_id] = usage[m.recipe_id] ?? []).push(d);
+      }
+    });
+  });
+  let prepItems = batchItems.filter(b => usage[b.recipe_id]?.length);
+  if (!prepItems.length) prepItems = batchItems;
+  const doneCount = prepItems.filter(b => prepDone[b.recipe_id]).length;
+  const prepPct   = prepItems.length ? Math.round(doneCount / prepItems.length * 100) : 0;
+  const nextIdx   = prepItems.findIndex(b => !prepDone[b.recipe_id]);
+
+  // Portsjonid: mitu korda retsept nädalaplaanis esineb; külmkapp = järgmise 4 päeva portsjonid, ülejäänu sügavkülm
+  const day4 = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
+  let portionsTotal = 0, fridgeN = 0, freezerN = 0;
+  prepItems.forEach(b => {
+    (usage[b.recipe_id] ?? []).forEach(d => {
+      portionsTotal++;
+      if (d <= day4) fridgeN++; else freezerN++;
+    });
+  });
+
+  const tagChips = b => {
+    const chips = [];
+    if (b.satiety === 'high') chips.push('Täitev');
+    if (b.satiety === 'low')  chips.push('Kergesti söödav');
+    if (b.slot_type === 'trennijook') chips.push('Trennipäeval');
+    return chips.map(c => `<span style="background:var(--chip);border:1px solid var(--border);border-radius:7px;padding:3px 7px;font:500 9.5px/1 var(--font);color:var(--text-2);">${c}</span>`).join('');
+  };
+
+  const prepRows = prepItems.map((b, i) => {
+    const done = !!prepDone[b.recipe_id];
+    const isNext = i === nextIdx;
+    const uses = usage[b.recipe_id]?.length ?? 0;
+    return `
+    <div class="card" style="margin-bottom:8px;${done ? 'opacity:0.65;' : ''}${isNext ? 'border-color:var(--accent);' : ''}">
+      <div style="display:flex;align-items:flex-start;gap:11px;">
+        <div onclick="mpTogglePrepDone('${b.recipe_id}')" style="width:22px;height:22px;border-radius:7px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;${done ? 'background:var(--accent);color:#fff;' : 'background:var(--surface);border:1.5px solid var(--border-strong);color:transparent;'}font:700 12px/1 var(--font-mono);">✓</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+            <span style="font:600 13.5px/1.2 var(--font);color:var(--text-1);${done ? 'text-decoration:line-through;color:var(--text-3);' : ''}">${b.emoji} ${b.name}</span>
+            ${isNext && !done ? `<span style="background:var(--accent-bg);color:var(--accent);border-radius:7px;padding:3px 7px;font:600 9px/1 var(--font);letter-spacing:0.4px;text-transform:uppercase;">Järgmine</span>` : ''}
+          </div>
+          <div style="font:500 10px/1.4 var(--font-mono);color:var(--text-3);margin-top:3px;">${uses ? uses + ' portsjonit sel nädalal' : ''}${b.batch_note ? (uses ? ' · ' : '') + b.batch_note : ''}</div>
+          <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;">${tagChips(b)}</div>
+          <div style="display:flex;justify-content:space-between;border-top:1px solid var(--track);margin-top:9px;padding-top:8px;">
+            <span style="font:600 11px/1 var(--font-mono);color:var(--text-1);">${b.kcal}<span style="color:var(--text-3);font-weight:500;"> kcal/ports</span></span>
+            <span style="font:500 10px/1 var(--font-mono);color:var(--text-3);">V ${b.protein}g · S ${b.carbs}g · R ${b.fat}g</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const batchSection = prepItems.length ? `
+    <div style="font:600 11px/1 var(--font);letter-spacing:0.6px;color:var(--text-3);text-transform:uppercase;margin:16px 0 8px;padding:0 2px;">🍱 Pühapäeva prep-sessioon</div>
+    <div class="card" style="border-radius:var(--r-lg);display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <span style="font:600 13px/1 var(--font);color:var(--text-1);">Retseptid ette valmis</span>
+        <span style="font:700 13px/1 var(--font-mono);color:var(--text-1);">${doneCount}<span style="color:var(--text-3);font-weight:500;">/${prepItems.length}</span></span>
+      </div>
+      <div style="height:8px;background:var(--track);border-radius:5px;overflow:hidden;"><div style="height:100%;width:${prepPct}%;background:${prepPct >= 100 ? 'var(--green)' : 'var(--accent)'};border-radius:5px;"></div></div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="font:500 9px/1 var(--font);color:var(--text-3);">Portsjonid<br><span style="font:700 13px/1.6 var(--font-mono);color:var(--text-1);">${portionsTotal}</span></span>
+        <span style="font:500 9px/1 var(--font);color:var(--text-3);text-align:center;">Karbid<br><span style="font:700 13px/1.6 var(--font-mono);color:var(--text-1);">${portionsTotal}</span></span>
+        <span style="font:500 9px/1 var(--font);color:var(--text-3);text-align:right;">Säilivus<br><span style="font:700 13px/1.6 var(--font-mono);color:var(--text-1);">3–4<span style="font-size:9px;color:var(--text-3);font-weight:500;"> päeva</span></span></span>
+      </div>
+    </div>
+    ${prepRows}
+    <div class="card-dark" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font:600 8.5px/1 var(--font);letter-spacing:1px;color:var(--dark-text-2);text-transform:uppercase;">Külmkapis / sügavkülmas</div>
+      <div style="display:flex;gap:14px;">
+        <div style="flex:1;">
+          <div style="font:700 22px/1 var(--font-mono);color:#fff;">${fridgeN}<span style="font-size:11px;color:var(--dark-text-2);font-weight:500;"> karpi</span></div>
+          <div style="font:500 9.5px/1.4 var(--font);color:var(--dark-text-2);margin-top:4px;">Külmkapp — järgmise 4 päeva portsjonid</div>
+        </div>
+        <div style="width:1px;background:var(--dark-2);"></div>
+        <div style="flex:1;">
+          <div style="font:700 22px/1 var(--font-mono);color:#fff;">${freezerN}<span style="font-size:11px;color:var(--dark-text-2);font-weight:500;"> karpi</span></div>
+          <div style="font:500 9.5px/1.4 var(--font);color:var(--dark-text-2);margin-top:4px;">Sügavkülm — nädala teine pool</div>
+        </div>
+      </div>
     </div>` : '';
+
+  /* Quiet Data: pealkiri + tehtud-suhe */
+  const fmtRange = () => {
+    const a = new Date(days[0]), b = new Date(days[6]);
+    return `${a.getDate()}.${String(a.getMonth()+1).padStart(2,'0')}–${b.getDate()}.${String(b.getMonth()+1).padStart(2,'0')}`;
+  };
 
   return `<div style="padding:var(--sp-md);">
 
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:2px 2px 12px;">
+      <div>
+        <div style="font:700 23px/1.1 var(--font);color:var(--text-1);letter-spacing:-0.4px;">Meal Prep</div>
+        <div style="font:500 11px/1 var(--font-mono);color:var(--text-3);margin-top:5px;letter-spacing:0.3px;">Nädal ${fmtRange()} · ${prepItems.length} retsepti</div>
+      </div>
+      <div style="background:var(--chip);border:1px solid var(--border);border-radius:9px;padding:6px 10px;font:700 12px/1 var(--font-mono);color:var(--text-1);white-space:nowrap;">${doneCount}<span style="color:var(--text-3);font-weight:500;">/${prepItems.length}</span></div>
+    </div>
+
     ${hasRepeat
-      ? `<div style="background:#fef9c3;border:1px solid #fde047;border-radius:var(--r-sm);padding:8px 12px;margin-bottom:10px;font-size:13px;">⚠️ Mõni retsept kordub üle 2× — <button onclick="mpRegenerate()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;font-weight:600;padding:0;">genereeri uuesti</button></div>`
-      : `<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:var(--r-sm);padding:8px 12px;margin-bottom:10px;font-size:13px;">✅ Hea vaheldus nädalas</div>`
+      ? `<div style="background:rgba(224,168,61,0.12);border:1px solid var(--amber);border-radius:var(--r-sm);padding:8px 12px;margin-bottom:10px;font-size:13px;">⚠️ Mõni retsept kordub üle 2× — <button onclick="mpRegenerate()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;font-weight:600;padding:0;">genereeri uuesti</button></div>`
+      : `<div style="background:rgba(76,154,106,0.1);border:1px solid var(--green);border-radius:var(--r-sm);padding:8px 12px;margin-bottom:10px;font-size:13px;color:#2C5E40;">✅ Hea vaheldus nädalas</div>`
     }
 
-    <div style="display:flex;gap:3px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;margin-bottom:var(--sp-md);">${dayTabs}</div>
+    <div style="display:flex;gap:3px;background:var(--chip);border-radius:12px;padding:3px;margin-bottom:var(--sp-md);">${dayTabs}</div>
 
     <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;">
       <div>
@@ -5578,8 +5707,8 @@ function renderMealPrep() {
         ${selDay === today ? `<span style="font-size:11px;color:var(--accent);margin-left:6px;font-weight:600;">Täna</span>` : ''}
       </div>
       <div style="text-align:right;">
-        <span style="font-size:20px;font-weight:700;">${dayKcal}</span>
-        <span style="font-size:12px;color:var(--text-2);"> kcal</span>
+        <span style="font:700 20px/1 var(--font-mono);">${dayKcal}</span>
+        <span style="font:500 12px/1 var(--font-mono);color:var(--text-3);"> kcal</span>
       </div>
     </div>
 
