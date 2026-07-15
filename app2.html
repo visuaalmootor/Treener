@@ -1902,7 +1902,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.3.5</span>
+  <span id="version-label">v0.9.4</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1921,7 +1921,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.3.5';
+const APP_VERSION  = '0.9.4';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -7582,13 +7582,136 @@ function removeLastAlkohol() {
 }
 
 /* Tab 5 — Mina */
+/* ---- Mina tab Quiet Data abikaardid (v0.9.3.6) ---- */
+function renderMinaProfileHeader() {
+  const name  = STATE.user?.name ?? 'Ingmar';
+  const phase = STATE.btbPhase ?? 1;
+  const week  = STATE.btbWeek ?? 1;
+  const progWeek = (phase - 1) * 5 + week;
+  return `
+    <div style="display:flex;align-items:center;gap:13px;padding:2px 2px 12px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--accent-bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font:700 18px/1 var(--font);color:var(--accent);flex-shrink:0;">${name.charAt(0).toUpperCase()}</div>
+      <div>
+        <div style="font:700 19px/1.1 var(--font);color:var(--text-1);">${name}</div>
+        <div style="font:500 10.5px/1 var(--font-mono);color:var(--text-3);margin-top:5px;letter-spacing:0.3px;">Bony to Beastly · Faas ${phase} · Nädal ${progWeek}/20</div>
+      </div>
+    </div>`;
+}
+
+function renderKehainfoCard() {
+  const s     = lsGet('mina_settings') ?? {};
+  const wl    = lsGet('weight_log') ?? [];
+  const kaal  = wl.length ? (wl[wl.length-1].weight ?? wl[wl.length-1].weight_kg) : (s.kaal ?? STATE.user?.weight_kg ?? 63);
+  const pikkus = STATE.user?.height_cm ?? 178;
+  const vanus  = STATE.user?.age ?? 34;
+  const siht   = s.kaalueesmärk ?? STATE.user?.goal_weight_kg ?? 78;
+  const rasva  = s.rasvaprotsent ?? 12;
+  const kmi    = (kaal / Math.pow(pikkus / 100, 2)).toFixed(1);
+  const neatMult = s.neat_mult ?? 1.6;
+  const aktiivsus = neatMult <= 1.5 ? 'Istuv' : neatMult <= 1.7 ? 'Mõõdukas' : 'Aktiivne';
+  const trenniN = (lsGet('train_sched') ?? [0,2,4]).length;
+  const cell = (lbl, val, unit) => `
+    <div>
+      <div style="font:500 9px/1 var(--font);color:var(--text-3);text-transform:uppercase;letter-spacing:0.4px;">${lbl}</div>
+      <div style="font:700 15px/1.2 var(--font-mono);color:var(--text-1);margin-top:4px;">${val}<span style="font-size:9.5px;color:var(--text-3);font-weight:500;">${unit ? ' ' + unit : ''}</span></div>
+    </div>`;
+  return `
+    <div class="card" style="border-radius:var(--r-lg);">
+      <div class="card-title">Kehainfo</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px 8px;">
+        ${cell('Kaal', kaal, 'kg')}
+        ${cell('Pikkus', pikkus, 'cm')}
+        ${cell('Vanus', vanus, '')}
+        ${cell('Kehatüüp', 'Ektomorf', '')}
+        ${cell('KMI', kmi, '')}
+        ${cell('Rasva%', '~' + rasva, '%')}
+        ${cell('Sihtkaal', siht, 'kg')}
+        ${cell('Aktiivsus', aktiivsus, '')}
+        ${cell('Trenn/näd', trenniN, '×')}
+      </div>
+    </div>`;
+}
+
+function renderKaloritarveCard() {
+  const s = lsGet('mina_settings') ?? {};
+  const bulk = s.bulk_surplus ?? 300;
+  const target = calcKcalTarget();
+  const trainTarget = calcKcalTrainingDay();
+  const tdee = target - bulk;
+  const row = (lbl, val, bold) => `
+    <div style="display:flex;justify-content:space-between;align-items:baseline;">
+      <span style="font:${bold ? '600 13px' : '500 12px'}/1 var(--font);color:${bold ? 'var(--text-1)' : 'var(--text-2)'};">${lbl}</span>
+      <span style="font:${bold ? '700 17px' : '600 13px'}/1 var(--font-mono);color:${bold ? 'var(--accent)' : 'var(--text-1)'};">${val}</span>
+    </div>`;
+  return `
+    <div class="card" style="border-radius:var(--r-lg);display:flex;flex-direction:column;gap:10px;">
+      <div class="card-title" style="margin-bottom:0;">BtB kaloritarve</div>
+      ${row('Baasvajadus (TDEE)', tdee + ' kcal')}
+      ${row('Bulking lisa (Faas ' + (STATE.btbPhase ?? 1) + ')', '+' + bulk + ' kcal')}
+      <div style="height:1px;background:var(--track);"></div>
+      ${row('Sihtenergia (puhkepäev)', target + ' kcal', true)}
+      ${row('Treeningupäeval', trainTarget + ' kcal')}
+      <div style="font:400 9.5px/1.4 var(--font);color:var(--text-3);">Arvutatud Bony to Beastly valemi järgi: RMR (500 + 22 × lihasmass) × NEAT + TEF + surplus. Muuda sisendeid allpool seadetes.</div>
+    </div>`;
+}
+
+function renderMinaStatGrids() {
+  /* Treeningustatistika 2×2 + Söömise/joomise 2×2 (Quiet Data) */
+  const tlog = lsGet('training_log') ?? [];
+  const workouts = tlog.filter(e => e.done).length;
+  let setsTotal = 0, volumeKg = 0;
+  tlog.forEach(e => (e.exercises ?? []).forEach(ex => (ex.sets ?? []).forEach(s => {
+    setsTotal++;
+    volumeKg += (s.weight_kg ?? 0) * (s.reps ?? 0);
+  })));
+  const volumeT = (volumeKg / 1000).toFixed(1).replace('.', ',');
+  const avgSets = workouts ? Math.round(setsTotal / workouts) : 0;
+
+  const kcalTarget = calcKcalTarget();
+  let daysLogged = 0, daysOnTarget = 0, waterSum = 0, waterDays = 0;
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    const kc = calcEatenKcal(d);
+    if (kc > 0) { daysLogged++; if (kc >= kcalTarget * 0.95) daysOnTarget++; }
+    const w = (lsGet('water_today_' + d) ?? 0) + (lsGet('coffee_today_' + d) ?? 0) * 200;
+    if (w > 0) { waterSum += w; waterDays++; }
+  }
+  const avgWater = waterDays ? (waterSum / waterDays / 1000).toFixed(1).replace('.', ',') : '—';
+  const alkWeek = (lsGet(getAlkoholWeekKey()) ?? []).length;
+
+  const tile = (lbl, val, unit, color) => `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 13px;box-shadow:var(--shadow);">
+      <div style="font:500 9px/1 var(--font);color:var(--text-3);text-transform:uppercase;letter-spacing:0.4px;">${lbl}</div>
+      <div style="font:700 20px/1.2 var(--font-mono);color:${color ?? 'var(--text-1)'};margin-top:5px;">${val}<span style="font-size:10px;color:var(--text-3);font-weight:500;">${unit ? ' ' + unit : ''}</span></div>
+    </div>`;
+  return `
+    <div style="font:600 11px/1 var(--font);letter-spacing:0.6px;color:var(--text-3);text-transform:uppercase;margin:16px 0 8px;padding:0 2px;">Treeningustatistika</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      ${tile('Trennid kokku', workouts, 'tk')}
+      ${tile('Maht kokku', volumeT, 't')}
+      ${tile('Seeriaid kokku', setsTotal, 'tk')}
+      ${tile('Ø seeriat / trenn', avgSets, 'tk')}
+    </div>
+    <div style="font:600 11px/1 var(--font);letter-spacing:0.6px;color:var(--text-3);text-transform:uppercase;margin:16px 0 8px;padding:0 2px;">Söömise ja joomise statistika · 30 päeva</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:var(--sp-sm);">
+      ${tile('Päevi logitud', daysLogged, '/ 30')}
+      ${tile('Ø vesi / päev', avgWater, 'L')}
+      ${tile('Alkohol nädalas', alkWeek, 'jooki', alkWeek > 2 ? 'var(--red)' : alkWeek > 0 ? 'var(--amber)' : 'var(--green)')}
+      ${tile('Päevi sihis', daysOnTarget, 'tk', 'var(--accent)')}
+    </div>`;
+}
+
 function renderMina() {
   setTimeout(renderBackupCard, 50);
   setTimeout(renderFirebaseCard, 60);
   return `
+    ${renderMinaProfileHeader()}
+    ${renderKehainfoCard()}
+    ${renderKaloritarveCard()}
     ${renderMinaSettings()}
     ${renderAlkohol()}
     ${renderProgress()}
+    ${renderMinaStatGrids()}
     ${renderBtbRoadmap()}
     <div id="backup-card" class="card" style="overflow:hidden;margin-top:var(--sp-sm);"></div>
     <div id="firebase-card" class="card" style="overflow:hidden;margin-top:var(--sp-sm);"></div>
@@ -8430,6 +8553,290 @@ function toggleExercise(id) {
   renderTab('trenn');
 }
 
+/* ============================================================
+   v0.9.4 — HARJUTUSE DETAILVAADE (Quiet Data)
+   Loeb/kirjutab SAMA ttm_training_log struktuuri mis saveExerciseLog.
+   UUS localStorage võti: ttm_exercise_notes { harjutus_id: tekst } — vana äpp ignoreerib.
+============================================================ */
+
+/* Aktiivse plaani/treeningu harjutused circuit-järjekorras (flat) */
+function _trennExList() {
+  const plan = STATE.trainingPlan?.plans?.[STATE.activePlan ?? 'B'];
+  const training = plan?.trainings?.[STATE.currentTraining ?? 'A'];
+  if (!training) return [];
+  const exercises = training[`phase_${STATE.btbPhase}`] ?? training.exercises ?? [];
+  const groups = {}, order = [];
+  exercises.forEach(pe => {
+    const g = pe.circuit ?? 'X';
+    if (!groups[g]) { groups[g] = []; order.push(g); }
+    groups[g].push(pe);
+  });
+  const out = [];
+  order.forEach(g => groups[g].forEach((pe, i) =>
+    out.push({ planEx: pe, label: `${g}${groups[g].length > 1 ? i + 1 : ''}` })));
+  return out;
+}
+
+function openExerciseDetail(idx) {
+  STATE.exDetailIdx = idx;
+  stopRestTimer();
+  renderTab('trenn');
+  document.getElementById('content')?.scrollTo(0, 0);
+}
+function closeExerciseDetail() {
+  STATE.exDetailIdx = null;
+  stopRestTimer();
+  renderTab('trenn');
+}
+function exDetailNav(d) {
+  const list = _trennExList();
+  const n = (STATE.exDetailIdx ?? 0) + d;
+  if (n < 0 || n >= list.length) return;
+  openExerciseDetail(n);
+}
+
+/* Seeria salvestamine detailvaatest — sama struktuur mis saveExerciseLog */
+function exSaveSet(exerciseId, setNo) {
+  const kgInp = document.getElementById(`det-kg-${setNo}`);
+  const rpInp = document.getElementById(`det-reps-${setNo}`);
+  const reps = parseInt(rpInp?.value) || 0;
+  const weight = parseFloat(String(kgInp?.value ?? '').replace(',', '.')) || 0;
+  if (!reps) { rpInp?.focus(); return; }
+
+  const today = new Date().toISOString().slice(0, 10);
+  let tlog = lsGet('training_log') ?? [];
+  let todayEntry = tlog.find(e => e.date === today && e.plan === STATE.activePlan && e.treening === STATE.currentTraining);
+  if (!todayEntry) {
+    todayEntry = { date: today, plan: STATE.activePlan, treening: STATE.currentTraining, done: false, exercises: [] };
+    tlog.push(todayEntry);
+  }
+  let exEntry = todayEntry.exercises.find(e => String(e.exercise_id) === String(exerciseId));
+  if (!exEntry) {
+    exEntry = { exercise_id: Number(exerciseId), sets: [] };
+    todayEntry.exercises.push(exEntry);
+  }
+  exEntry.sets.push({ reps, weight_kg: weight });
+  lsSet('training_log', tlog);
+  updateDayStats();
+  renderTab('trenn');
+  // Auto-start puhketaimer (faasi rest_s)
+  const rest = STATE.btbPhaseData?.phases?.[String(STATE.btbPhase)]?.rest_s ?? 60;
+  setTimeout(() => startRestTimer(rest), 80);
+}
+
+/* ---- Puhketaimer ---- */
+let _restInterval = null;
+function _fmtRest(s) { return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
+function _restEl() { return document.getElementById('rest-timer-display'); }
+function startRestTimer(sec) {
+  stopRestTimer();
+  STATE.restRemain = sec;
+  const el = _restEl();
+  if (el) { el.textContent = _fmtRest(sec); el.style.color = '#fff'; }
+  _restInterval = setInterval(() => {
+    STATE.restRemain--;
+    const el2 = _restEl();
+    if (!el2) { stopRestTimer(); return; }
+    if (STATE.restRemain <= 0) {
+      el2.textContent = '00:00';
+      el2.style.color = 'var(--green)';
+      stopRestTimer();
+      showToast('💪 Puhkus läbi — järgmine seeria!');
+      return;
+    }
+    el2.textContent = _fmtRest(STATE.restRemain);
+  }, 1000);
+}
+function addRestTime(s) {
+  if (_restInterval && STATE.restRemain > 0) {
+    STATE.restRemain += s;
+    const el = _restEl();
+    if (el) el.textContent = _fmtRest(STATE.restRemain);
+  } else {
+    const rest = STATE.btbPhaseData?.phases?.[String(STATE.btbPhase)]?.rest_s ?? 60;
+    startRestTimer(rest + s);
+  }
+}
+function stopRestTimer() {
+  if (_restInterval) clearInterval(_restInterval);
+  _restInterval = null;
+}
+function toggleRestTimer() {
+  if (_restInterval) {
+    stopRestTimer();
+  } else {
+    const rest = STATE.restRemain > 0 ? STATE.restRemain : (STATE.btbPhaseData?.phases?.[String(STATE.btbPhase)]?.rest_s ?? 60);
+    startRestTimer(rest);
+  }
+}
+
+/* ---- Märkmed harjutuse kohta ---- */
+function saveExerciseNote(id) {
+  const v = document.getElementById('ex-note-inp')?.value ?? '';
+  const notes = lsGet('exercise_notes') ?? {};
+  notes[String(id)] = v;
+  lsSet('exercise_notes', notes);
+  showToast('✓ Märkus salvestatud');
+}
+
+function renderExerciseDetail() {
+  const list = _trennExList();
+  const idx = STATE.exDetailIdx;
+  if (idx == null || idx < 0 || idx >= list.length) return null;
+  const { planEx, label } = list[idx];
+  const exData = STATE.exercises?.exercises?.[String(planEx.id)];
+  if (!exData) return null;
+
+  const weekCfg = getBtbWeekConfig();
+  const sets    = weekCfg?.sets ?? planEx.sets ?? 3;
+  const repsMin = weekCfg?.reps_min ?? planEx.reps_min ?? 8;
+  const repsMax = weekCfg?.reps_max ?? planEx.reps_max ?? 12;
+  const restS   = weekCfg?.rest_s ?? 60;
+  const tempo   = weekCfg?.tempo ?? '301';
+  const isBw    = exData.is_bodyweight;
+  const lastW   = getLastWeight(String(planEx.id));
+  const defaultW = lastW ?? planEx.start_weight_kg ?? 0;
+
+  // Tänased logitud seeriad
+  const today = new Date().toISOString().slice(0, 10);
+  const tlog  = lsGet('training_log') ?? [];
+  const todayEntry = tlog.find(e => e.date === today && e.plan === STATE.activePlan && e.treening === STATE.currentTraining);
+  const todaySets = todayEntry?.exercises?.find(e => String(e.exercise_id) === String(planEx.id))?.sets ?? [];
+
+  // Eelmine sessioon (viimane varasem päev kus see harjutus logitud)
+  let prevSets = null, prevDate = null;
+  const prevEntries = tlog
+    .filter(e => e.date < today && e.exercises?.some(x => String(x.exercise_id) === String(planEx.id) && x.sets?.length))
+    .sort((a, b) => b.date.localeCompare(a.date));
+  if (prevEntries.length) {
+    prevDate = prevEntries[0].date;
+    prevSets = prevEntries[0].exercises.find(x => String(x.exercise_id) === String(planEx.id)).sets;
+  }
+
+  // Progressiooni soovitus (double progression)
+  let suggestion;
+  if (prevSets) {
+    const allAtMax = prevSets.length >= sets && prevSets.every(s => (s.reps ?? 0) >= repsMax);
+    const prevW = prevSets[0]?.weight_kg ?? 0;
+    if (isBw) {
+      suggestion = allAtMax
+        ? `<span style="color:var(--green);font-weight:700;">↑ Kõik seeriad maksimumis — lisa kordusi või raskust (vest/ketas)</span>`
+        : `<span style="color:var(--text-2);">→ Sihi ${repsMax} kordust igas seerias</span>`;
+    } else if (allAtMax) {
+      suggestion = `<span style="color:var(--green);font-weight:700;">↑ Soovitus: ${(prevW + 2.5).toFixed(1).replace('.0','')} kg (+2.5)</span> — kõik seeriad jõudsid ${repsMax}-ni`;
+    } else {
+      suggestion = `<span style="color:var(--text-2);">→ Sama raskus (${prevW} kg) — sihi ${repsMax} kordust igas seerias</span>`;
+    }
+  } else {
+    suggestion = `<span style="color:var(--text-2);">Esimene kord — alusta ${isBw ? 'kehakaaluga' : (planEx.start_weight_kg ?? '?') + ' kg-ga'}, tehnika ees</span>`;
+  }
+  const prevLine = prevSets
+    ? `Eelmine kord (${prevDate.slice(8,10)}.${prevDate.slice(5,7)}): <b>${prevSets[0]?.weight_kg ?? 0} kg</b> × ${prevSets.map(s => s.reps).join(', ')}`
+    : 'Varasemat logi pole';
+
+  // Seeriate read
+  const setRows = Array.from({ length: Math.max(sets, todaySets.length) }, (_, i) => {
+    const n = i + 1;
+    const done = todaySets[i];
+    if (done) {
+      return `
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--track);">
+        <span style="width:26px;font:700 11px/1 var(--font-mono);color:var(--text-3);">${n}.</span>
+        <span style="flex:1;font:700 14px/1 var(--font-mono);color:var(--text-1);">${done.weight_kg ?? 0} kg × ${done.reps}</span>
+        <span style="width:30px;height:30px;border-radius:9px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font:700 13px/1 var(--font-mono);">✓</span>
+      </div>`;
+    }
+    const isNextRow = i === todaySets.length;
+    return `
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--track);${isNextRow ? '' : 'opacity:0.45;'}">
+        <span style="width:26px;font:700 11px/1 var(--font-mono);color:${isNextRow ? 'var(--accent)' : 'var(--text-3)'};">${n}.</span>
+        ${isBw
+          ? `<span style="width:74px;font:500 11px/1 var(--font-mono);color:var(--text-3);">kehakaal</span>`
+          : `<input id="det-kg-${n}" type="number" step="0.5" inputmode="decimal" value="${defaultW || ''}" placeholder="kg" ${isNextRow ? '' : 'disabled'}
+              style="width:74px;padding:8px 6px;border:1px solid var(--border);border-radius:9px;font:600 13px/1 var(--font-mono);text-align:center;background:var(--surface);color:var(--text-1);">`}
+        <input id="det-reps-${n}" type="number" inputmode="numeric" placeholder="${repsMin}–${repsMax}" ${isNextRow ? '' : 'disabled'}
+          style="flex:1;padding:8px 6px;border:1px solid var(--border);border-radius:9px;font:600 13px/1 var(--font-mono);text-align:center;background:var(--surface);color:var(--text-1);">
+        <button onclick="exSaveSet('${planEx.id}', ${n})" ${isNextRow ? '' : 'disabled'}
+          style="width:30px;height:30px;border-radius:9px;border:none;cursor:pointer;background:${isNextRow ? 'var(--accent)' : 'var(--chip)'};color:${isNextRow ? '#fff' : 'var(--text-3)'};font:700 13px/1 var(--font-mono);flex-shrink:0;">✓</button>
+      </div>`;
+  }).join('');
+
+  const notes = (lsGet('exercise_notes') ?? {})[String(planEx.id)] ?? '';
+  const ytQuery = encodeURIComponent(exData.youtube_search ?? exData.name);
+  const stepsHtml = (exData.steps ?? []).map(s => `<li style="margin-bottom:5px;">${s}</li>`).join('');
+
+  return `
+    <!-- Päis -->
+    <div style="display:flex;align-items:center;gap:11px;padding:2px 2px 12px;">
+      <button onclick="closeExerciseDetail()" style="width:36px;height:36px;border-radius:11px;background:var(--surface);border:1px solid var(--border);cursor:pointer;font-size:16px;color:var(--text-1);flex-shrink:0;box-shadow:var(--shadow);">←</button>
+      <div style="min-width:0;">
+        <div style="font:700 19px/1.15 var(--font);color:var(--text-1);letter-spacing:-0.3px;">${exData.emoji ?? ''} ${exData.name}</div>
+        <div style="font:500 10.5px/1 var(--font-mono);color:var(--text-3);margin-top:4px;">Harjutus ${idx + 1} / ${list.length} · ${label} · Treening ${STATE.currentTraining ?? 'A'}</div>
+      </div>
+    </div>
+
+    <!-- Tehnika video -->
+    <a href="https://www.youtube.com/results?search_query=${ytQuery}" target="_blank" rel="noopener" style="text-decoration:none;">
+      <div class="card-dark" style="display:flex;align-items:center;justify-content:center;gap:12px;padding:22px 16px;cursor:pointer;">
+        <span style="width:42px;height:42px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0;">▶</span>
+        <div>
+          <div style="font:600 8.5px/1 var(--font);letter-spacing:1px;color:var(--dark-text-2);text-transform:uppercase;">Tehnika video</div>
+          <div style="font:600 13px/1.2 var(--font);color:#fff;margin-top:5px;">Vaata õpetust YouTube'is →</div>
+        </div>
+      </div>
+    </a>
+
+    ${exData.ingmar_note ? `
+    <div style="background:rgba(224,168,61,0.12);border:1px solid var(--amber);border-radius:var(--r-md);padding:10px 13px;margin-bottom:12px;font-size:12px;color:#7a5a12;line-height:1.5;">⚠️ <b>Sinu piirang:</b> ${exData.ingmar_note}</div>` : ''}
+
+    <!-- Juhis -->
+    ${stepsHtml ? `
+    <div class="card" style="border-radius:var(--r-lg);">
+      <div class="card-title">Juhis · tempo ${tempo}</div>
+      <ol style="margin:0;padding-left:17px;font-size:13px;color:var(--text-2);line-height:1.5;">${stepsHtml}</ol>
+    </div>` : ''}
+
+    <!-- Seeriate logimine -->
+    <div class="card" style="border-radius:var(--r-lg);box-shadow:var(--shadow),0 10px 26px rgba(40,30,10,.05);">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+        <span style="font:600 13px/1 var(--font);color:var(--text-1);">Seeriad</span>
+        <span style="font:600 11px/1 var(--font-mono);color:var(--text-3);">${todaySets.length}/${sets} · siht ${repsMin}–${repsMax} kordust</span>
+      </div>
+      <div style="background:var(--accent-bg);border-radius:10px;padding:9px 11px;margin:8px 0 6px;">
+        <div style="font:500 11px/1.5 var(--font-mono);color:var(--text-2);">${prevLine}</div>
+        <div style="font:500 11px/1.5 var(--font);margin-top:3px;">${suggestion}</div>
+      </div>
+      ${setRows}
+    </div>
+
+    <!-- Puhketaimer -->
+    <div class="card-dark" style="display:flex;align-items:center;gap:14px;">
+      <div style="flex:1;">
+        <div style="font:600 8.5px/1 var(--font);letter-spacing:1px;color:var(--dark-text-2);text-transform:uppercase;">Puhkeaeg · ${restS}s</div>
+        <div id="rest-timer-display" style="font:800 34px/1.1 var(--font-mono);color:#fff;letter-spacing:-1px;margin-top:6px;">${_fmtRest(STATE.restRemain > 0 ? STATE.restRemain : restS)}</div>
+      </div>
+      <button onclick="addRestTime(30)" style="padding:10px 12px;border-radius:11px;border:none;cursor:pointer;background:var(--dark-2);color:#E8E2D6;font:600 12px/1 var(--font-mono);">+30s</button>
+      <button onclick="toggleRestTimer()" style="width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;background:var(--accent);color:#fff;font-size:16px;">▶</button>
+    </div>
+
+    <!-- Märkmed -->
+    <div class="card" style="border-radius:var(--r-lg);">
+      <div class="card-title">Märkmed</div>
+      <textarea id="ex-note-inp" rows="2" placeholder="Lisa märkus selle harjutuse kohta (tunne, tehnika, valu jne)…"
+        onblur="saveExerciseNote('${planEx.id}')"
+        style="width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 11px;font:500 13px/1.5 var(--font);color:var(--text-1);background:var(--surface);resize:vertical;box-sizing:border-box;">${notes}</textarea>
+      <div style="font:400 9.5px/1 var(--font);color:var(--text-3);margin-top:5px;">Salvestub automaatselt · nähtav ainult siin</div>
+    </div>
+
+    <!-- Eelmine / Järgmine -->
+    <div style="display:flex;gap:8px;padding-bottom:var(--sp-md);">
+      <button onclick="exDetailNav(-1)" ${idx === 0 ? 'disabled' : ''}
+        style="flex:1;padding:13px;border-radius:12px;border:1px solid var(--border);cursor:pointer;background:var(--surface);color:${idx === 0 ? 'var(--text-3)' : 'var(--text-1)'};font:600 13px/1 var(--font);box-shadow:var(--shadow);">← Eelmine</button>
+      <button onclick="exDetailNav(1)" ${idx >= list.length - 1 ? 'disabled' : ''}
+        style="flex:1;padding:13px;border-radius:12px;border:none;cursor:pointer;background:${idx >= list.length - 1 ? 'var(--chip)' : 'var(--accent)'};color:${idx >= list.length - 1 ? 'var(--text-3)' : '#fff'};font:600 13px/1 var(--font);">Järgmine →</button>
+    </div>`;
+}
+
 /* Salvestab ühe harjutuse logikirje */
 function saveExerciseLog(exerciseId) {
   const repsInput = document.getElementById(`log-reps-${exerciseId}`);
@@ -8927,7 +9334,7 @@ function renderExerciseSlot(planEx, exData, idx, circuitLabel, phaseConfig) {
 
   return `
     <div class="exercise-slot ${isDoneSlot ? 'done-slot' : ''}">
-      <div class="exercise-slot-header" onclick="toggleExercise('${id}')">
+      <div class="exercise-slot-header" onclick="${idx != null ? `openExerciseDetail(${idx})` : `toggleExercise('${id}')`}">
         <span class="exercise-num">${displayNum}</span>
         <div class="exercise-info">
           <div class="exercise-name">${exData.name}</div>
@@ -9288,6 +9695,13 @@ function renderTrenn() {
 
   const exercises = training[phaseKey] ?? training.exercises ?? [];
 
+  /* v0.9.4: harjutuse detailvaade avatud → näita seda kogu tabi asemel */
+  if (STATE.exDetailIdx != null && !isComingSoon) {
+    const dv = renderExerciseDetail();
+    if (dv) return dv;
+    STATE.exDetailIdx = null;
+  }
+
   // Grupeeri harjutused circuit-i järgi (A, B, C, D)
   function buildCircuitGroups(exList) {
     const groups = {};
@@ -9307,6 +9721,7 @@ function renderTrenn() {
   if (isComingSoon) {
     exSlotsHtml = renderPhaseIndicator(); // näitab coming-soon sisu
   } else {
+    let _flatIdx = 0; // v0.9.4: index detailvaate jaoks (sama järjekord mis _trennExList)
     circuitGroups.forEach(group => {
       const cName = group.circuit;
       const isFinisher = cName === 'D';
@@ -9317,7 +9732,7 @@ function renderTrenn() {
       const slots = group.items.map((planEx, subIdx) => {
         const ex           = exData[String(planEx.id)];
         const circLabel    = `${cName}${group.items.length > 1 ? subIdx + 1 : ''}`;
-        return renderExerciseSlot(planEx, ex, null, circLabel, weekCfg);
+        return renderExerciseSlot(planEx, ex, _flatIdx++, circLabel, weekCfg);
       }).join('');
 
       exSlotsHtml += `<div class="circuit-group">${label}<div>${slots}</div></div>`;
