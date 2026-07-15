@@ -1902,7 +1902,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.4.4</span>
+  <span id="version-label">v0.9.4.5</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1921,7 +1921,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.4.4';
+const APP_VERSION  = '0.9.4.5';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -5859,6 +5859,12 @@ function toggleRecentFoods() {
   renderTab('toitumine');
 }
 
+/* v0.9.4.5: Toitumine söögisloti laiendus (retsept nagu Meal Prepis) */
+function toitToggleSlot(sid) {
+  STATE.toitExpandedSlot = STATE.toitExpandedSlot === sid ? null : sid;
+  renderTab('toitumine');
+}
+
 function addRecentFood(i, dateStr) {
   const src = (STATE._recentFoods ?? [])[i];
   if (!src) return;
@@ -6001,31 +6007,38 @@ function renderToitumine() {
         const skipped = status === 'skipped';
         const emoji   = MP_MEALS[m.recipe_id]?.emoji ?? TOITUMINE_SLOT_EMOJI[sid];
         const slotSupps = suppsBySlot[suppSlot(sid)] ?? [];
-        return `<div class="card" style="margin-bottom:8px;${skipped ? 'opacity:0.55;' : ''}overflow:hidden;">
-          <div style="display:flex;align-items:center;gap:10px;padding:12px;">
+        const isExp   = STATE.toitExpandedSlot === sid;
+        const protBadge = (m.protein ?? 0) >= 40
+          ? `<span title="40g+ valku" style="flex-shrink:0;font:600 9px/1 var(--font-mono);background:rgba(76,154,106,0.12);color:var(--green);border-radius:6px;padding:2px 5px;">✓ 40g+</span>`
+          : (m.protein ?? 0) >= 20
+          ? `<span title="20–39g valku" style="flex-shrink:0;font:600 9px/1 var(--font-mono);background:rgba(224,168,61,0.14);color:#8a6414;border-radius:6px;padding:2px 5px;">${m.protein}g V</span>`
+          : `<span title="alla 20g valku" style="flex-shrink:0;font:600 9px/1 var(--font-mono);background:var(--chip);color:var(--text-3);border-radius:6px;padding:2px 5px;">${m.protein ?? 0}g V</span>`;
+        return `<div class="card" style="margin-bottom:8px;${skipped ? 'opacity:0.55;' : ''}overflow:hidden;padding:0;">
+          <!-- Päis: klõps avab retsepti -->
+          <div onclick="toitToggleSlot('${sid}')" style="display:flex;align-items:flex-start;gap:10px;padding:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
             <div style="font-size:24px;min-width:32px;text-align:center;">${emoji}</div>
             <div style="flex:1;min-width:0;">
               <div style="font:500 10px/1 var(--font-mono);color:var(--text-3);">${MP_SLOT_LABELS[sid] ?? sid} · ${MP_SLOT_TIMES[sid] ?? ''}</div>
-              <div style="display:flex;align-items:center;gap:6px;min-width:0;margin-top:2px;">
-                <span style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.name}</span>
-                ${(m.protein ?? 0) >= 40
-                  ? `<span title="40g+ valku" style="flex-shrink:0;font:600 9px/1 var(--font-mono);background:rgba(76,154,106,0.12);color:var(--green);border-radius:6px;padding:2px 5px;">✓ 40g+</span>`
-                  : (m.protein ?? 0) >= 20
-                  ? `<span title="20–39g valku" style="flex-shrink:0;font:600 9px/1 var(--font-mono);background:rgba(224,168,61,0.14);color:#8a6414;border-radius:6px;padding:2px 5px;">${m.protein}g V</span>`
-                  : `<span title="alla 20g valku" style="flex-shrink:0;font:600 9px/1 var(--font-mono);background:var(--chip);color:var(--text-3);border-radius:6px;padding:2px 5px;">${m.protein ?? 0}g V</span>`}
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:3px;">
+                <span style="font-weight:600;font-size:14px;line-height:1.25;">${m.name}</span>
+                ${protBadge}
               </div>
-              <div style="font:500 10.5px/1.3 var(--font-mono);color:var(--text-3);margin-top:2px;">${m.kcal} kcal · V ${m.protein}g · S ${m.carbs}g · R ${m.fat}g</div>
+              <div style="font:500 10.5px/1.3 var(--font-mono);color:var(--text-3);margin-top:3px;">${m.kcal} kcal · V ${m.protein}g · S ${m.carbs}g · R ${m.fat}g</div>
             </div>
-            <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
-              <button onclick="setMealStatus('${sid}','eaten','${selDate}')"
-                style="padding:6px 10px;background:${eaten ? 'var(--accent)' : 'var(--surface)'};color:${eaten ? '#fff' : 'var(--text-2)'};border:1px solid ${eaten ? 'var(--accent)' : 'var(--border)'};border-radius:var(--r-sm);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">
-                ${eaten ? '✓ Söödud' : 'Söin ära'}
-              </button>
-              <button onclick="setMealStatus('${sid}','skipped','${selDate}')"
-                style="padding:6px 10px;background:${skipped ? '#fee2e2' : 'var(--surface)'};color:${skipped ? '#dc2626' : 'var(--text-2)'};border:1px solid ${skipped ? '#fca5a5' : 'var(--border)'};border-radius:var(--r-sm);font-size:12px;font-weight:${skipped ? '600' : '400'};cursor:pointer;white-space:nowrap;">
-                ${skipped ? '✗ Vahele' : 'Jätsin vahele'}
-              </button>
-            </div>
+            <span style="color:var(--text-3);font-size:12px;flex-shrink:0;margin-top:3px;">${isExp ? '▲' : '▼'}</span>
+          </div>
+          <!-- Retsept (koostisained + valmistamine) -->
+          ${isExp ? `<div style="border-top:1px solid var(--track);margin:0 12px;padding:11px 0;">${mpRecipeDetail(m.recipe_id) || '<div style="font-size:12px;color:var(--text-3);">Retsepti detailid puuduvad.</div>'}</div>` : ''}
+          <!-- Staatusnupud: täislaiuses all -->
+          <div style="display:flex;gap:8px;padding:0 12px 12px;">
+            <button onclick="setMealStatus('${sid}','eaten','${selDate}')"
+              style="flex:1;padding:10px;background:${eaten ? 'var(--accent)' : 'var(--surface)'};color:${eaten ? '#fff' : 'var(--text-2)'};border:1px solid ${eaten ? 'var(--accent)' : 'var(--border)'};border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">
+              ${eaten ? '✓ Söödud' : 'Söin ära'}
+            </button>
+            <button onclick="setMealStatus('${sid}','skipped','${selDate}')"
+              style="flex:1;padding:10px;background:${skipped ? 'rgba(217,72,59,0.1)' : 'var(--surface)'};color:${skipped ? 'var(--red)' : 'var(--text-2)'};border:1px solid ${skipped ? 'var(--red)' : 'var(--border)'};border-radius:10px;font-size:13px;font-weight:${skipped ? '600' : '500'};cursor:pointer;">
+              ${skipped ? '✗ Vahele' : 'Jätsin vahele'}
+            </button>
           </div>
           ${suppRow(slotSupps)}
         </div>`;
