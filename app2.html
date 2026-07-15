@@ -1902,7 +1902,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.4.3</span>
+  <span id="version-label">v0.9.4.4</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1921,7 +1921,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.4.3';
+const APP_VERSION  = '0.9.4.4';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -7567,70 +7567,168 @@ function renderProgress() {
    ALKOHOLI LOGI (Tab 5)
 ============================================================ */
 function renderAlkohol() {
-  const weekKey = getAlkoholWeekKey(); // v0.9.4.3: üks allikas, kohaliku ajavööndi järgi
-  const log = lsGet(weekKey) ?? [];
-  const count = log.length;
-  const limit = 2;
+  const offset   = STATE.alkoholWeekOffset ?? 0;
+  const weekDays = alkoholWeekDays(offset);
+  const weekKey  = getAlkoholWeekKey(weekDays[0]);
+  const log      = lsGet(weekKey) ?? [];
+  const count    = log.length;
+  const limit    = 2;
   const overLimit = count > limit;
+  const today    = _localDateStr(new Date());
 
-  const dots = Array.from({length: Math.max(count, limit + 1)}, (_, i) => {
-    const filled = i < count;
-    const isOver = i >= limit;
-    return '<span style="display:inline-block;width:20px;height:20px;border-radius:50%;margin:0 3px;' +
-      'background:' + (filled ? (isOver ? '#dc2626' : '#f59e0b') : 'var(--border)') + ';' +
-      'border:2px solid ' + (filled ? (isOver ? '#dc2626' : '#f59e0b') : 'var(--border)') + ';"></span>';
+  // Valitud päev (vaikimisi täna jooksval nädalal, muidu nädala esmaspäev)
+  const selDay = (STATE.alkoholDay && weekDays.includes(STATE.alkoholDay))
+    ? STATE.alkoholDay
+    : (offset === 0 ? today : weekDays[0]);
+
+  // Päevade kaupa loendus
+  const dayCount = {};
+  log.forEach(e => { dayCount[e.date] = (dayCount[e.date] ?? 0) + 1; });
+
+  // Nädala silt
+  const mon = new Date(weekDays[0] + 'T12:00:00');
+  const sun = new Date(weekDays[6] + 'T12:00:00');
+  const p2 = n => String(n).padStart(2, '0');
+  const weekLabel = offset === 0 ? 'See nädal'
+    : `${p2(mon.getDate())}.${p2(mon.getMonth()+1)}–${p2(sun.getDate())}.${p2(sun.getMonth()+1)}`;
+
+  const DS = ['E','T','K','N','R','L','P'];
+  const daySel = weekDays.map((d, i) => {
+    const isSel = d === selDay, isToday = d === today;
+    const c = dayCount[d] ?? 0;
+    const dm = new Date(d + 'T12:00:00').getDate();
+    return `<button onclick="setAlkoholDay('${d}')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border:none;border-radius:9px;cursor:pointer;background:${isSel ? 'var(--dark)' : 'transparent'};-webkit-tap-highlight-color:transparent;">
+      <span style="font:600 11px/1 var(--font);color:${isSel ? '#fff' : isToday ? 'var(--accent)' : 'var(--text-2)'};">${DS[i]}</span>
+      <span style="font:500 9px/1 var(--font-mono);color:${isSel ? 'var(--dark-text-2)' : 'var(--text-3)'};">${dm}</span>
+      <span style="min-width:14px;height:14px;border-radius:7px;font:700 8px/14px var(--font-mono);color:#fff;background:${c ? (c >= 1 ? 'var(--amber)' : 'transparent') : 'transparent'};padding:0 3px;">${c || ''}</span>
+    </button>`;
   }).join('');
 
+  // Valitud päeva kirjed (globaalse indeksiga eemaldamiseks)
+  const dayEntries = log
+    .map((e, idx) => ({ ...e, _idx: idx }))
+    .filter(e => e.date === selDay);
+  const selWd = new Date(selDay + 'T12:00:00').toLocaleDateString('et-EE', { weekday: 'long' });
+  const selDayLabel = selDay === today ? 'Täna' : (selWd.charAt(0).toUpperCase() + selWd.slice(1));
+
+  const entriesHtml = dayEntries.length
+    ? dayEntries.map(e => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--track);">
+        <span style="font:500 12.5px/1 var(--font);color:var(--text-1);">${e.label === 'Vein/kange' ? '🍷' : '🍺'} ${e.label}</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font:500 10px/1 var(--font-mono);color:var(--text-3);">${e.time}</span>
+          <button onclick="removeAlkoholEntry('${weekKey}', ${e._idx})" title="Eemalda" style="width:24px;height:24px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text-3);cursor:pointer;font:600 14px/1 var(--font);flex-shrink:0;">×</button>
+        </div>
+      </div>`).join('')
+    : `<div style="font:500 11px/1.4 var(--font);color:var(--text-3);padding:6px 0;">Sel päeval jooke pole logitud.</div>`;
+
   const warning = overLimit
-    ? '<div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:8px 10px;font-size:12px;color:#dc2626;margin-top:8px;">⚠️ Rohkem kui 2 jooki nädalas mõjutab testosterooni, taastumist ja lihasarengut märgatavalt.</div>'
+    ? '<div style="background:rgba(217,72,59,0.1);border:1px solid var(--red);border-radius:10px;padding:9px 11px;font:500 11.5px/1.5 var(--font);color:#a5342a;margin-top:10px;">⚠️ Üle 2 joogi nädalas mõjutab testosterooni, taastumist ja lihasarengut märgatavalt.</div>'
     : count === limit
-    ? '<div style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:8px 10px;font-size:12px;color:#854d0e;margin-top:8px;">🟡 Piiril — rohkem ei soovita.</div>'
+    ? '<div style="background:rgba(224,168,61,0.14);border:1px solid var(--amber);border-radius:10px;padding:9px 11px;font:500 11.5px/1.5 var(--font);color:#8a6414;margin-top:10px;">🟡 Nädala piiril — rohkem ei soovita.</div>'
     : '';
 
-  const lastEntries = log.slice(-3).reverse().map(e =>
-    '<div style="font-size:11px;color:var(--text-2);padding:2px 0;">' + e.label + ' · ' + e.time + '</div>'
-  ).join('');
+  return `<div class="card" style="border-radius:var(--r-lg);overflow:hidden;">
+    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span>🍺 Alkohol</span>
+      <span style="font:600 11px/1 var(--font-mono);color:${overLimit ? 'var(--red)' : count === limit ? 'var(--amber)' : 'var(--text-3)'};text-transform:none;letter-spacing:0;">${count} / ${limit} nädalas</span>
+    </div>
 
-  return `<div class="card" style="overflow:hidden;margin-bottom:var(--sp-sm);">
-    <div style="padding:var(--sp-sm) var(--sp-md);border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:14px;font-weight:700;">🍺 Alkohol nädalas</span>
-      <span style="font-size:12px;color:${overLimit ? '#dc2626' : count === limit ? '#854d0e' : 'var(--text-2)'};">${count} / ${limit} soov. piiri</span>
+    <!-- Nädalanavigatsioon -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <button onclick="setAlkoholWeek(${offset - 1})" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;font:600 13px/1 var(--font);">‹</button>
+      <span style="font:600 11px/1 var(--font);color:var(--text-2);">${weekLabel}</span>
+      <button onclick="setAlkoholWeek(${offset + 1})" ${offset >= 0 ? 'disabled' : ''} style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:${offset >= 0 ? 'var(--text-3)' : 'var(--text-2)'};cursor:${offset >= 0 ? 'default' : 'pointer'};font:600 13px/1 var(--font);">›</button>
     </div>
-    <div style="padding:var(--sp-sm) var(--sp-md);">
-      <div style="margin-bottom:10px;">${dots}</div>
-      ${warning}
-      ${lastEntries ? '<div style="margin-top:8px;">' + lastEntries + '</div>' : ''}
-      <div style="display:flex;gap:8px;margin-top:10px;">
-        <button onclick="addAlkohol('Õlu/siider')" style="flex:1;padding:8px 4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;">🍺 Õlu/siider</button>
-        <button onclick="addAlkohol('Vein/kange')" style="flex:1;padding:8px 4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;">🍷 Vein/kange</button>
-        ${count > 0 ? '<button onclick="removeLastAlkohol()" style="padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--text-2);">−</button>' : ''}
-      </div>
+
+    <!-- Päevavalija -->
+    <div style="display:flex;gap:2px;background:var(--chip);border-radius:11px;padding:3px;margin-bottom:12px;">${daySel}</div>
+
+    <!-- Valitud päeva kirjed -->
+    <div style="font:600 10px/1 var(--font);letter-spacing:0.4px;color:var(--text-3);text-transform:uppercase;margin-bottom:2px;">${selDayLabel}${dayEntries.length ? ` · ${dayEntries.length} ${dayEntries.length === 1 ? 'jook' : 'jooki'}` : ''}</div>
+    ${entriesHtml}
+
+    <!-- Lisamise nupud (valitud päevale) -->
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button onclick="addAlkohol('Õlu/siider')" style="flex:1;padding:10px 4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font:600 12px/1 var(--font);cursor:pointer;box-shadow:var(--shadow);">🍺 Õlu/siider</button>
+      <button onclick="addAlkohol('Vein/kange')" style="flex:1;padding:10px 4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font:600 12px/1 var(--font);cursor:pointer;box-shadow:var(--shadow);">🍷 Vein/kange</button>
     </div>
+    ${selDay !== today ? `<div style="font:500 10px/1.4 var(--font);color:var(--text-3);margin-top:7px;text-align:center;">Lisad ${selDayLabel.toLowerCase()} peale — vali "Täna" jooksva päeva jaoks</div>` : ''}
+    ${warning}
   </div>`;
 }
 
-function getAlkoholWeekKey() {
-  const d = new Date();
+/* v0.9.4.4: valikuline kuupäev → selle päeva nädala võti (esmaspäevapõhine, kohalik aeg) */
+function _localDateStr(d) {
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+function getAlkoholWeekKey(dateStr) {
+  const d = dateStr ? new Date(dateStr + 'T12:00:00') : new Date();
   const dow = d.getDay() === 0 ? 6 : d.getDay() - 1;
   const mon = new Date(d); mon.setDate(d.getDate() - dow);
-  // v0.9.4.3: kohalik kuupäev, mitte UTC — toISOString andis 00:00–03:00 vahel VALE nädalavõtme (eelmine päev UTC-s)
-  const p = n => String(n).padStart(2, '0');
-  return `alkohol_week_${mon.getFullYear()}-${p(mon.getMonth() + 1)}-${p(mon.getDate())}`;
+  // kohalik kuupäev, mitte UTC — toISOString andis 00:00–03:00 vahel VALE nädalavõtme
+  return 'alkohol_week_' + _localDateStr(mon);
+}
+
+/* Nädala esmaspäev offset'iga (0 = jooksev, -1 = eelmine) + selle nädala 7 päeva */
+function alkoholMonday(offset) {
+  const d = new Date();
+  const dow = d.getDay() === 0 ? 6 : d.getDay() - 1;
+  const mon = new Date(d);
+  mon.setDate(d.getDate() - dow + (offset || 0) * 7);
+  mon.setHours(12, 0, 0, 0);
+  return mon;
+}
+function alkoholWeekDays(offset) {
+  const mon = alkoholMonday(offset);
+  return Array.from({ length: 7 }, (_, i) => {
+    const x = new Date(mon); x.setDate(mon.getDate() + i);
+    return _localDateStr(x);
+  });
+}
+function setAlkoholWeek(off) {
+  STATE.alkoholWeekOffset = off;
+  STATE.alkoholDay = null; // vali automaatselt uue nädala vaikepäev
+  renderTab('mina');
+}
+function setAlkoholDay(dateStr) {
+  STATE.alkoholDay = dateStr;
+  renderTab('mina');
+}
+function removeAlkoholEntry(weekKey, idx) {
+  const log = lsGet(weekKey) ?? [];
+  if (idx < 0 || idx >= log.length) return;
+  const removed = log.splice(idx, 1)[0];
+  lsSet(weekKey, log);
+  if (removed?.date) { lsSet('kcal_today_' + removed.date, calcEatenKcal(removed.date)); }
+  updateDayStats();
+  renderTab('mina');
 }
 
 function addAlkohol(label) {
-  const key = getAlkoholWeekKey();
+  // v0.9.4.4: lisa VALITUD päeva peale (vaikimisi täna) — võimaldab tagantjärele logimist
+  const offset = STATE.alkoholWeekOffset ?? 0;
+  const weekDays = alkoholWeekDays(offset);
+  const today = _localDateStr(new Date());
+  const targetDate = (STATE.alkoholDay && weekDays.includes(STATE.alkoholDay))
+    ? STATE.alkoholDay
+    : (offset === 0 ? today : weekDays[0]);
+
+  const key = getAlkoholWeekKey(targetDate);
   const log = lsGet(key) ?? [];
   const now = new Date();
-  const time = now.toLocaleDateString('et-EE', {weekday:'short'}) + ' ' +
-    now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-  log.push({label, time, date: now.toISOString().slice(0,10)});
+  const wd = new Date(targetDate + 'T12:00:00').toLocaleDateString('et-EE', { weekday: 'short' });
+  const time = wd + ' ' + now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+  log.push({ label, time, date: targetDate });
   lsSet(key, log);
-  // v0.9.4.2 fix: alkoholi kcal peab kohe jõudma päeva kaloribilanssi (header + Kodu + Toitumine)
-  const t = now.toISOString().slice(0, 10);
-  lsSet('kcal_today_' + t, calcEatenKcal(t));
+  // alkoholi kcal jõuab kohe selle päeva kaloribilanssi (header + Kodu + Toitumine)
+  lsSet('kcal_today_' + targetDate, calcEatenKcal(targetDate));
   updateDayStats();
-  showToast(`🍺 ${label} lisatud (+${label === 'Vein/kange' ? 200 : 180} kcal päeva bilanssi)`);
+  const kcal = label === 'Vein/kange' ? 200 : 180;
+  showToast(targetDate === today
+    ? `🍺 ${label} lisatud (+${kcal} kcal)`
+    : `🍺 ${label} lisatud ${wd} peale (+${kcal} kcal)`);
   renderTab('mina');
 }
 
