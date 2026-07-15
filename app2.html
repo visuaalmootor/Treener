@@ -1902,7 +1902,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.4.1</span>
+  <span id="version-label">v0.9.4.3</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1921,7 +1921,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.4.1';
+const APP_VERSION  = '0.9.4.3';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2002,13 +2002,40 @@ async function syncFromFirestore() {
       log('Firestore tühi — push kõik lokaalsed andmed üles', 'dbg-warn');
       await pushAllToFirestore();
     } else {
-      let count = 0;
+      /* v0.9.4.3: ajatemplipõhine merge — UUEM võidab, kummaski suunas.
+         Varem kirjutas pilv ALATI lokaalse üle → kui fbWrite oli vahele jäänud,
+         kadusid värsked lokaalsed kirjed (nt alkoholilogi) järgmisel sünkimisel. */
+      const meta = _tsMetaGet();
+      const cloudKeys = new Set();
+      let loaded = 0, keptLocal = 0;
       snap.forEach(doc => {
-        localStorage.setItem('ttm_' + doc.id, JSON.stringify(doc.data().v));
-        count++;
+        if (doc.id === '_meta_ts') return;
+        cloudKeys.add(doc.id);
+        const cloudTs = doc.data().ts ?? 0;
+        const localTs = meta[doc.id] ?? 0;
+        const hasLocal = localStorage.getItem('ttm_' + doc.id) !== null;
+        if (!hasLocal || cloudTs >= localTs) {
+          localStorage.setItem('ttm_' + doc.id, JSON.stringify(doc.data().v));
+          meta[doc.id] = cloudTs;
+          loaded++;
+        } else {
+          // Lokaalne on uuem — lükka see pilve, ära kirjuta üle
+          try { fbWrite(doc.id, JSON.parse(localStorage.getItem('ttm_' + doc.id))); } catch (e) {}
+          keptLocal++;
+        }
       });
-      log(`Firestore sync: ${count} kirjet laetud`, 'dbg-ok');
-      showToast(`☁️ Sünkroonitud (${count} kirjet)`);
+      // Lokaalsed võtmed, mida pilves pole üldse → push üles
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !k.startsWith('ttm_') || k === 'ttm__meta_ts') continue;
+        const id = k.slice(4);
+        if (!cloudKeys.has(id)) {
+          try { fbWrite(id, JSON.parse(localStorage.getItem(k))); keptLocal++; } catch (e) {}
+        }
+      }
+      try { localStorage.setItem('ttm__meta_ts', JSON.stringify(meta)); } catch (e) {}
+      log(`Firestore sync: ${loaded} laetud, ${keptLocal} lokaalset uuemat hoitud/üles lükatud`, 'dbg-ok');
+      showToast(`☁️ Sünkroonitud (${loaded} kirjet${keptLocal ? `, ${keptLocal} lokaalset hoitud` : ''})`);
     }
   } catch (e) {
     log('syncFromFirestore viga: ' + e.message, 'dbg-err');
@@ -2023,7 +2050,7 @@ async function pushAllToFirestore() {
   let count = 0;
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (!k || !k.startsWith('ttm_')) continue;
+    if (!k || !k.startsWith('ttm_') || k === 'ttm__meta_ts') continue;
     const key = k.slice(4);
     try {
       const val = JSON.parse(localStorage.getItem(k));
@@ -2625,9 +2652,23 @@ async function getData(filename) {
 function lsGet(key) {
   try { const v = localStorage.getItem('ttm_' + key); return v ? JSON.parse(v) : null; } catch { return null; }
 }
+/* v0.9.4.3: lokaalsed ajatemplid (ttm__meta_ts) — Firestore-sünk võrdleb neid pilve omadega,
+   et VANEM pilveväärtus ei kirjutaks UUEMAT lokaalset üle (nt kui fbWrite jäi võrguvea tõttu vahele) */
+function _tsMetaGet() {
+  try { return JSON.parse(localStorage.getItem('ttm__meta_ts') ?? '{}'); } catch (e) { return {}; }
+}
+function _tsMetaSet(key, ts) {
+  try {
+    const m = _tsMetaGet();
+    m[key] = ts;
+    localStorage.setItem('ttm__meta_ts', JSON.stringify(m));
+  } catch (e) { /* meta pole kriitiline */ }
+}
+
 function lsSet(key, value) {
   try {
     localStorage.setItem('ttm_' + key, JSON.stringify(value));
+    _tsMetaSet(key, Date.now());
     fbWrite(key, value);   // ← Firestore sync (fire-and-forget)
     scheduleBackup();
     return true;
@@ -5867,6 +5908,11 @@ function renderToitumine() {
     });
   }
   (log._custom || []).forEach(e => { kcalEaten += e.kcal ?? 0; });
+  // v0.9.4.2 fix: alkoholi kalorid kuuluvad päeva bilanssi (sama loogika mis calcEatenKcal)
+  const alkKcalDay = (lsGet(getAlkoholWeekKey()) ?? [])
+    .filter(e => e.date === selDate)
+    .reduce((s, e) => s + (e.label === 'Vein/kange' ? 200 : 180), 0);
+  kcalEaten += alkKcalDay;
   const kcalPct  = Math.min(100, Math.round(kcalEaten / kcalTarget * 100));
   const barColor = kcalPct >= 100 ? 'var(--green)' : kcalPct > 60 ? 'var(--accent)' : 'var(--amber)';
 
@@ -6053,6 +6099,7 @@ function renderToitumine() {
         <span style="font:600 14px/1 var(--font-mono);color:var(--text-1);"><span style="color:${barColor};font-weight:700;">${kcalEaten}</span> <span style="color:var(--text-3);font-weight:500;">/ ${kcalTarget} kcal</span></span>
       </div>
       <div style="height:9px;background:var(--track);border-radius:5px;overflow:hidden;"><div style="height:100%;width:${kcalPct}%;background:${barColor};border-radius:5px;"></div></div>
+      ${alkKcalDay > 0 ? `<div style="font:500 10.5px/1 var(--font-mono);color:var(--text-3);">sh 🍺 alkohol ${alkKcalDay} kcal</div>` : ''}
       ${nextMealHtml}
       ${tRow('Valk', protEaten, macroT2.protein_g)}
       ${tRow('Süsivesik', carbsEaten, macroT2.carbs_g)}
@@ -7520,12 +7567,7 @@ function renderProgress() {
    ALKOHOLI LOGI (Tab 5)
 ============================================================ */
 function renderAlkohol() {
-  const weekKey = (function() {
-    const d = new Date();
-    const dow = d.getDay() === 0 ? 6 : d.getDay() - 1;
-    const mon = new Date(d); mon.setDate(d.getDate() - dow);
-    return 'alkohol_week_' + mon.toISOString().slice(0, 10);
-  })();
+  const weekKey = getAlkoholWeekKey(); // v0.9.4.3: üks allikas, kohaliku ajavööndi järgi
   const log = lsGet(weekKey) ?? [];
   const count = log.length;
   const limit = 2;
@@ -7571,7 +7613,9 @@ function getAlkoholWeekKey() {
   const d = new Date();
   const dow = d.getDay() === 0 ? 6 : d.getDay() - 1;
   const mon = new Date(d); mon.setDate(d.getDate() - dow);
-  return 'alkohol_week_' + mon.toISOString().slice(0, 10);
+  // v0.9.4.3: kohalik kuupäev, mitte UTC — toISOString andis 00:00–03:00 vahel VALE nädalavõtme (eelmine päev UTC-s)
+  const p = n => String(n).padStart(2, '0');
+  return `alkohol_week_${mon.getFullYear()}-${p(mon.getMonth() + 1)}-${p(mon.getDate())}`;
 }
 
 function addAlkohol(label) {
@@ -7582,6 +7626,11 @@ function addAlkohol(label) {
     now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
   log.push({label, time, date: now.toISOString().slice(0,10)});
   lsSet(key, log);
+  // v0.9.4.2 fix: alkoholi kcal peab kohe jõudma päeva kaloribilanssi (header + Kodu + Toitumine)
+  const t = now.toISOString().slice(0, 10);
+  lsSet('kcal_today_' + t, calcEatenKcal(t));
+  updateDayStats();
+  showToast(`🍺 ${label} lisatud (+${label === 'Vein/kange' ? 200 : 180} kcal päeva bilanssi)`);
   renderTab('mina');
 }
 
@@ -7589,6 +7638,10 @@ function removeLastAlkohol() {
   const key = getAlkoholWeekKey();
   const log = lsGet(key) ?? [];
   if (log.length > 0) { log.pop(); lsSet(key, log); }
+  // v0.9.4.2 fix: värskenda päeva kaloribilanss ka eemaldamisel
+  const t = new Date().toISOString().slice(0, 10);
+  lsSet('kcal_today_' + t, calcEatenKcal(t));
+  updateDayStats();
   renderTab('mina');
 }
 
