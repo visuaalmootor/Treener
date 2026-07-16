@@ -1896,7 +1896,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.4.9</span>
+  <span id="version-label">v0.9.5.0</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1915,7 +1915,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.4.9';
+const APP_VERSION  = '0.9.5.0';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -1988,6 +1988,103 @@ function fbWrite(key, value) {
     .catch(e => log('fbWrite viga: ' + e.message, 'dbg-err'));
 }
 
+/* ===== v0.9.5.0: liidetavate logide targem sünk =====
+   Kogunevad logid (nutrition_log jne) on ÜKS objekt kõigi päevadega. Vana "uuem võidab terve objekti"
+   loogika tähendas: kui mõlemas seadmes samal päeval logida, kirjutas hiljem sünkiv seade teise oma üle
+   (= tänased telefoni-kirjed kadusid desktopis). Lahendus: liida (union) mõlema seadme andmed. */
+function _isMergeKey(id) {
+  return id === 'nutrition_log' || id === 'training_log' || id === 'weight_log'
+      || id === 'meal_plan' || id === 'mp_prep_done' || id === 'exercise_notes'
+      || id.indexOf('alkohol_week_') === 0;
+}
+function _mergeByKey(a, b, keyFn) {
+  const map = new Map();
+  [...(a || []), ...(b || [])].forEach(it => {
+    if (it == null) return;
+    const k = keyFn(it);
+    const ex = map.get(k);
+    // sama võtme korral hoia "rikkalikum" kirje (rohkem infot)
+    if (!ex || JSON.stringify(it).length >= JSON.stringify(ex).length) map.set(k, it);
+  });
+  return [...map.values()];
+}
+function _mergeNutritionLog(a, b) {
+  const out = {};
+  const dates = new Set([...Object.keys(a || {}), ...Object.keys(b || {})]);
+  dates.forEach(d => {
+    const da = (a && a[d]) || {}, db = (b && b[d]) || {};
+    const m = {};
+    const keys = new Set([...Object.keys(da), ...Object.keys(db)]);
+    keys.forEach(s => {
+      if (s === '_custom') {
+        const byId = {};
+        [...(da._custom || []), ...(db._custom || [])].forEach(e => { if (e && e.id != null) byId[e.id] = e; });
+        m._custom = Object.values(byId);
+      } else {
+        const va = da[s], vb = db[s];
+        // söödud-staatus: eelista mitte-null; konflikti korral 'eaten'
+        m[s] = (va && vb) ? ((va === 'eaten' || vb === 'eaten') ? 'eaten' : va) : (va ?? vb);
+      }
+    });
+    out[d] = m;
+  });
+  return out;
+}
+function _mergeLogValue(id, localVal, cloudVal) {
+  if (id === 'nutrition_log') return _mergeNutritionLog(localVal, cloudVal);
+  if (id === 'training_log')  return _mergeByKey(localVal, cloudVal, e => `${e.date}|${e.plan}|${e.treening}`);
+  if (id === 'weight_log')    return _mergeByKey(localVal, cloudVal, e => e.date).sort((x, y) => (x.date || '').localeCompare(y.date || ''));
+  if (id.indexOf('alkohol_week_') === 0) return _mergeByKey(localVal, cloudVal, e => `${e.date}|${e.time}|${e.label}`);
+  if (id === 'exercise_notes') return { ...(cloudVal || {}), ...(localVal || {}) };
+  if (id === 'mp_prep_done') {
+    const out = { ...(cloudVal || {}) };
+    for (const [wk, days] of Object.entries(localVal || {})) out[wk] = { ...(out[wk] || {}), ...days };
+    return out;
+  }
+  if (id === 'meal_plan') {
+    const out = { ...(cloudVal || {}) };
+    for (const [d, plan] of Object.entries(localVal || {})) {
+      if (!out[d] || JSON.stringify(plan).length >= JSON.stringify(out[d]).length) out[d] = plan;
+    }
+    return out;
+  }
+  return localVal;
+}
+/* Rakenda üks pilvedokument lokaalselt. Tagastab true kui lokaalne muutus. meta = ajatemplite objekt. */
+function _applyCloudDoc(id, cloudData, meta) {
+  const cloudVal = cloudData.v;
+  const cloudTs  = cloudData.ts ?? 0;
+  const localRaw = localStorage.getItem('ttm_' + id);
+  const localVal = localRaw != null ? (() => { try { return JSON.parse(localRaw); } catch (e) { return undefined; } })() : undefined;
+
+  if (_isMergeKey(id) && localVal !== undefined) {
+    const merged    = _mergeLogValue(id, localVal, cloudVal);
+    const mergedStr = JSON.stringify(merged);
+    let changed = false;
+    if (mergedStr !== localRaw) { localStorage.setItem('ttm_' + id, mergedStr); changed = true; }
+    if (mergedStr !== JSON.stringify(cloudVal)) { try { fbWrite(id, merged); } catch (e) {} } // konvergeeru pilvega
+    meta[id] = Math.max(meta[id] || 0, cloudTs);
+    return changed;
+  }
+  // Skalaar / konfiguratsioon → ajatempel, uuem võidab
+  const localTs = meta[id] ?? 0;
+  if (localVal === undefined || cloudTs >= localTs) {
+    const cloudStr = JSON.stringify(cloudVal);
+    meta[id] = cloudTs;
+    if (localRaw !== cloudStr) { localStorage.setItem('ttm_' + id, cloudStr); return true; }
+    return false;
+  }
+  try { fbWrite(id, localVal); } catch (e) {} // lokaalne uuem → lükka pilve
+  return false;
+}
+/* Pärast sünki: arvuta ümber tuletatud päeva-kalorid (kcal_today_*) liidetud logidest */
+function _recomputeDerivedKcal() {
+  try {
+    const nl = lsGet('nutrition_log') ?? {};
+    Object.keys(nl).forEach(d => { lsSet('kcal_today_' + d, calcEatenKcal(d)); });
+  } catch (e) {}
+}
+
 // Lae kõik võtmed Firestorest → localStorage (login järel).
 // Kui Firestores pole veel midagi → push kõik lokaalsed andmed automaatselt üles.
 async function syncFromFirestore() {
@@ -2005,22 +2102,11 @@ async function syncFromFirestore() {
          kadusid värsked lokaalsed kirjed (nt alkoholilogi) järgmisel sünkimisel. */
       const meta = _tsMetaGet();
       const cloudKeys = new Set();
-      let loaded = 0, keptLocal = 0;
+      let changedCount = 0;
       snap.forEach(doc => {
         if (doc.id === '_meta_ts') return;
         cloudKeys.add(doc.id);
-        const cloudTs = doc.data().ts ?? 0;
-        const localTs = meta[doc.id] ?? 0;
-        const hasLocal = localStorage.getItem('ttm_' + doc.id) !== null;
-        if (!hasLocal || cloudTs >= localTs) {
-          localStorage.setItem('ttm_' + doc.id, JSON.stringify(doc.data().v));
-          meta[doc.id] = cloudTs;
-          loaded++;
-        } else {
-          // Lokaalne on uuem — lükka see pilve, ära kirjuta üle
-          try { fbWrite(doc.id, JSON.parse(localStorage.getItem('ttm_' + doc.id))); } catch (e) {}
-          keptLocal++;
-        }
+        if (_applyCloudDoc(doc.id, doc.data(), meta)) changedCount++;
       });
       // Lokaalsed võtmed, mida pilves pole üldse → push üles
       for (let i = 0; i < localStorage.length; i++) {
@@ -2028,13 +2114,13 @@ async function syncFromFirestore() {
         if (!k || !k.startsWith('ttm_') || k === 'ttm__meta_ts') continue;
         const id = k.slice(4);
         if (!cloudKeys.has(id)) {
-          try { fbWrite(id, JSON.parse(localStorage.getItem(k))); keptLocal++; } catch (e) {}
+          try { fbWrite(id, JSON.parse(localStorage.getItem(k))); } catch (e) {}
         }
       }
       try { localStorage.setItem('ttm__meta_ts', JSON.stringify(meta)); } catch (e) {}
-      log(`Firestore sync: ${loaded} laetud, ${keptLocal} lokaalset uuemat hoitud/üles lükatud`, 'dbg-ok');
-      // Toast ainult kui midagi päriselt pilvest alla tuli (väldib spämmi iga fookuse peale)
-      if (loaded > 0) showToast(`☁️ Sünkroonitud (${loaded} kirjet)`);
+      if (changedCount > 0) _recomputeDerivedKcal();
+      log(`Firestore sync: ${changedCount} kirjet uuendatud/liidetud`, 'dbg-ok');
+      if (changedCount > 0) showToast(`☁️ Sünkroonitud (${changedCount} muudatust)`);
     }
   } catch (e) {
     log('syncFromFirestore viga: ' + e.message, 'dbg-err');
@@ -2060,17 +2146,11 @@ function startRealtimeSync() {
           if (ch.doc.metadata.hasPendingWrites) return;
           const id = ch.doc.id;
           if (id === '_meta_ts' || ch.type === 'removed') return;
-          const data = ch.doc.data();
-          const cloudTs = data.ts ?? 0;
-          const localTs = meta[id] ?? 0;
-          if (cloudTs > localTs) {   // ainult päriselt uuem (väldib esmase snapshoti topelttööd)
-            localStorage.setItem('ttm_' + id, JSON.stringify(data.v));
-            meta[id] = cloudTs;
-            changed++;
-          }
+          if (_applyCloudDoc(id, ch.doc.data(), meta)) changed++;
         });
         if (changed) {
           try { localStorage.setItem('ttm__meta_ts', JSON.stringify(meta)); } catch (e) {}
+          _recomputeDerivedKcal();
           updateDayStats();
           // Ära katkesta kui kasutaja parasjagu vormi täidab
           const ae = document.activeElement;
