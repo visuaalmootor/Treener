@@ -1902,7 +1902,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.4.6</span>
+  <span id="version-label">v0.9.4.7</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1921,7 +1921,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.4.6';
+const APP_VERSION  = '0.9.4.7';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -4417,40 +4417,23 @@ function cancelConfirmation() {
    OPEN FOOD FACTS — toidu otsing kalorite auto-täitmiseks
 ============================================================ */
 
-/* ===== Barkoodiskänner ===== */
-let _barcodeStream = null;
+/* ===== Barkoodiskänner (v0.9.4.7) =====
+   1) Natiivne BarcodeDetector (Chrome Android, Safari iOS 17+)
+   2) ZXing UMD fallback (usaldusväärne Brave/Safari iOS-is) */
+let _barcodeStream   = null;
+let _zxingControls   = null;
 
-async function loadBarcodePolyfill() {
+function _loadScript(src) {
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/barcode-detector@2/dist/iife/barcode-detector.min.js';
+    s.src = src;
     s.onload = resolve;
-    s.onerror = reject;
+    s.onerror = () => reject(new Error('script load failed'));
     document.head.appendChild(s);
   });
 }
 
-async function scanBarcode() {
-  const hasCamera = !!(navigator.mediaDevices?.getUserMedia);
-  if (!hasCamera) {
-    showEanInput('Kaamera pole saadaval —');
-    return;
-  }
-
-  // Lae polyfill kui BarcodeDetector pole natiivne (nt Brave iOS)
-  if (!('BarcodeDetector' in window)) {
-    const resultsEl = document.getElementById('custom-off-results');
-    if (resultsEl) resultsEl.innerHTML = `<div class="off-status">⏳ Laen skännerit...</div>`;
-    try {
-      await loadBarcodePolyfill();
-    } catch(e) {
-      showEanInput('Skänner ei laadinud —');
-      return;
-    }
-    if (resultsEl) resultsEl.innerHTML = '';
-  }
-
-  // Loo overlay
+function _openScannerOverlay() {
   const overlay = document.createElement('div');
   overlay.id = 'barcode-overlay';
   overlay.innerHTML = `
@@ -4467,50 +4450,100 @@ async function scanBarcode() {
           </div>
         </div>
       </div>
-      <div class="barcode-status" id="barcode-status">Otsin barkood...</div>
+      <div class="barcode-status" id="barcode-status">Valmistan kaamerat…</div>
       <button class="btn-ean-manual-fallback"
         onclick="closeBarcodeScanner(); showEanInput('Sisesta EAN kood käsitsi:');">
         ✏️ Sisesta kood käsitsi
       </button>
     </div>`;
   document.body.appendChild(overlay);
+}
+function _scanStatus(t) {
+  const el = document.getElementById('barcode-status');
+  if (el) el.textContent = t;
+}
+function _onBarcodeFound(code) {
+  _scanStatus('✅ Leitud: ' + code);
+  setTimeout(() => { closeBarcodeScanner(); lookupEAN(code); }, 400);
+}
 
+async function scanBarcode() {
+  if (!(navigator.mediaDevices?.getUserMedia)) {
+    showEanInput('Kaamera pole selles brauseris saadaval —');
+    return;
+  }
+  _openScannerOverlay();
+
+  // 1) Natiivne BarcodeDetector
+  if ('BarcodeDetector' in window) {
+    try { await _startNativeScanner(); return; }
+    catch (e) { /* proovime ZXingi */ }
+  }
+
+  // 2) ZXing fallback
+  _scanStatus('⏳ Laen skännerit…');
   try {
-    _barcodeStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-    });
-    const video = document.getElementById('barcode-video');
-    if (!video) { closeBarcodeScanner(); return; }
-    video.srcObject = _barcodeStream;
-    await video.play();
-
-    const detector = new BarcodeDetector({
-      formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'qr_code']
-    });
-
-    const scan = async () => {
-      if (!document.getElementById('barcode-overlay')) return; // suletud
-      try {
-        const found = await detector.detect(video);
-        if (found.length > 0) {
-          const code = found[0].rawValue;
-          const statusEl = document.getElementById('barcode-status');
-          if (statusEl) statusEl.textContent = `✅ Leitud: ${code}`;
-          setTimeout(() => { closeBarcodeScanner(); lookupEAN(code); }, 400);
-          return;
-        }
-      } catch(e) { /* jätka */ }
-      requestAnimationFrame(scan);
-    };
-    requestAnimationFrame(scan);
-
-  } catch(e) {
+    if (!window.ZXingBrowser) {
+      await _loadScript('https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/zxing-browser.min.js');
+    }
+  } catch (e) {
     closeBarcodeScanner();
-    showEanInput('Kaamera juurdepääs keelatud —');
+    showEanInput('Skänner ei laadinud (kontrolli internetti) —');
+    return;
+  }
+  if (!window.ZXingBrowser?.BrowserMultiFormatReader) {
+    closeBarcodeScanner();
+    showEanInput('Skänner pole selles brauseris saadaval —');
+    return;
+  }
+  try {
+    const video  = document.getElementById('barcode-video');
+    if (!video) { closeBarcodeScanner(); return; }
+    const reader = new window.ZXingBrowser.BrowserMultiFormatReader();
+    _scanStatus('Otsin barkoodi…');
+    _zxingControls = await reader.decodeFromConstraints(
+      { video: { facingMode: 'environment' } },
+      video,
+      (result) => {
+        if (result && document.getElementById('barcode-overlay')) {
+          const code = result.getText();
+          if (_zxingControls) { try { _zxingControls.stop(); } catch(e){} _zxingControls = null; }
+          _onBarcodeFound(code);
+        }
+      }
+    );
+  } catch (e) {
+    closeBarcodeScanner();
+    showEanInput('Kaamera juurdepääs keelatud — luba kaamera brauseri seadetes või —');
   }
 }
 
+async function _startNativeScanner() {
+  _barcodeStream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+  });
+  const video = document.getElementById('barcode-video');
+  if (!video) { closeBarcodeScanner(); return; }
+  video.srcObject = _barcodeStream;
+  await video.play();
+  _scanStatus('Otsin barkoodi…');
+
+  const detector = new BarcodeDetector({
+    formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'qr_code']
+  });
+  const scan = async () => {
+    if (!document.getElementById('barcode-overlay')) return; // suletud
+    try {
+      const found = await detector.detect(video);
+      if (found.length > 0) { _onBarcodeFound(found[0].rawValue); return; }
+    } catch (e) { /* jätka */ }
+    requestAnimationFrame(scan);
+  };
+  requestAnimationFrame(scan);
+}
+
 function closeBarcodeScanner() {
+  if (_zxingControls) { try { _zxingControls.stop(); } catch(e){} _zxingControls = null; }
   if (_barcodeStream) {
     _barcodeStream.getTracks().forEach(t => t.stop());
     _barcodeStream = null;
@@ -4923,11 +4956,13 @@ function saveCustomMeal(dateStr) {
   const carbs   = parseFloat(document.getElementById('custom-inp-carbs')?.value)   || 0;
   const fat     = parseFloat(document.getElementById('custom-inp-fat')?.value)     || 0;
 
-  const log = getNutritionLog();
-  if (!log[dateStr]) log[dateStr] = {};
-  if (!log[dateStr]._custom) log[dateStr]._custom = [];
+  // v0.9.4.7 fix: EI tohi nimetada muutujat 'log' — see varjutas globaalse log() funktsiooni,
+  // mistõttu alumine log(...) kutse viskas vea ja renderTab jäi käivitamata (kirje lisati, aga UI ei uuenenud)
+  const nutLog = getNutritionLog();
+  if (!nutLog[dateStr]) nutLog[dateStr] = {};
+  if (!nutLog[dateStr]._custom) nutLog[dateStr]._custom = [];
 
-  log[dateStr]._custom.push({
+  nutLog[dateStr]._custom.push({
     id:        Date.now().toString(36),
     name,
     kcal,
@@ -4937,7 +4972,7 @@ function saveCustomMeal(dateStr) {
     added_at:  new Date().toISOString()
   });
 
-  lsSet('nutrition_log', log);
+  lsSet('nutrition_log', nutLog);
 
   // Uuenda headeri kalorid
   const totalKcal = calcEatenKcal(dateStr);
@@ -4945,7 +4980,8 @@ function saveCustomMeal(dateStr) {
   updateDayStats();
 
   STATE.showCustomForm = false;
-  log(`Käsitsi lisatud: ${name} ${kcal} kcal`, 'dbg-ok');
+  STATE.offSelected = null;
+  showToast(`✓ ${name} lisatud (${kcal} kcal)`);
   renderTab('toitumine');
 }
 
