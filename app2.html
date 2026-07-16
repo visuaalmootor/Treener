@@ -1902,7 +1902,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.4.7</span>
+  <span id="version-label">v0.9.4.8</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1921,7 +1921,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.4.7';
+const APP_VERSION  = '0.9.4.8';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -1954,10 +1954,14 @@ function fbInit() {
         await syncFromFirestore();
         updateDayStats();
         renderTab(STATE.currentTab);
+        startRealtimeSync();   // v0.9.4.8: elav sünk teistelt seadmetelt
       } else {
         log('Firebase: välja logitud', 'dbg-warn');
+        stopRealtimeSync();
       }
     });
+    // v0.9.4.8: sünkrooni uuesti kui aken tuleb fookusesse / PWA taasavatakse
+    _setupResyncListeners();
     log('Firebase init ✓', 'dbg-ok');
   } catch (e) {
     log('Firebase init viga: ' + e.message, 'dbg-err');
@@ -2035,11 +2039,82 @@ async function syncFromFirestore() {
       }
       try { localStorage.setItem('ttm__meta_ts', JSON.stringify(meta)); } catch (e) {}
       log(`Firestore sync: ${loaded} laetud, ${keptLocal} lokaalset uuemat hoitud/üles lükatud`, 'dbg-ok');
-      showToast(`☁️ Sünkroonitud (${loaded} kirjet${keptLocal ? `, ${keptLocal} lokaalset hoitud` : ''})`);
+      // Toast ainult kui midagi päriselt pilvest alla tuli (väldib spämmi iga fookuse peale)
+      if (loaded > 0) showToast(`☁️ Sünkroonitud (${loaded} kirjet)`);
     }
   } catch (e) {
     log('syncFromFirestore viga: ' + e.message, 'dbg-err');
   }
+}
+
+/* ===== v0.9.4.8: elav (reaalaja) sünk + fookuse-põhine taassünk ===== */
+let _fbUnsub      = null;
+let _resyncSetup  = false;
+let _lastResyncAt = 0;
+
+/* Reaalaja kuulaja — teistes seadmetes tehtud muudatused ilmuvad kohe */
+function startRealtimeSync() {
+  if (!FB_USER || !_fbDb) return;
+  stopRealtimeSync();
+  try {
+    _fbUnsub = _fbDb.collection('users').doc(FB_USER.uid).collection('kv')
+      .onSnapshot(snap => {
+        const meta = _tsMetaGet();
+        let changed = 0;
+        snap.docChanges().forEach(ch => {
+          // Meie enda veel kinnitamata kirjutused → jäta vahele (väldib silmust)
+          if (ch.doc.metadata.hasPendingWrites) return;
+          const id = ch.doc.id;
+          if (id === '_meta_ts' || ch.type === 'removed') return;
+          const data = ch.doc.data();
+          const cloudTs = data.ts ?? 0;
+          const localTs = meta[id] ?? 0;
+          if (cloudTs > localTs) {   // ainult päriselt uuem (väldib esmase snapshoti topelttööd)
+            localStorage.setItem('ttm_' + id, JSON.stringify(data.v));
+            meta[id] = cloudTs;
+            changed++;
+          }
+        });
+        if (changed) {
+          try { localStorage.setItem('ttm__meta_ts', JSON.stringify(meta)); } catch (e) {}
+          updateDayStats();
+          // Ära katkesta kui kasutaja parasjagu vormi täidab
+          const ae = document.activeElement;
+          const typing = ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
+          if (!typing) renderTab(STATE.currentTab);
+          log(`Reaalaja sünk: ${changed} kirjet teisest seadmest`, 'dbg-ok');
+        }
+      }, err => log('onSnapshot viga: ' + err.message, 'dbg-err'));
+  } catch (e) { log('startRealtimeSync viga: ' + e.message, 'dbg-err'); }
+}
+function stopRealtimeSync() {
+  if (_fbUnsub) { try { _fbUnsub(); } catch (e) {} _fbUnsub = null; }
+}
+
+/* Taassünk. force=true (käsitsi nupp) eirab throttle'it ja annab tagasiside */
+async function resyncNow(force) {
+  if (!FB_USER || !_fbDb) {
+    if (force) showToast('Logi kõigepealt Google\'iga sisse');
+    return;
+  }
+  const now = Date.now();
+  if (!force && now - _lastResyncAt < 8000) return;
+  _lastResyncAt = now;
+  await syncFromFirestore();
+  updateDayStats();
+  const ae = document.activeElement;
+  const typing = ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
+  if (!typing) renderTab(STATE.currentTab);
+  if (force) showToast('☁️ Sünkroonitud');
+}
+
+function _setupResyncListeners() {
+  if (_resyncSetup) return;
+  _resyncSetup = true;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') resyncNow(true);
+  });
+  window.addEventListener('focus', () => resyncNow(true));
 }
 
 // Sünkroniseeri kogu localStorage Firestoresse (esimene login / uus seade)
@@ -8072,8 +8147,9 @@ function renderFirebaseCard() {
       <div style="padding:var(--sp-sm) var(--sp-md);">
         <p style="font-size:12px;color:var(--text-2);margin:0 0 10px 0;">
           Logitud sisse: <strong>${name}</strong><br>
-          Kõik andmemuutused sünkroniseeritakse automaatselt pilve.
+          Muutused sünkroonivad reaalajas seadmete vahel. Tõmbab uuenduse ka siis, kui aken uuesti avad.
         </p>
+        <button class="btn-primary" onclick="resyncNow(true)" style="width:100%;margin-bottom:8px;">🔄 Sünkrooni nüüd</button>
         <div style="display:flex;gap:8px;">
           <button class="btn-sm" onclick="pushAllToFirestore()" style="flex:1;">⬆️ Laadi kõik üles</button>
           <button class="btn-sm" onclick="if(confirm('Logi välja?\\n${FB_USER.email}'))fbLogout()" style="flex:1;color:var(--red);border-color:var(--red);">Logi välja</button>
