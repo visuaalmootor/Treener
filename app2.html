@@ -1902,7 +1902,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.4.5</span>
+  <span id="version-label">v0.9.4.6</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1921,7 +1921,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.4.5';
+const APP_VERSION  = '0.9.4.6';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -4543,7 +4543,7 @@ async function lookupEAN(ean) {
   if (resultsEl) resultsEl.innerHTML = `<div class="off-status">🔍 Otsin koodiga ${ean}...</div>`;
 
   try {
-    const url = `https://world.openfoodfacts.org/api/v0/product/${encodeURIComponent(ean)}.json?fields=product_name,product_name_en,brands,nutriments`;
+    const url = `https://world.openfoodfacts.org/api/v0/product/${encodeURIComponent(ean)}.json?fields=product_name,product_name_en,brands,nutriments,serving_size`;
     const r   = await fetch(url);
     const data = await r.json();
 
@@ -4565,18 +4565,23 @@ async function lookupEAN(ean) {
     const brand   = p.brands ? p.brands.split(',')[0].trim() : '';
     const name    = rawName + (brand && !rawName.toLowerCase().includes(brand.toLowerCase()) ? ` (${brand})` : '');
 
-    // Täida vorm sama loogikaga nagu selectOFFResult
-    const grams = parseFloat(document.getElementById('custom-inp-grams')?.value) || 100;
-    const mult  = grams / 100;
+    // Salvesta 100g väärtused (sama loogika mis selectOFFResult) → elav grammiarvutus
+    STATE.offSelected = {
+      name,
+      kcal100,
+      prot100: p.nutriments?.['proteins_100g']      || 0,
+      carb100: p.nutriments?.['carbohydrates_100g'] || 0,
+      fat100:  p.nutriments?.['fat_100g']           || 0,
+      serving: _parseServingG(p.serving_size)
+    };
+    const gramsInput = document.getElementById('custom-inp-grams');
+    if (STATE.offSelected.serving > 0 && gramsInput && (!gramsInput.value || gramsInput.value === '100')) {
+      gramsInput.value = STATE.offSelected.serving;
+    }
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
-    set('custom-inp-name',    name);
-    set('custom-inp-kcal',    Math.round(kcal100 * mult));
-    set('custom-inp-protein', ((p.nutriments?.['proteins_100g']        || 0) * mult).toFixed(1));
-    set('custom-inp-carbs',   ((p.nutriments?.['carbohydrates_100g']   || 0) * mult).toFixed(1));
-    set('custom-inp-fat',     ((p.nutriments?.['fat_100g']             || 0) * mult).toFixed(1));
-
-    if (resultsEl) resultsEl.innerHTML =
-      `<div class="off-status" style="color:var(--green);">✅ ${name || 'Toode'} — ${kcal100} kcal/100g</div>`;
+    set('custom-inp-name', name);
+    applyOFFGrams();
+    showOFFServingHint();
 
   } catch(e) {
     if (resultsEl) resultsEl.innerHTML =
@@ -4612,14 +4617,16 @@ async function searchOFF() {
       resultsEl.innerHTML = products.map((p, i) => {
         const kcal100 = Math.round(p.nutriments['energy-kcal_100g'] || 0);
         const name = p.product_name + (p.brands ? ` (${p.brands.split(',')[0].trim()})` : '');
+        const servG = _parseServingG(p.serving_size);
         return `<div class="off-result-row" onclick="selectOFFResult(${i})" data-off-idx="${i}"
           data-kcal100="${kcal100}"
           data-prot100="${(p.nutriments['proteins_100g']||0).toFixed(1)}"
           data-carb100="${(p.nutriments['carbohydrates_100g']||0).toFixed(1)}"
           data-fat100="${(p.nutriments['fat_100g']||0).toFixed(1)}"
+          data-serving="${servG}"
           data-name="${name.replace(/"/g,'&quot;')}">
           <span class="off-result-name">${name}</span>
-          <span class="off-result-kcal">${kcal100} kcal/100g</span>
+          <span class="off-result-kcal">${kcal100} kcal/100g${servG ? ` · portsjon ${servG}g` : ''}</span>
           <span class="off-result-arrow">›</span>
         </div>`;
       }).join('');
@@ -4636,23 +4643,75 @@ function selectOFFResult(idx) {
   const row = document.querySelector(`[data-off-idx="${idx}"]`);
   if (!row) return;
 
+  // Salvesta 100g väärtused → gramme muutes arvutab elavalt ümber
+  STATE.offSelected = {
+    name:    row.dataset.name,
+    kcal100: parseFloat(row.dataset.kcal100) || 0,
+    prot100: parseFloat(row.dataset.prot100) || 0,
+    carb100: parseFloat(row.dataset.carb100) || 0,
+    fat100:  parseFloat(row.dataset.fat100)  || 0,
+    serving: parseFloat(row.dataset.serving) || 0
+  };
+
   const gramsInput = document.getElementById('custom-inp-grams');
-  const grams = parseFloat(gramsInput?.value) || 100;
-  const mult = grams / 100;
-
-  document.getElementById('custom-inp-name').value = row.dataset.name;
-  document.getElementById('custom-inp-kcal').value  = Math.round(parseFloat(row.dataset.kcal100) * mult);
-  document.getElementById('custom-inp-protein').value = (parseFloat(row.dataset.prot100) * mult).toFixed(1);
-  document.getElementById('custom-inp-carbs').value   = (parseFloat(row.dataset.carb100) * mult).toFixed(1);
-  document.getElementById('custom-inp-fat').value     = (parseFloat(row.dataset.fat100)  * mult).toFixed(1);
-
-  document.getElementById('custom-off-results').innerHTML = '';
+  // Kui tootel on portsjonisuurus ja kasutaja pole gramme ise muutnud (100 = vaikeväärtus) → kasuta portsjonit
+  if (STATE.offSelected.serving > 0 && gramsInput && (!gramsInput.value || gramsInput.value === '100')) {
+    gramsInput.value = STATE.offSelected.serving;
+  }
+  document.getElementById('custom-inp-name').value = STATE.offSelected.name;
+  applyOFFGrams();
+  showOFFServingHint();
 }
 
-// Gramme muutudes uuendab kalorid kui toode on juba valitud (kcal väli täidetud)
+/* Kuvab portsjonivihje + kiirnupud (1 portsjon / 100g), et kasutaja saaks õige koguse ühe vajutusega */
+function showOFFServingHint() {
+  const el = document.getElementById('custom-off-results');
+  const s = STATE.offSelected;
+  if (!el || !s) return;
+  const g = parseFloat(document.getElementById('custom-inp-grams')?.value) || 100;
+  el.innerHTML = `
+    <div style="background:var(--accent-bg);border-radius:10px;padding:9px 11px;margin-top:2px;">
+      <div style="font:600 11px/1.4 var(--font);color:var(--accent);">${s.name}</div>
+      <div style="font:500 10px/1.4 var(--font-mono);color:var(--text-2);margin-top:3px;">Praegu arvutan <b>${g}g</b> kohta · andmebaasis ${s.kcal100} kcal/100g</div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+        ${s.serving > 0 ? `<button onclick="setOFFServing(${s.serving})" style="padding:6px 10px;border:1px solid var(--accent);border-radius:8px;background:${g === s.serving ? 'var(--accent)' : 'var(--surface)'};color:${g === s.serving ? '#fff' : 'var(--accent)'};font:600 11px/1 var(--font);cursor:pointer;">1 portsjon (${s.serving}g)</button>` : ''}
+        <button onclick="setOFFServing(100)" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:${g === 100 ? 'var(--accent)' : 'var(--surface)'};color:${g === 100 ? '#fff' : 'var(--text-2)'};font:600 11px/1 var(--font);cursor:pointer;">100g</button>
+        <span style="font:500 10px/1.6 var(--font);color:var(--text-3);align-self:center;">või muuda grammiväli ise ↑</span>
+      </div>
+    </div>`;
+}
+
+/* v0.9.4.6: portsjonisuuruse parser + elav grammiarvutus.
+   OFF annab makrod 100g kohta; kasutaja sööb tihti ühe portsjoni (nt 40g kohuke). */
+function _parseServingG(servStr) {
+  if (!servStr) return 0;
+  const m = String(servStr).match(/([\d.,]+)\s*g/i);
+  return m ? (parseFloat(m[1].replace(',', '.')) || 0) : 0;
+}
+
+/* Arvutab kcal + makrod praeguste grammide järgi salvestatud 100g väärtustest */
+function applyOFFGrams() {
+  const s = STATE.offSelected;
+  if (!s) return;
+  const grams = parseFloat(document.getElementById('custom-inp-grams')?.value) || 100;
+  const mult  = grams / 100;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  set('custom-inp-kcal',    Math.round(s.kcal100 * mult));
+  set('custom-inp-protein', (s.prot100 * mult).toFixed(1));
+  set('custom-inp-carbs',   (s.carb100 * mult).toFixed(1));
+  set('custom-inp-fat',     (s.fat100  * mult).toFixed(1));
+}
+
+// Gramme muutudes arvutab kohe ümber (kui toode on valitud)
 function recalcOFFByGrams() {
-  // Kui kasutaja muudab gramme pärast valimist, ei tee midagi automaatselt —
-  // kasutaja saab uuesti otsida. Lihtne ja selge.
+  if (STATE.offSelected) applyOFFGrams();
+}
+
+/* Portsjoni-kiirnupp: sea grammiväli portsjonisuurusele ja arvuta ümber */
+function setOFFServing(g) {
+  const el = document.getElementById('custom-inp-grams');
+  if (el) { el.value = g; }
+  applyOFFGrams();
 }
 
 /* ============================================================
@@ -4845,6 +4904,7 @@ function buildRecipeSectionHTML() {
 
 function toggleCustomForm(dateStr) {
   STATE.showCustomForm = !STATE.showCustomForm;
+  STATE.offSelected = null; // uus vorm → unusta eelmine valitud toode
   renderTab('toitumine');
   // Fokuseerida esimene väli pärast renderdamist
   if (STATE.showCustomForm) {
@@ -6154,7 +6214,7 @@ function renderToitumine() {
           <div class="off-search-row">
             <input id="custom-inp-name" type="text" placeholder="nt šokolaad, pitsa, burger..." autocomplete="off"
               onkeydown="if(event.key==='Enter'){event.preventDefault();searchOFF();}">
-            <input id="custom-inp-grams" type="number" value="100" min="1" max="9999" title="Kogus grammides">
+            <input id="custom-inp-grams" type="number" value="100" min="1" max="9999" title="Kogus grammides" oninput="recalcOFFByGrams()">
             <button id="btn-off-search" class="btn-off-search" onclick="searchOFF()">Otsi</button>
           </div>
           <div style="font-size:10px;color:var(--text-3);margin:-4px 0 6px;">grammi</div>
