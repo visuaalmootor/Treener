@@ -1774,25 +1774,19 @@
     <div id="hdr-top">
       <div id="hdr-title">Trenn & Toitumine</div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button id="refresh-btn" onclick="refreshPrices()" title="Värskenda hinnad" style="
-          height:32px;min-width:32px;border:0.5px solid var(--border);border-radius:var(--r-sm);
-          background:var(--surface);display:flex;align-items:center;justify-content:center;gap:5px;
-          color:var(--text-2);flex-shrink:0;padding:0 8px;transition:min-width 0.2s,border-color 0.3s,color 0.3s;white-space:nowrap;">
-          <svg id="refresh-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;transition:color 0.3s;">
-            <path d="M23 4v6h-6"/>
-            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-          </svg>
-          <span id="refresh-label" style="display:none;font-size:12px;font-weight:600;line-height:1;"></span>
-        </button>
-        <button id="budget-btn" onclick="cycleBudget()" title="Vaheta eelarve klass">
-          <div id="budget-name">—</div>
-          <div id="budget-range">—</div>
-        </button>
         <button id="fb-auth-btn" title="Logi sisse Google'iga" style="
           height:32px;width:32px;border:0.5px solid var(--border);border-radius:50%;
           background:var(--surface);display:flex;align-items:center;justify-content:center;
           color:var(--text-2);flex-shrink:0;padding:0;transition:border-color 0.3s;overflow:hidden;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+        <button id="sync-btn" onclick="resyncNow(true)" title="Sünkrooni pilvega" style="
+          height:32px;width:32px;border:0.5px solid var(--border);border-radius:50%;
+          background:var(--surface);display:flex;align-items:center;justify-content:center;
+          color:var(--text-2);flex-shrink:0;padding:0;transition:border-color 0.3s;">
+          <svg id="sync-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
         </button>
       </div>
     </div>
@@ -1902,7 +1896,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.4.8</span>
+  <span id="version-label">v0.9.4.9</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1921,7 +1915,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.4.8';
+const APP_VERSION  = '0.9.4.9';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2094,17 +2088,20 @@ function stopRealtimeSync() {
 /* Taassünk. force=true (käsitsi nupp) eirab throttle'it ja annab tagasiside */
 async function resyncNow(force) {
   if (!FB_USER || !_fbDb) {
-    if (force) showToast('Logi kõigepealt Google\'iga sisse');
+    if (force) showToast('Logi kõigepealt Google\'iga sisse (Mina tab)');
     return;
   }
   const now = Date.now();
   if (!force && now - _lastResyncAt < 8000) return;
   _lastResyncAt = now;
+  const svg = document.getElementById('sync-svg');
+  if (svg) svg.style.animation = 'spin 1s linear infinite';
   await syncFromFirestore();
   updateDayStats();
   const ae = document.activeElement;
   const typing = ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
   if (!typing) renderTab(STATE.currentTab);
+  if (svg) setTimeout(() => { svg.style.animation = ''; }, 400);
   if (force) showToast('☁️ Sünkroonitud');
 }
 
@@ -3030,48 +3027,31 @@ async function refreshPrices() {
   const label = document.getElementById('refresh-label');
   if (!btn) return;
 
-  // — laadimisolek —
+  // — laadimisolek (nupp elab nüüd Ostukorvi tabis; tab re-renderdub lõpus värske nupuga) —
   btn.style.pointerEvents = 'none';
-  btn.style.minWidth      = '72px';
-  svg.style.animation     = 'spin 1s linear infinite';
-  label.style.display     = 'block';
-  label.textContent       = '0s';
-
+  if (svg)   svg.style.animation = 'spin 1s linear infinite';
   const start = Date.now();
   const timer = setInterval(() => {
-    label.textContent = Math.round((Date.now() - start) / 1000) + 's';
+    if (label) label.textContent = 'Värskendan ' + Math.round((Date.now() - start) / 1000) + 's…';
   }, 500);
 
   log('Värskenda hinnad + tühjenda linnukesed...');
   lsSet('shopping_checked', {});
   STATE.prices = await getData('prices.json');
-  if (STATE.currentTab === 'ostukorv') renderTab('ostukorv');
 
   clearInterval(timer);
-
-  // — valmis olek (roheline) —
-  svg.style.animation  = '';
-  btn.style.borderColor = 'var(--green)';
-  btn.style.color       = 'var(--green)';
-  label.textContent     = '✓ Valmis';
-
   log('Hinnad värskendatud, linnukesed tühjendatud', 'dbg-ok');
-
-  // — tagasi normaalseks 3 sek pärast —
-  setTimeout(() => {
-    btn.style.minWidth    = '32px';
-    btn.style.padding     = '0';
-    btn.style.borderColor = '';
-    btn.style.color       = '';
-    label.style.display   = 'none';
-    btn.style.pointerEvents = '';
-  }, 3000);
+  showToast('✓ Hinnad värskendatud · linnukesed tühjendatud');
+  if (STATE.currentTab === 'ostukorv') renderTab('ostukorv'); // värske nupp
 }
 
 function updateBudgetUI(cls) {
   const b = BUDGET_CLASSES[cls];
-  document.getElementById('budget-name').textContent  = b.name;
-  document.getElementById('budget-range').textContent = b.range;
+  // v0.9.4.9: nupud on nüüd Ostukorvi tabis, mitte headeris — null-turvaline
+  const nm = document.getElementById('budget-name');
+  const rg = document.getElementById('budget-range');
+  if (nm) nm.textContent = b.name;
+  if (rg) rg.textContent = b.range;
 }
 
 function cycleBudget() {
@@ -4434,9 +4414,26 @@ function renderOstukorv() {
       <div style="background:var(--chip);border:1px solid var(--border);border-radius:9px;padding:6px 10px;font:700 12px/1 var(--font-mono);color:var(--text-1);white-space:nowrap;">${_checkedCount}<span style="color:var(--text-3);font-weight:500;">/${_allIds.length}</span></div>
     </div>`;
 
+  /* v0.9.4.9: hinnakontrollid (värskenda + eelarve) — soovitusliku poe ja tootenimekirja vahel */
+  const _bc = BUDGET_CLASSES[budgetClass] ?? BUDGET_CLASSES[2];
+  const priceControls = `
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:stretch;">
+      <button id="refresh-btn" onclick="refreshPrices()" title="Värskenda hinnad" style="flex:1;border:1px solid var(--border);border-radius:12px;background:var(--surface);display:flex;align-items:center;justify-content:center;gap:7px;color:var(--text-2);box-shadow:var(--shadow);white-space:nowrap;padding:11px 8px;cursor:pointer;">
+        <svg id="refresh-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+          <path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        <span id="refresh-label" style="font:600 12px/1 var(--font);">Värskenda hinnad</span>
+      </button>
+      <button id="budget-btn" onclick="cycleBudget()" title="Vaheta eelarve klass" style="border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:flex-end;justify-content:center;padding:6px 12px;cursor:pointer;">
+        <div id="budget-name" style="font:600 13px/1.2 var(--font);color:var(--text-1);">${_bc.name}</div>
+        <div id="budget-range" style="font:500 10px/1.3 var(--font-mono);color:var(--text-3);">${_bc.range}</div>
+      </button>
+    </div>`;
+
   return `
     ${titleBlock}
     <div id="ostukorv-metrics"></div>
+    ${priceControls}
     ${sectionsHtml}
     <div id="shopping-summary"></div>
     ${confirmBtn}
