@@ -1896,7 +1896,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.5.0</span>
+  <span id="version-label">v0.9.5.1</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1915,7 +1915,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.5.0';
+const APP_VERSION  = '0.9.5.1';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2152,10 +2152,8 @@ function startRealtimeSync() {
           try { localStorage.setItem('ttm__meta_ts', JSON.stringify(meta)); } catch (e) {}
           _recomputeDerivedKcal();
           updateDayStats();
-          // Ära katkesta kui kasutaja parasjagu vormi täidab
-          const ae = document.activeElement;
-          const typing = ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
-          if (!typing) renderTab(STATE.currentTab);
+          // Ära katkesta kui kasutaja parasjagu vormi täidab / seaded salvestamata
+          if (!_syncRenderBlocked()) renderTab(STATE.currentTab);
           log(`Reaalaja sünk: ${changed} kirjet teisest seadmest`, 'dbg-ok');
         }
       }, err => log('onSnapshot viga: ' + err.message, 'dbg-err'));
@@ -2178,9 +2176,8 @@ async function resyncNow(force) {
   if (svg) svg.style.animation = 'spin 1s linear infinite';
   await syncFromFirestore();
   updateDayStats();
-  const ae = document.activeElement;
-  const typing = ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
-  if (!typing) renderTab(STATE.currentTab);
+  // Ei renderda üle salvestamata seadete/vormi (nt NEAT valik) — andmed on ikka localStorage'is
+  if (!_syncRenderBlocked()) renderTab(STATE.currentTab);
   if (svg) setTimeout(() => { svg.style.animation = ''; }, 400);
   if (force) showToast('☁️ Sünkroonitud');
 }
@@ -3322,6 +3319,17 @@ function previewKcal() {
   set('prev-tef',   tef + ' kcal');
   set('prev-rest',  rest);
   set('prev-train', rest + erat);
+  // v0.9.5.1: märgi seaded "salvestamata" → taustasünk ei renderda vahepeal üle
+  STATE.minaSettingsDirty = true;
+}
+
+/* Kas taustasünk tohib praegu tabi uuesti renderdada? Ei tohi kui kasutaja kirjutab
+   või kui Mina seadetes on salvestamata muudatus (muidu lähtub nt NEAT valik tagasi) */
+function _syncRenderBlocked() {
+  const ae = document.activeElement;
+  if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return true;
+  if (STATE.currentTab === 'mina' && STATE.minaSettingsDirty) return true;
+  return false;
 }
 
 function showToast(msg, durationMs = 2500) {
@@ -3358,6 +3366,7 @@ function saveMinaSettings() {
   const btbStart = document.getElementById('ms-btbstart')?.value             || '';
   lsSet('mina_settings', { kaal, rasvaprotsent: rasva, neat_mult: neat,
                             kaalueesmärk: eesmärk, bulk_surplus: bulk, btb_start: btbStart });
+  STATE.minaSettingsDirty = false; // salvestatud → taustasünk tohib jälle renderdada
   STATE.user = STATE.user ?? {};
   STATE.user.weight_kg   = kaal;
   STATE.user.goal_weight = eesmärk;
@@ -8194,6 +8203,7 @@ function renderMealTimesCard() {
 }
 
 function renderMina() {
+  STATE.minaSettingsDirty = false; // värske render = puhas seadete vorm
   setTimeout(renderBackupCard, 50);
   setTimeout(renderFirebaseCard, 60);
   return `
