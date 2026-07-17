@@ -1898,7 +1898,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.5.4</span>
+  <span id="version-label">v0.9.5.5</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1917,7 +1917,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.5.4';
+const APP_VERSION  = '0.9.5.5';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2038,24 +2038,53 @@ async function _gisLogin() {
   }
 }
 
-function _gisCallback(response) {
+async function _gisCallback(response) {
   try {
     if (!response || !response.credential) {
-      showToast('❌ Google ei tagastanud tokenit'); return;
+      _gisSetStatus('❌ Google ei tagastanud tokenit. Proovi uuesti.', true);
+      return;
     }
-    _gisCloseOverlay();
-    showToast('☁️ Login — sünkroonin…');
+    _gisSetStatus('Sisselogimine…', false);
+    // v0.9.5.5: määra sessiooni püsivus selgelt (LOCAL → jääb püsima ka pärast sulgemist)
+    try {
+      await _fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    } catch (pe) {
+      log('setPersistence LOCAL ebaõnnestus: ' + (pe.code || pe.message) + ' — proovin SESSION', 'dbg-warn');
+      try { await _fbAuth.setPersistence(firebase.auth.Auth.Persistence.SESSION); }
+      catch (pe2) { log('setPersistence SESSION ka ebaõnnestus: ' + (pe2.code || pe2.message), 'dbg-err'); }
+    }
     const cred = firebase.auth.GoogleAuthProvider.credential(response.credential);
-    _fbAuth.signInWithCredential(cred)
-      .then(() => log('GIS login OK', 'dbg-ok'))
-      .catch(e => {
-        log('signInWithCredential viga: ' + (e.code || e.message), 'dbg-err');
-        showToast('❌ Login ebaõnnestus: ' + (e.code || e.message));
-      });
+    try {
+      const uc = await _fbAuth.signInWithCredential(cred);
+      const email = (uc && uc.user && uc.user.email) || 'OK';
+      log('GIS login OK: ' + email, 'dbg-ok');
+      _gisSetStatus('✓ Sisse logitud: ' + email, false);
+      setTimeout(_gisCloseOverlay, 1200);
+    } catch (e) {
+      const code = e.code || e.message || String(e);
+      log('signInWithCredential viga: ' + code, 'dbg-err');
+      _gisSetStatus('❌ Firebase login ebaõnnestus:<br><b>' + code + '</b>', true);
+    }
   } catch (e) {
-    log('GIS callback viga: ' + (e.message || e), 'dbg-err');
-    showToast('❌ Login viga: ' + (e.message || e));
+    const code = e.message || String(e);
+    log('GIS callback viga: ' + code, 'dbg-err');
+    _gisSetStatus('❌ Login viga:<br><b>' + code + '</b>', true);
   }
+}
+
+/* Kirjuta olek otse login-aknasse (ei kao ära nagu toast) */
+function _gisSetStatus(html, isErr) {
+  const box = document.getElementById('gis-status');
+  const btn = document.getElementById('gis-btn');
+  if (btn) btn.style.display = 'none';
+  if (box) {
+    box.style.display = 'block';
+    box.style.color = isErr ? '#D9483B' : '#4C9A6A';
+    box.innerHTML = html;
+  }
+  // veaolukorras jäta aken lahti, et kasutaja saaks koodi lugeda + sulgeda nupuga
+  const cancel = document.getElementById('gis-cancel');
+  if (cancel && isErr) cancel.textContent = 'Sulge';
 }
 
 function _gisOpenOverlay() {
@@ -2075,6 +2104,8 @@ function _gisOpenOverlay() {
     + '<div style="font:400 13px/1.45 var(--font,sans-serif);color:#8A7E6A;margin-bottom:18px;">'
     + 'Sinu andmed sünkroonivad seadmete vahel.</div>'
     + '<div id="gis-btn" style="display:flex;justify-content:center;"></div>'
+    + '<div id="gis-status" style="display:none;font:500 13px/1.5 var(--font,sans-serif);'
+    + 'margin:4px 0 2px;word-break:break-word;"></div>'
     + '<button id="gis-cancel" style="margin-top:16px;background:none;border:none;'
     + 'font:500 13px var(--font,sans-serif);color:#8A7E6A;cursor:pointer;">Tühista</button>';
   ov.appendChild(card);
