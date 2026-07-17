@@ -1898,7 +1898,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.6.0</span>
+  <span id="version-label">v0.9.6.1</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1917,7 +1917,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.6.0';
+const APP_VERSION  = '0.9.6.1';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2255,6 +2255,19 @@ function _mergeLogValue(id, localVal, cloudVal) {
   }
   return localVal;
 }
+/* Kanooniline JSON (rekursiivselt sorteeritud võtmed) — võrdluseks, et võtmejärjekord
+   ei annaks valepositiivi ja ei tekitaks lõputut sünk-silmust (v0.9.6.1) */
+function _canon(v) {
+  const norm = (x) => {
+    if (x === null || typeof x !== 'object') return x;
+    if (Array.isArray(x)) return x.map(norm);
+    const out = {};
+    Object.keys(x).sort().forEach(k => { out[k] = norm(x[k]); });
+    return out;
+  };
+  try { return JSON.stringify(norm(v)); } catch (e) { return JSON.stringify(v); }
+}
+
 /* Rakenda üks pilvedokument lokaalselt. Tagastab true kui lokaalne muutus. meta = ajatemplite objekt. */
 function _applyCloudDoc(id, cloudData, meta) {
   const cloudVal = cloudData.v;
@@ -2267,9 +2280,10 @@ function _applyCloudDoc(id, cloudData, meta) {
     const mergedStr = JSON.stringify(merged);
     let changed = false;
     if (mergedStr !== localRaw) { localStorage.setItem('ttm_' + id, mergedStr); changed = true; }
-    // v0.9.5.3: EI kirjuta enam pilve tagasi siit — see tekitas lõputu onSnapshot-silmuse
-    // (JSON võtmejärjekord erines → mergedStr !== cloudVal alati → fbWrite → onSnapshot → ...).
-    // Pilv saab liidetud versiooni järgmisel kasutaja lsSet-il (kirjutab terve objekti).
+    // v0.9.6.1: kui liidetud tulem erineb pilve omast (KANOONILISELT — mitte lihtsalt võtmejärjekord),
+    // lükka pilve tagasi → seadmed konvergeeruvad. Kanooniline võrdlus väldib v0.9.5.3 lõputut silmust:
+    // pärast tagasikirjutust pilv = merged → _canon võrdne → rohkem ei kirjutata.
+    if (_canon(merged) !== _canon(cloudVal)) { try { fbWrite(id, merged); } catch (e) {} }
     meta[id] = Math.max(meta[id] || 0, cloudTs);
     return changed;
   }
