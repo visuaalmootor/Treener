@@ -1896,7 +1896,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.5.1</span>
+  <span id="version-label">v0.9.5.2</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1915,7 +1915,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.5.1';
+const APP_VERSION  = '0.9.5.2';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -1954,6 +1954,10 @@ function fbInit() {
         stopRealtimeSync();
       }
     });
+    // v0.9.5.2: käsitle ümbersuunamisega sisselogimise tulemus (mobiil/PWA)
+    _fbAuth.getRedirectResult()
+      .then(res => { if (res && res.user) { log('Redirect login OK: ' + res.user.email, 'dbg-ok'); showToast('☁️ Sisse logitud'); } })
+      .catch(e => { log('getRedirectResult viga: ' + (e.code || e.message), 'dbg-err'); showToast('❌ Login ebaõnnestus: ' + (e.code || e.message)); });
     // v0.9.4.8: sünkrooni uuesti kui aken tuleb fookusesse / PWA taasavatakse
     _setupResyncListeners();
     log('Firebase init ✓', 'dbg-ok');
@@ -1962,14 +1966,44 @@ function fbInit() {
   }
 }
 
+/* Mobiil/PWA tuvastus — seal on signInWithPopup ebausaldusväärne (hüpikaken blokeeritakse) */
+function _isMobileOrPWA() {
+  const mob = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+           || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform)); // iPadOS
+  const pwa = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches
+           || window.navigator.standalone === true;
+  return mob || pwa;
+}
+
 async function fbLogin() {
-  if (!_fbAuth) return;
+  if (!_fbAuth) { showToast('Firebase pole veel valmis — proovi hetke pärast'); return; }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
   try {
-    const provider = new firebase.auth.GoogleAuthProvider();
+    if (_isMobileOrPWA()) {
+      // Mobiilis/PWA-s: ümbersuunamine (popup ei tööta usaldusväärselt)
+      showToast('Suunan Google\'i sisselogimisele…');
+      await _fbAuth.signInWithRedirect(provider);
+      return; // leht suunatakse ümber; tulemus käib getRedirectResult / onAuthStateChanged kaudu
+    }
     await _fbAuth.signInWithPopup(provider);
   } catch (e) {
-    log('Login viga: ' + e.message, 'dbg-err');
-    showToast('❌ Login ebaõnnestus');
+    // Hüpikaken blokeeritud / suletud → proovi ümbersuunamist
+    log('Login popup viga: ' + (e.code || e.message), 'dbg-warn');
+    if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user'
+        || e.code === 'auth/cancelled-popup-request' || e.code === 'auth/operation-not-supported-in-this-environment') {
+      try {
+        showToast('Suunan Google\'i sisselogimisele…');
+        await _fbAuth.signInWithRedirect(provider);
+        return;
+      } catch (e2) {
+        log('Login redirect viga: ' + (e2.code || e2.message), 'dbg-err');
+        showToast('❌ Login ebaõnnestus: ' + (e2.code || e2.message));
+        return;
+      }
+    }
+    log('Login viga: ' + (e.code || e.message), 'dbg-err');
+    showToast('❌ Login ebaõnnestus: ' + (e.code || e.message));
   }
 }
 
