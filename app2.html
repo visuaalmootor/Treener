@@ -1898,7 +1898,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.6.2</span>
+  <span id="version-label">v0.9.6.3</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1917,7 +1917,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.6.2';
+const APP_VERSION  = '0.9.6.3';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -1961,6 +1961,16 @@ async function fbInit() {
     firebase.initializeApp(FB_CONFIG);
     _fbAuth = firebase.auth();
     _fbDb   = firebase.firestore();
+    // v0.9.6.3: Safari/iOS blokeerib Firestore'i striimiva WebChannel-ühenduse → KIRJUTAMISED
+    // ei jõua pilve (lugemine töötab, seepärast telefon nägi desktopi andmeid aga vastupidi mitte).
+    // Long-polling käib tavalise HTTP kaudu ja töötab Safaris. Mobiilis force, desktopil auto-detect.
+    // NB: settings() peab tulema ENNE esimest Firestore-operatsiooni.
+    try {
+      _fbDb.settings(_isMobileOrPWA()
+        ? { experimentalForceLongPolling: true }
+        : { experimentalAutoDetectLongPolling: true });
+      log('Firestore transport: ' + (_isMobileOrPWA() ? 'long-polling (force)' : 'auto-detect'), 'dbg-ok');
+    } catch (e) { log('Firestore settings viga: ' + (e.message || e), 'dbg-warn'); }
     _fbAuth.onAuthStateChanged(async user => {
       FB_USER = user;
       renderAuthBtn();
@@ -7165,7 +7175,7 @@ function renderNutritionChart(nutLog, weeks) {
     let waterDays = 0, waterDaysOk = 0, waterSum = 0;
     for (let d = 0; d < daysInBucket; d++) {
       const dd  = new Date(wStart.getTime() + d * dayMs);
-      const key = d_localDateStr(d);
+      const key = _localDateStr(dd);
       // Söömine — kasuta KÕIKI regulaarseid slotte loendajana, mitte ainult logituid
       const dayLog  = nutLog[key] ?? {};
       const hasData = slotIds.some(id => dayLog[id] != null);
