@@ -1898,7 +1898,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.5.9</span>
+  <span id="version-label">v0.9.6.0</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1917,7 +1917,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.5.9';
+const APP_VERSION  = '0.9.6.0';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -5660,7 +5660,7 @@ function showEmergency(missingKcal) {
           <div class="emergency-kcal">+${e.kcal} kcal</div>
           <div class="emergency-time">${e.time_sec < 60 ? e.time_sec + ' sek' : Math.round(e.time_sec/60) + ' min'}</div>
         </div>
-        <button class="btn-add-emergency" onclick="addEmergencyItem(${e.kcal}, '${e.name}')">Lisa</button>
+        <button class="btn-add-emergency" onclick="addEmergencyItem(${e.kcal}, '${(e.name||'').replace(/'/g, "\\'")}', ${e.protein_g||0}, ${e.carbs_g||0}, ${e.fat_g||0})">Lisa</button>
       </div>`).join('');
   }
   ov.classList.add('open');
@@ -5670,14 +5670,29 @@ function hideEmergency() {
   document.getElementById('emergency-overlay')?.classList.remove('open');
 }
 
-function addEmergencyItem(kcal, name) {
-  // Salvestab hädaolukorra kaloreid toitumislogisse kui eraldi kirje
+function addEmergencyItem(kcal, name, protein, carbs, fat) {
+  // v0.9.6.0: salvesta samasse _custom massiivi nagu käsitsi lisatud toidud →
+  // arvestatakse kalorite kogusse (calcEatenKcal), kuvatakse nimekirjas ja on eemaldatav.
   const today = new Date().toISOString().slice(0, 10);
-  const existing = lsGet('kcal_today_' + today) ?? 0;
-  lsSet('kcal_today_' + today, existing + kcal);
+  const nutLog = getNutritionLog();
+  if (!nutLog[today]) nutLog[today] = {};
+  if (!nutLog[today]._custom) nutLog[today]._custom = [];
+  nutLog[today]._custom.push({
+    id:        Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    name,
+    kcal,
+    protein_g: protein || 0,
+    carbs_g:   carbs   || 0,
+    fat_g:     fat     || 0,
+    added_at:  new Date().toISOString()
+  });
+  lsSet('nutrition_log', nutLog);
+  lsSet('kcal_today_' + today, calcEatenKcal(today));
   updateDayStats();
   hideEmergency();
-  log(`Hädaolukorra kalorid +${kcal} kcal: ${name}`, 'dbg-ok');
+  showToast(`✓ ${name} lisatud (${kcal} kcal)`);
+  renderTab('toitumine');
+  log(`Kiire lisaenergia +${kcal} kcal: ${name}`, 'dbg-ok');
 }
 
 /* Retsepti detailvaade */
