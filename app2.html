@@ -1898,7 +1898,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.5.8</span>
+  <span id="version-label">v0.9.5.9</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1917,7 +1917,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.5.8';
+const APP_VERSION  = '0.9.5.9';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -1942,20 +1942,25 @@ let _fbAuth = null;
 let _fbDb   = null;
 let FB_USER = null;
 
-function fbInit() {
+async function fbInit() {
   try {
+    // v0.9.5.9: mobiilis võib Firebase'i oma IndexedDB baas (firebaseLocalStorageDb) olla
+    // katki/lukus (jääb varasematest signInWithRedirect katsetest) → signInWithCredential ripub.
+    // Kustuta see ÜKS kord enne initsialiseerimist, siis loob Firebase värske toimiva baasi.
+    if (_isMobileOrPWA() && !localStorage.getItem('ttm_fbdb_cleared_v1')) {
+      try {
+        await _withTimeout(new Promise((res) => {
+          let done = false;
+          const r = indexedDB.deleteDatabase('firebaseLocalStorageDb');
+          r.onsuccess = r.onerror = r.onblocked = () => { if (!done) { done = true; res(); } };
+        }), 3000, 'delFbDb');
+        log('firebaseLocalStorageDb puhastatud', 'dbg-ok');
+      } catch (e) { log('firebaseLocalStorageDb puhastus: ' + (e.message || e), 'dbg-warn'); }
+      try { localStorage.setItem('ttm_fbdb_cleared_v1', '1'); } catch (e) {}
+    }
     firebase.initializeApp(FB_CONFIG);
     _fbAuth = firebase.auth();
     _fbDb   = firebase.firestore();
-    // v0.9.5.7: mobiilis (Brave/Safari iOS) IndexedDB ripub → Firebase sisselogimine jääb toppama.
-    // Määra kohe SESSION-salvestus (sessionStorage, ei kasuta IndexedDB-d). Fire-and-forget.
-    if (_isMobileOrPWA()) {
-      try {
-        _fbAuth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
-          .then(() => log('Mobiili persistence: SESSION', 'dbg-ok'))
-          .catch(e => log('init setPersistence viga: ' + (e.code || e.message), 'dbg-warn'));
-      } catch (e) { log('init setPersistence exception: ' + e.message, 'dbg-warn'); }
-    }
     _fbAuth.onAuthStateChanged(async user => {
       FB_USER = user;
       renderAuthBtn();
@@ -2060,14 +2065,15 @@ function _withTimeout(promise, ms, label) {
 /* v0.9.5.8: diagnostika — testib eraldi IndexedDB-d ja võrku Firebase'ini,
    et teada kumb login'i rippuma paneb. */
 async function _gisDiagnose() {
+  // Testi JUST Firebase'i oma baasi (firebaseLocalStorageDb) — see on tegelik kahtlusalune
   let idb = '?';
   try {
     idb = await _withTimeout(new Promise((res) => {
       let done = false;
-      const req = indexedDB.open('__diag_test_ttm__', 1);
-      req.onsuccess = () => { if (done) return; done = true; try { req.result.close(); } catch (e) {} try { indexedDB.deleteDatabase('__diag_test_ttm__'); } catch (e) {} res('✓ OK'); };
+      const req = indexedDB.open('firebaseLocalStorageDb');
+      req.onsuccess = () => { if (done) return; done = true; try { req.result.close(); } catch (e) {} res('✓ OK'); };
       req.onerror   = () => { if (done) return; done = true; res('viga: ' + (req.error && req.error.name || 'unknown')); };
-      req.onblocked = () => { if (done) return; done = true; res('BLOCKED'); };
+      req.onblocked = () => { if (done) return; done = true; res('BLOCKED ✗'); };
     }), 4000, 'idb');
   } catch (e) { idb = 'RIPUB ✗'; }
   let net = '?';
@@ -2089,12 +2095,6 @@ async function _gisCallback(response) {
       return;
     }
     _gisSetStatus('Sisselogimine…', false);
-    // v0.9.5.7: kasuta SESSION-salvestust (ei kasuta IndexedDB-d, mis Brave/Safari iOS-is ripub).
-    try {
-      await _withTimeout(_fbAuth.setPersistence(firebase.auth.Auth.Persistence.SESSION), 2500, 'setPersistence');
-    } catch (pe) {
-      log('setPersistence vahele jäetud: ' + (pe.code || pe.message || pe), 'dbg-warn');
-    }
     const cred = firebase.auth.GoogleAuthProvider.credential(response.credential);
     try {
       const uc = await _withTimeout(_fbAuth.signInWithCredential(cred), 15000, 'signInWithCredential');
