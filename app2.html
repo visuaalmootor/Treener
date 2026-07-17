@@ -9,6 +9,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <!-- Google Identity Services (v0.9.5.4 — mobiili login) -->
+  <script src="https://accounts.google.com/gsi/client" async></script>
   <meta name="theme-color" content="#2563eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1896,7 +1898,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.5.3</span>
+  <span id="version-label">v0.9.5.4</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1915,7 +1917,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.5.3';
+const APP_VERSION  = '0.9.5.4';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -1930,6 +1932,11 @@ const FB_CONFIG = {
   messagingSenderId: '736192118553',
   appId:             '1:736192118553:web:fa71b25e5650d04a774f88'
 };
+
+/* v0.9.5.4: OAuth Web Client ID — Google Identity Services (mobiili/PWA login).
+   GIS kasutab Google'i enda sisselogimist ega sõltu firebaseapp.com cross-site
+   salvestusest, seega töötab ka Brave/Safari iOS-is, kus signInWithRedirect katkeb. */
+const GIS_CLIENT_ID = '736192118553-bf0elc72qqvfpj7u27egq875ufpbf6gb.apps.googleusercontent.com';
 
 let _fbAuth = null;
 let _fbDb   = null;
@@ -1977,34 +1984,116 @@ function _isMobileOrPWA() {
 
 async function fbLogin() {
   if (!_fbAuth) { showToast('Firebase pole veel valmis — proovi hetke pärast'); return; }
+  // Mobiil/PWA: kasuta Google Identity Services (ei sõltu cross-site salvestusest)
+  if (_isMobileOrPWA()) { _gisLogin(); return; }
+  // Desktop: hüpikaken (usaldusväärne), varuvariandiks GIS
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
   try {
-    if (_isMobileOrPWA()) {
-      // Mobiilis/PWA-s: ümbersuunamine (popup ei tööta usaldusväärselt)
-      showToast('Suunan Google\'i sisselogimisele…');
-      await _fbAuth.signInWithRedirect(provider);
-      return; // leht suunatakse ümber; tulemus käib getRedirectResult / onAuthStateChanged kaudu
-    }
     await _fbAuth.signInWithPopup(provider);
   } catch (e) {
-    // Hüpikaken blokeeritud / suletud → proovi ümbersuunamist
     log('Login popup viga: ' + (e.code || e.message), 'dbg-warn');
     if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user'
         || e.code === 'auth/cancelled-popup-request' || e.code === 'auth/operation-not-supported-in-this-environment') {
-      try {
-        showToast('Suunan Google\'i sisselogimisele…');
-        await _fbAuth.signInWithRedirect(provider);
-        return;
-      } catch (e2) {
-        log('Login redirect viga: ' + (e2.code || e2.message), 'dbg-err');
-        showToast('❌ Login ebaõnnestus: ' + (e2.code || e2.message));
-        return;
-      }
+      _gisLogin();
+      return;
     }
     log('Login viga: ' + (e.code || e.message), 'dbg-err');
     showToast('❌ Login ebaõnnestus: ' + (e.code || e.message));
   }
+}
+
+/* ── Google Identity Services login (v0.9.5.4) ──────────────────────────
+   Näitab Google'i enda sisselogimisnupu overlays. Klõps → Google tagastab
+   ID-tokeni callbacki → signInWithCredential. Töötab Brave/Safari iOS-is,
+   sest GIS ei vaja firebaseapp.com cross-site salvestust. */
+let _gisInited = false;
+
+async function _gisLogin() {
+  // Oota kuni GIS teek on laetud (async script)
+  let waited = 0;
+  while (!(window.google && google.accounts && google.accounts.id) && waited < 5000) {
+    await new Promise(r => setTimeout(r, 150)); waited += 150;
+  }
+  if (!(window.google && google.accounts && google.accounts.id)) {
+    log('GIS teek ei laadinud', 'dbg-err');
+    showToast('❌ Google login ei laadinud — kontrolli internetti');
+    return;
+  }
+  try {
+    if (!_gisInited) {
+      google.accounts.id.initialize({
+        client_id: GIS_CLIENT_ID,
+        callback: _gisCallback,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+        use_fedcm_for_prompt: true
+      });
+      _gisInited = true;
+    }
+    _gisOpenOverlay();
+  } catch (e) {
+    log('GIS init viga: ' + (e.message || e), 'dbg-err');
+    showToast('❌ Google login viga: ' + (e.message || e));
+  }
+}
+
+function _gisCallback(response) {
+  try {
+    if (!response || !response.credential) {
+      showToast('❌ Google ei tagastanud tokenit'); return;
+    }
+    _gisCloseOverlay();
+    showToast('☁️ Login — sünkroonin…');
+    const cred = firebase.auth.GoogleAuthProvider.credential(response.credential);
+    _fbAuth.signInWithCredential(cred)
+      .then(() => log('GIS login OK', 'dbg-ok'))
+      .catch(e => {
+        log('signInWithCredential viga: ' + (e.code || e.message), 'dbg-err');
+        showToast('❌ Login ebaõnnestus: ' + (e.code || e.message));
+      });
+  } catch (e) {
+    log('GIS callback viga: ' + (e.message || e), 'dbg-err');
+    showToast('❌ Login viga: ' + (e.message || e));
+  }
+}
+
+function _gisOpenOverlay() {
+  _gisCloseOverlay(); // ära dubleeri
+  const ov = document.createElement('div');
+  ov.id = 'gis-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(20,18,14,0.55);'
+    + 'display:flex;align-items:center;justify-content:center;padding:24px;'
+    + '-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);';
+  ov.addEventListener('click', ev => { if (ev.target === ov) _gisCloseOverlay(); });
+  const card = document.createElement('div');
+  card.style.cssText = 'background:#FFFFFF;border:1px solid #ECE4D5;border-radius:18px;'
+    + 'padding:26px 22px;max-width:340px;width:100%;text-align:center;'
+    + 'box-shadow:0 12px 40px rgba(0,0,0,0.25);';
+  card.innerHTML = '<div style="font:600 16px/1.3 var(--font,sans-serif);color:#211E18;margin-bottom:6px;">'
+    + 'Logi sisse Google\'iga</div>'
+    + '<div style="font:400 13px/1.45 var(--font,sans-serif);color:#8A7E6A;margin-bottom:18px;">'
+    + 'Sinu andmed sünkroonivad seadmete vahel.</div>'
+    + '<div id="gis-btn" style="display:flex;justify-content:center;"></div>'
+    + '<button id="gis-cancel" style="margin-top:16px;background:none;border:none;'
+    + 'font:500 13px var(--font,sans-serif);color:#8A7E6A;cursor:pointer;">Tühista</button>';
+  ov.appendChild(card);
+  document.body.appendChild(ov);
+  document.getElementById('gis-cancel').addEventListener('click', _gisCloseOverlay);
+  try {
+    google.accounts.id.renderButton(document.getElementById('gis-btn'),
+      { theme: 'filled_blue', size: 'large', shape: 'pill', text: 'signin_with', width: 260 });
+  } catch (e) {
+    log('renderButton viga: ' + (e.message || e), 'dbg-err');
+  }
+  // Lisaks One Tap (kui brauser toetab) — ei sega renderitud nuppu
+  try { google.accounts.id.prompt(); } catch (e) {}
+}
+
+function _gisCloseOverlay() {
+  const ov = document.getElementById('gis-overlay');
+  if (ov) ov.remove();
+  try { google.accounts.id.cancel(); } catch (e) {}
 }
 
 async function fbLogout() {
