@@ -1898,7 +1898,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.6.3</span>
+  <span id="version-label">v0.9.6.4</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1917,7 +1917,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.6.3';
+const APP_VERSION  = '0.9.6.4';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2428,9 +2428,11 @@ function _setupResyncListeners() {
 
 // Sünkroniseeri kogu localStorage Firestoresse (esimene login / uus seade)
 async function pushAllToFirestore() {
-  if (!FB_USER || !_fbDb) return;
-  const batch = _fbDb.batch();
+  if (!FB_USER || !_fbDb) { showToast('Logi kõigepealt Google\'iga sisse'); return; }
+  showToast('⬆️ Laen üles…');
+  log('pushAllToFirestore: alustan…', 'dbg-ok');
   const ref = _fbDb.collection('users').doc(FB_USER.uid).collection('kv');
+  const batch = _fbDb.batch();
   let count = 0;
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
@@ -2442,9 +2444,17 @@ async function pushAllToFirestore() {
       count++;
     } catch {}
   }
-  await batch.commit();
-  showToast(`☁️ ${count} kirjet üles laetud`);
-  log(`pushAllToFirestore: ${count} kirjet`, 'dbg-ok');
+  // v0.9.6.4: selge tagasiside + ajapiirang, et nupp ei jääks vaikselt rippuma.
+  // Veakood ütleb MIKS kirjutamine ebaõnnestub (permission-denied / unavailable / timeout).
+  try {
+    await _withTimeout(batch.commit(), 20000, 'batch.commit');
+    showToast(`☁️ ${count} kirjet üles laetud`);
+    log(`pushAllToFirestore OK: ${count} kirjet`, 'dbg-ok');
+  } catch (e) {
+    const code = e.code || e.message || String(e);
+    showToast('❌ Üleslaadimine ebaõnnestus: ' + code);
+    log('pushAllToFirestore VIGA: ' + code, 'dbg-err');
+  }
 }
 
 function renderAuthBtn() {
