@@ -1896,7 +1896,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.5.2</span>
+  <span id="version-label">v0.9.5.3</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1915,7 +1915,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.5.2';
+const APP_VERSION  = '0.9.5.3';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2096,7 +2096,9 @@ function _applyCloudDoc(id, cloudData, meta) {
     const mergedStr = JSON.stringify(merged);
     let changed = false;
     if (mergedStr !== localRaw) { localStorage.setItem('ttm_' + id, mergedStr); changed = true; }
-    if (mergedStr !== JSON.stringify(cloudVal)) { try { fbWrite(id, merged); } catch (e) {} } // konvergeeru pilvega
+    // v0.9.5.3: EI kirjuta enam pilve tagasi siit — see tekitas lõputu onSnapshot-silmuse
+    // (JSON võtmejärjekord erines → mergedStr !== cloudVal alati → fbWrite → onSnapshot → ...).
+    // Pilv saab liidetud versiooni järgmisel kasutaja lsSet-il (kirjutab terve objekti).
     meta[id] = Math.max(meta[id] || 0, cloudTs);
     return changed;
   }
@@ -2115,7 +2117,11 @@ function _applyCloudDoc(id, cloudData, meta) {
 function _recomputeDerivedKcal() {
   try {
     const nl = lsGet('nutrition_log') ?? {};
-    Object.keys(nl).forEach(d => { lsSet('kcal_today_' + d, calcEatenKcal(d)); });
+    const today = new Date().toISOString().slice(0, 10);
+    const dates = new Set([...Object.keys(nl), today]); // ka täna, isegi kui logi tühi
+    // v0.9.5.3: kirjuta OTSE localStorage'i (mitte lsSet) — kcal_today on tuletatud väärtus,
+    // ei pea pilve sünkima; lsSet oleks käivitanud fbWrite → onSnapshot-silmus
+    dates.forEach(d => { localStorage.setItem('ttm_kcal_today_' + d, JSON.stringify(calcEatenKcal(d))); });
   } catch (e) {}
 }
 
@@ -3188,8 +3194,8 @@ function updateDayStats() {
   const kcalTarget  = calcKcalTarget();
   const waterTarget = u?.water_target_ml  ?? 2750;
 
-  // Kalorid — Tab 2 täidab selle väärtuse (praegu 0)
-  const kcalEaten = lsGet('kcal_today_' + today) ?? 0;
+  // Kalorid — v0.9.5.3: arvuta ELAVALT (sama loogika mis Toitumine/Kodu) → header ei näita enam vananenud skalaari
+  const kcalEaten = calcEatenKcal(today);
   const kcalPct   = Math.min(100, Math.round(kcalEaten / kcalTarget * 100));
 
   // Vesi + kohv — Tab 2 täidab need väärtused (praegu 0)
@@ -3737,9 +3743,9 @@ function renderKodu() {
     </div>`;
   }
 
-  /* ---- KALORID ---- */
+  /* ---- KALORID (v0.9.5.3: elav arvutus, kooskõlas headeri ja Toitumisega) ---- */
   const kcalTarget = calcKcalTarget();
-  const kcalEaten  = lsGet('kcal_today_' + today) ?? 0;
+  const kcalEaten  = calcEatenKcal(today);
   const kcalPct    = Math.min(100, Math.round(kcalEaten / kcalTarget * 100));
   const kcalColor  = kcalPct >= 100 ? 'var(--green)' : kcalPct >= 60 ? 'var(--accent)' : 'var(--amber)';
   const kcalLeft   = Math.max(0, kcalTarget - kcalEaten);
@@ -3762,7 +3768,9 @@ function renderKodu() {
   const btbPhase = STATE.btbPhase ?? 1;
   const btbWeek  = STATE.btbWeek ?? 1;
   const weekTotal = (btbPhase - 1) * 5 + btbWeek;
-  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  // v0.9.5.3: päevapõhine stabiilne valik (ei virvenda re-renderdusel — sama päev = sama lause)
+  const _seed = (function(){ let h=0; for(let i=0;i<today.length;i++) h=(h*31+today.charCodeAt(i))>>>0; return h; })();
+  const pick = arr => arr[_seed % arr.length];
   let motivMsg;
   if (kgGained <= 0) {
     motivMsg = pick([
@@ -8863,7 +8871,9 @@ function renderRuleBasedAnalysis() {
     : [`Hardgainerid vajavad süsteemi, mitte motivatsiooni. Vali üks asi mida parandad.`,
        'BtB õpetab: konsistentsus > intensiivsus. Isegi 60% on parem kui 0%.',
        `Iga nädal on uus algus. Faas ${ph} ootab — alusta tänasest.`];
-  const motivation = motivPool[Math.floor(Math.random() * motivPool.length)];
+  const _mDay = new Date().toISOString().slice(0, 10);
+  const _mSeed = (function(){ let h=0; for(let i=0;i<_mDay.length;i++) h=(h*31+_mDay.charCodeAt(i))>>>0; return h; })();
+  const motivation = motivPool[_mSeed % motivPool.length];
 
   // ── RENDER ───────────────────────────────────────────────────
   const row = (emoji, tekst) => `
