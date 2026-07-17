@@ -1,11 +1,11 @@
-const CACHE_NAME = 'tt-v0.8.5';
+const CACHE_NAME = 'tt-v0.9.6.1';
 const STATIC = [
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
 ];
 
-// Paigalda: cache ainult staatilised varad (mitte app.html)
+// Paigalda: cache ainult staatilised varad (mitte HTML)
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(c => c.addAll(STATIC))
@@ -13,7 +13,7 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
-// Aktiveeri: kustuta vana cache
+// Aktiveeri: kustuta vana cache (uus CACHE_NAME → vana app2.html visatakse minema)
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -24,15 +24,15 @@ self.addEventListener('activate', e => {
 });
 
 // Fetch strateegia:
-//   app.html      → network-first (alati värsked muutused kohe näha)
-//   prices.json   → network-first (hinnad peavad olema värsked)
-//   data/*.json   → network-first (andmed peavad olema värsked)
-//   muu (ikoonid, manifest) → cache-first (muutuvad harva)
+//   HTML-dokumendid (app.html, app2.html, navigatsioon) → network-first (alati värske versioon kohe)
+//   .json (hinnad, andmed)                              → network-first
+//   muu (ikoonid, manifest)                             → cache-first (muutuvad harva)
+// ⚠ v0.9.6.1 fix: varem oli network-first ainult `app.html`-le (endsWith) → app2.html
+//   langes cache-first alla ja jäi vanasse versiooni kinni. Nüüd katab kõik HTML + navigatsiooni.
 self.addEventListener('fetch', e => {
   const url = e.request.url;
 
-  // app.html + kõik .json failid → network-first
-  if (url.endsWith('app.html') || url.includes('.json')) {
+  if (e.request.mode === 'navigate' || url.endsWith('.html') || url.includes('.json')) {
     e.respondWith(
       fetch(e.request)
         .then(res => {
@@ -58,5 +58,3 @@ self.addEventListener('fetch', e => {
     })
   );
 });
-</content>
-</invoke>
