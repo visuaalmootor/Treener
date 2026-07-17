@@ -1898,7 +1898,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.5.5</span>
+  <span id="version-label">v0.9.5.6</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1917,7 +1917,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.5.5';
+const APP_VERSION  = '0.9.5.6';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2038,6 +2038,14 @@ async function _gisLogin() {
   }
 }
 
+/* Promise ajapiiranguga — et ükski samm ei saaks lõputult rippuda (v0.9.5.6) */
+function _withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, rej) => setTimeout(() => rej(new Error((label || 'toiming') + ' timeout ' + ms + 'ms')), ms))
+  ]);
+}
+
 async function _gisCallback(response) {
   try {
     if (!response || !response.credential) {
@@ -2045,17 +2053,16 @@ async function _gisCallback(response) {
       return;
     }
     _gisSetStatus('Sisselogimine…', false);
-    // v0.9.5.5: määra sessiooni püsivus selgelt (LOCAL → jääb püsima ka pärast sulgemist)
+    // v0.9.5.6: setPersistence(LOCAL) ripub Brave/Safari iOS-is (ootab IndexedDB-d), seega
+    // proovime seda AINULT ajapiiranguga ja EI blokeeri sellel — kui ei õnnestu, jätkame ikka.
     try {
-      await _fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+      await _withTimeout(_fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL), 2500, 'setPersistence');
     } catch (pe) {
-      log('setPersistence LOCAL ebaõnnestus: ' + (pe.code || pe.message) + ' — proovin SESSION', 'dbg-warn');
-      try { await _fbAuth.setPersistence(firebase.auth.Auth.Persistence.SESSION); }
-      catch (pe2) { log('setPersistence SESSION ka ebaõnnestus: ' + (pe2.code || pe2.message), 'dbg-err'); }
+      log('setPersistence vahele jäetud: ' + (pe.code || pe.message || pe), 'dbg-warn');
     }
     const cred = firebase.auth.GoogleAuthProvider.credential(response.credential);
     try {
-      const uc = await _fbAuth.signInWithCredential(cred);
+      const uc = await _withTimeout(_fbAuth.signInWithCredential(cred), 15000, 'signInWithCredential');
       const email = (uc && uc.user && uc.user.email) || 'OK';
       log('GIS login OK: ' + email, 'dbg-ok');
       _gisSetStatus('✓ Sisse logitud: ' + email, false);
@@ -2063,7 +2070,10 @@ async function _gisCallback(response) {
     } catch (e) {
       const code = e.code || e.message || String(e);
       log('signInWithCredential viga: ' + code, 'dbg-err');
-      _gisSetStatus('❌ Firebase login ebaõnnestus:<br><b>' + code + '</b>', true);
+      const hint = /timeout/i.test(code)
+        ? '<br><span style="font-weight:400;color:#8A7E6A;">Päring ei jõudnud Firebase\'ini — tõenäoliselt blokeerib Brave Shields. Proovi kilbi-ikoonist Shields alla lülitada selle lehe jaoks.</span>'
+        : '';
+      _gisSetStatus('❌ Firebase login ebaõnnestus:<br><b>' + code + '</b>' + hint, true);
     }
   } catch (e) {
     const code = e.message || String(e);
