@@ -1898,7 +1898,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.6.1</span>
+  <span id="version-label">v0.9.6.2</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1917,7 +1917,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.6.1';
+const APP_VERSION  = '0.9.6.2';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2302,7 +2302,7 @@ function _applyCloudDoc(id, cloudData, meta) {
 function _recomputeDerivedKcal() {
   try {
     const nl = lsGet('nutrition_log') ?? {};
-    const today = new Date().toISOString().slice(0, 10);
+    const today = _localDateStr(new Date());
     const dates = new Set([...Object.keys(nl), today]); // ka täna, isegi kui logi tühi
     // v0.9.5.3: kirjuta OTSE localStorage'i (mitte lsSet) — kcal_today on tuletatud väärtus,
     // ei pea pilve sünkima; lsSet oleks käivitanud fbWrite → onSnapshot-silmus
@@ -3155,7 +3155,7 @@ function showBackupFallback() {
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href     = url;
-  a.download = 'ttm-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.download = 'ttm-backup-' + _localDateStr(new Date()) + '.json';
   a.click();
   URL.revokeObjectURL(url);
 
@@ -3302,7 +3302,7 @@ async function exportFromFirestore() {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'ttm-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.download = 'ttm-backup-' + _localDateStr(new Date()) + '.json';
     a.click();
     URL.revokeObjectURL(a.href);
     showToast(`✓ Backup allalaaditud (${snap.size} kirjet)`);
@@ -3374,7 +3374,7 @@ function cycleBudget() {
    Tab 3 (trenn) kirjutab: ttm_training_log → done: true
 ============================================================ */
 function updateDayStats() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDateStr(new Date());
   const u = STATE.user;
   const kcalTarget  = calcKcalTarget();
   const waterTarget = u?.water_target_ml  ?? 2750;
@@ -3821,7 +3821,7 @@ function renderWeeklyWeightFeedback() {
    TAB 0 — KODU (DASHBOARD)
 ============================================================ */
 function renderKodu() {
-  const today    = new Date().toISOString().slice(0, 10);
+  const today    = _localDateStr(new Date());
   const todayNum = getTodayDayNum();
 
   /* ---- KEHAKAAL ---- */
@@ -4012,7 +4012,7 @@ function renderKodu() {
   let weekDelta = null;
   if (weightLog.length >= 2) {
     const lastE   = weightLog[weightLog.length - 1];
-    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+    const weekAgo = _localDateStr(new Date(Date.now() - 7 * 86400000));
     let refE = weightLog[0];
     for (const e of weightLog) { if (e.date <= weekAgo) refE = e; }
     if (refE !== lastE) weekDelta = (lastE.weight ?? lastE.weight_kg) - (refE.weight ?? refE.weight_kg);
@@ -4102,14 +4102,14 @@ function renderKodu() {
     const thr = kcalTarget * 0.7;
     if (calcEatenKcal(today) >= thr) streak++;
     for (let i = 1; i <= 90; i++) {
-      const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      const d = _localDateStr(new Date(Date.now() - i * 86400000));
       if (calcEatenKcal(d) >= thr) streak++; else break;
     }
   }
   let projection = 'Logi kaalu kord nädalas — sihtkaalu prognoos ilmub siia.';
   if (weightLog.length >= 2 && kgToGoal > 0) {
     const lastE  = weightLog[weightLog.length - 1];
-    const cutoff = new Date(Date.now() - 28 * 86400000).toISOString().slice(0, 10);
+    const cutoff = _localDateStr(new Date(Date.now() - 28 * 86400000));
     const refE   = weightLog.find(e => e.date >= cutoff) ?? weightLog[0];
     const days   = Math.round((new Date(lastE.date) - new Date(refE.date)) / 86400000);
     if (days >= 5) {
@@ -4770,7 +4770,7 @@ function confirmShopping() {
     .filter(p => checked[p.id])
     .reduce((sum, p) => sum + getWeeklyCost(resolveProduct(p, budgetClass)), 0);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDateStr(new Date());
   const confirmation = {
     date: today,
     budget_class: budgetClass,
@@ -5551,7 +5551,7 @@ function getDateForDayNum(dayNum) {
   const diff = dayNum - todayDayNum;
   const d = new Date(today);
   d.setDate(today.getDate() + diff);
-  return d.toISOString().slice(0, 10);
+  return _localDateStr(d);
 }
 
 // Arvutab söödud kalorid logi põhjal (loeb meal_plan-ist)
@@ -5594,7 +5594,7 @@ function setMealStatus(slotId, status, dateStr) {
   };
   const wasEaten = prevStatus === 'eaten';
   const isNowEaten = newStatus === 'eaten';
-  if (dateStr === new Date().toISOString().slice(0, 10) && wasEaten !== isNowEaten) {
+  if (dateStr === _localDateStr(new Date()) && wasEaten !== isNowEaten) {
     let waterDelta = 0;
     if (slotId === 'S06') {
       waterDelta = isNowEaten ? 600 : -600;
@@ -5626,7 +5626,7 @@ function setMealStatus(slotId, status, dateStr) {
 
 // Vesi
 function addWater(ml) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDateStr(new Date());
   const cur   = lsGet('water_today_' + today) ?? 0;
   lsSet('water_today_' + today, Math.max(0, cur + ml));
   updateDayStats();
@@ -5634,7 +5634,7 @@ function addWater(ml) {
 }
 
 function addCoffee(delta) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDateStr(new Date());
   const cur   = lsGet('coffee_today_' + today) ?? 0;
   lsSet('coffee_today_' + today, Math.max(0, cur + delta));
   updateDayStats();
@@ -5687,7 +5687,7 @@ function hideEmergency() {
 function addEmergencyItem(kcal, name, protein, carbs, fat) {
   // v0.9.6.0: salvesta samasse _custom massiivi nagu käsitsi lisatud toidud →
   // arvestatakse kalorite kogusse (calcEatenKcal), kuvatakse nimekirjas ja on eemaldatav.
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDateStr(new Date());
   const nutLog = getNutritionLog();
   if (!nutLog[today]) nutLog[today] = {};
   if (!nutLog[today]._custom) nutLog[today]._custom = [];
@@ -5859,7 +5859,7 @@ function mpWeekDays() {
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() + mondayOffset + i);
-    return d.toISOString().slice(0, 10);
+    return _localDateStr(d);
   });
 }
 
@@ -6090,7 +6090,7 @@ function mpTogglePrepDone(rid) {
 }
 
 function renderMealPrep() {
-  const today  = new Date().toISOString().slice(0, 10);
+  const today  = _localDateStr(new Date());
   const plan   = lsGet('meal_plan') ?? {};
   const days   = mpWeekDays();
 
@@ -6192,7 +6192,7 @@ function renderMealPrep() {
   const nextIdx   = prepItems.findIndex(b => !prepDone[b.recipe_id]);
 
   // Portsjonid: mitu korda retsept nädalaplaanis esineb; külmkapp = järgmise 4 päeva portsjonid, ülejäänu sügavkülm
-  const day4 = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
+  const day4 = _localDateStr(new Date(Date.now() + 3 * 86400000));
   const storSplit = {}; // recipe_id → { fridge, freezer }
   let portionsTotal = 0, fridgeN = 0, freezerN = 0;
   prepItems.forEach(b => {
@@ -6390,7 +6390,7 @@ function qaOpenForm(dateStr, mode) {
 }
 
 function renderToitumine() {
-  const today    = new Date().toISOString().slice(0, 10);
+  const today    = _localDateStr(new Date());
   const todayNum = getTodayDayNum();
   const selDay   = getSelectedDay();
   const selDate  = getDateForDayNum(selDay);
@@ -6767,7 +6767,7 @@ function renderToitumine() {
     ${(function(){
       const h = new Date().getHours();
       const tlog2 = lsGet('training_log') ?? [];
-      const today2 = new Date().toISOString().slice(0,10);
+      const today2 = _localDateStr(new Date());
       const trainDoneToday = tlog2.some(function(e){ return e.date === today2 && e.done; });
       const isTrainDay2 = (lsGet('train_sched') ?? [1,3,5]).includes(new Date().getDay());
       if (selDay !== todayNum) return '';
@@ -6789,7 +6789,7 @@ function renderToitumine() {
     ${(function(){
       const kcals = [], prots = [];
       for (let i = 0; i < 7; i++) {
-        const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+        const d = _localDateStr(new Date(Date.now() - i * 86400000));
         const kc = calcEatenKcal(d);
         if (kc <= 0) continue;
         kcals.push(kc);
@@ -6886,7 +6886,7 @@ function renderWeightChart(entries, weeks) {
   const xTicksHtml = Array.from({length: xTickCount + 1}, (_, i) => {
     const d = new Date(start);
     d.setDate(d.getDate() + Math.round(i * weeks * 7 / xTickCount));
-    const x = toX(d.toISOString().slice(0, 10));
+    const x = toX(_localDateStr(d));
     const label = `${d.getDate()}.${d.getMonth() + 1}`;
     return `<text x="${x}" y="${H - 4}" text-anchor="middle" font-size="9" fill="var(--text-3)">${label}</text>`;
   }).join('');
@@ -7010,7 +7010,7 @@ function renderMeasurementChart(entries, weeks, field, label, unit, color) {
   const xTicksHtml = Array.from({length: xTickCount + 1}, (_, i) => {
     const d = new Date(start);
     d.setDate(d.getDate() + Math.round(i * weeks * 7 / xTickCount));
-    const x = toX(d.toISOString().slice(0, 10));
+    const x = toX(_localDateStr(d));
     return `<text x="${x}" y="${H - 4}" text-anchor="middle" font-size="9" fill="var(--text-3)">${d.getDate()}.${d.getMonth()+1}</text>`;
   }).join('');
 
@@ -7091,7 +7091,7 @@ function renderAllMeasurementsChart(entries, weeks) {
   const xTicksHtml = Array.from({length: xTickCount + 1}, (_, i) => {
     const d = new Date(start);
     d.setDate(d.getDate() + Math.round(i * weeks * 7 / xTickCount));
-    const x = toX(d.toISOString().slice(0, 10));
+    const x = toX(_localDateStr(d));
     return `<text x="${x}" y="${H - 4}" text-anchor="middle" font-size="9" fill="var(--text-3)">${d.getDate()}.${d.getMonth()+1}</text>`;
   }).join('');
 
@@ -7130,7 +7130,7 @@ function renderNutritionChart(nutLog, weeks) {
 
   if (!hasNutLog && weeks > 0) {
     // Proovi vähemalt vee/kohvi andmeid
-    const today = new Date().toISOString().slice(0, 10);
+    const today = _localDateStr(new Date());
     const anyWater  = lsGet('water_today_' + today) ?? 0;
     const anyCoffee = lsGet('coffee_today_' + today) ?? 0;
     if (!anyWater && !anyCoffee) {
@@ -7165,7 +7165,7 @@ function renderNutritionChart(nutLog, weeks) {
     let waterDays = 0, waterDaysOk = 0, waterSum = 0;
     for (let d = 0; d < daysInBucket; d++) {
       const dd  = new Date(wStart.getTime() + d * dayMs);
-      const key = dd.toISOString().slice(0, 10);
+      const key = d_localDateStr(d);
       // Söömine — kasuta KÕIKI regulaarseid slotte loendajana, mitte ainult logituid
       const dayLog  = nutLog[key] ?? {};
       const hasData = slotIds.some(id => dayLog[id] != null);
@@ -7301,7 +7301,7 @@ function getMuscleActivity(weeks) {
   const tlog     = lsGet('training_log') ?? [];
   const exIndex  = STATE.exercises?.exercises ?? {};
   const now      = new Date();
-  const todayStr = now.toISOString().slice(0, 10);
+  const todayStr = _localDateStr(now);
 
   const counts = {};
   tlog.forEach(session => {
@@ -7799,7 +7799,7 @@ function renderPRSection() {
 function renderTrainingStatsChart(weeks) {
   var tlog     = lsGet('training_log') ?? [];
   var now      = new Date();
-  var todayStr = now.toISOString().slice(0, 10);
+  var todayStr = _localDateStr(now);
 
   // BtB sihtmaht per treening: faasi seeriad × harjutuste arv
   var phase     = STATE.btbPhase ?? 1;
@@ -8249,7 +8249,7 @@ function removeLastAlkohol() {
   const log = lsGet(key) ?? [];
   if (log.length > 0) { log.pop(); lsSet(key, log); }
   // v0.9.4.2 fix: värskenda päeva kaloribilanss ka eemaldamisel
-  const t = new Date().toISOString().slice(0, 10);
+  const t = _localDateStr(new Date());
   lsSet('kcal_today_' + t, calcEatenKcal(t));
   updateDayStats();
   renderTab('mina');
@@ -8344,7 +8344,7 @@ function renderMinaStatGrids() {
   const kcalTarget = calcKcalTarget();
   let daysLogged = 0, daysOnTarget = 0, waterSum = 0, waterDays = 0;
   for (let i = 0; i < 30; i++) {
-    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    const d = _localDateStr(new Date(Date.now() - i * 86400000));
     const kc = calcEatenKcal(d);
     if (kc > 0) { daysLogged++; if (kc >= kcalTarget * 0.95) daysOnTarget++; }
     const w = (lsGet('water_today_' + d) ?? 0) + (lsGet('coffee_today_' + d) ?? 0) * 200;
@@ -8558,7 +8558,7 @@ function calcOnTrack(weeks) {
   const today = new Date();
   const daysArr = Array.from({length: days}, (_,i) => {
     const d = new Date(today); d.setDate(d.getDate()-i);
-    return d.toISOString().slice(0,10);
+    return _localDateStr(d);
   });
 
   const nutLog     = lsGet('nutrition_log') || {};
@@ -8595,7 +8595,7 @@ function calcOnTrack(weeks) {
   // Treening — alati viimase 7 päeva vastu (3×/näd sihtmaht), perioodist sõltumata
   const trainWindow = Array.from({length:7}, (_,i) => {
     const d = new Date(today); d.setDate(d.getDate()-i);
-    return d.toISOString().slice(0,10);
+    return _localDateStr(d);
   });
   const trainDone = trainWindow.filter(d => trainLog.some(e => e.date === d && e.done)).length;
   const trennExpected = 3;
@@ -8634,7 +8634,7 @@ function renderKcalChart(weeks) {
   const dailyData = [];
   for (let i = days - 1; i >= 0; i--) {
     const d    = new Date(now.getTime() - i * dayMs);
-    const key  = d.toISOString().slice(0, 10);
+    const key  = _localDateStr(d);
     const kcal = lsGet('kcal_today_' + key) ?? 0;
     const pct  = target > 0 ? Math.round(kcal / target * 100) : 0;
     dailyData.push({
@@ -8881,7 +8881,7 @@ function renderRuleBasedAnalysis() {
   const today = new Date();
   const days14 = Array.from({length:14}, (_,i) => {
     const d = new Date(today); d.setDate(d.getDate() - i);
-    return d.toISOString().slice(0,10);
+    return _localDateStr(d);
   }).reverse();
   const days7 = days14.slice(7);
 
@@ -9071,7 +9071,7 @@ function renderRuleBasedAnalysis() {
     : [`Hardgainerid vajavad süsteemi, mitte motivatsiooni. Vali üks asi mida parandad.`,
        'BtB õpetab: konsistentsus > intensiivsus. Isegi 60% on parem kui 0%.',
        `Iga nädal on uus algus. Faas ${ph} ootab — alusta tänasest.`];
-  const _mDay = new Date().toISOString().slice(0, 10);
+  const _mDay = _localDateStr(new Date());
   const _mSeed = (function(){ let h=0; for(let i=0;i<_mDay.length;i++) h=(h*31+_mDay.charCodeAt(i))>>>0; return h; })();
   const motivation = motivPool[_mSeed % motivPool.length];
 
@@ -9205,7 +9205,7 @@ function saveWeightEntry() {
     return;
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDateStr(new Date());
   const log   = lsGet('weight_log') ?? [];
 
   // Asenda kui täna juba on kirje
@@ -9351,7 +9351,7 @@ function exSaveSet(exerciseId, setNo) {
   const weight = parseFloat(String(kgInp?.value ?? '').replace(',', '.')) || 0;
   if (!reps) { rpInp?.focus(); return; }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDateStr(new Date());
   let tlog = lsGet('training_log') ?? [];
   let todayEntry = tlog.find(e => e.date === today && e.plan === STATE.activePlan && e.treening === STATE.currentTraining);
   if (!todayEntry) {
@@ -9446,7 +9446,7 @@ function renderExerciseDetail() {
   const defaultW = lastW ?? planEx.start_weight_kg ?? 0;
 
   // Tänased logitud seeriad
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDateStr(new Date());
   const tlog  = lsGet('training_log') ?? [];
   const todayEntry = tlog.find(e => e.date === today && e.plan === STATE.activePlan && e.treening === STATE.currentTraining);
   const todaySets = todayEntry?.exercises?.find(e => String(e.exercise_id) === String(planEx.id))?.sets ?? [];
@@ -9594,7 +9594,7 @@ function saveExerciseLog(exerciseId) {
   const weight = parseFloat(wInput?.value) || 0;
   if (!reps) { repsInput.focus(); return; }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDateStr(new Date());
   let tlog = lsGet('training_log') ?? [];
   let todayEntry = tlog.find(e => e.date === today && e.plan === STATE.activePlan && e.treening === STATE.currentTraining);
   if (!todayEntry) {
@@ -9617,7 +9617,7 @@ function saveExerciseLog(exerciseId) {
 
 /* Märgib treeningu tehtuks */
 function markTrainingDone() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDateStr(new Date());
   let tlog = lsGet('training_log') ?? [];
   let todayEntry = tlog.find(e => e.date === today && e.plan === STATE.activePlan && e.treening === STATE.currentTraining);
   if (!todayEntry) {
@@ -9661,7 +9661,7 @@ function advanceBtbWeek() {
   } else if (STATE.btbPhase < 2) {  // Faas 3-4 on coming soon
     STATE.btbPhase++;
     STATE.btbWeek = 1;
-    STATE.btbStartDate = new Date().toISOString().slice(0, 10);
+    STATE.btbStartDate = _localDateStr(new Date());
     lsSet('btb_phase',      STATE.btbPhase);
     lsSet('btb_week',       STATE.btbWeek);
     lsSet('btb_start_date', STATE.btbStartDate);
@@ -9929,7 +9929,7 @@ function setBtbWeek(week) {
   // Uuenda start kuupäev vastavalt valitud nädalale
   const d = new Date();
   d.setDate(d.getDate() - (week - 1) * 7);
-  STATE.btbStartDate = d.toISOString().slice(0, 10);
+  STATE.btbStartDate = _localDateStr(d);
   lsSet('btb_start_date', STATE.btbStartDate);
   renderTab('trenn');
 }
@@ -9940,7 +9940,7 @@ function setBtbPhase(phase) {
   if (phaseData?.coming_soon) return;
   STATE.btbPhase     = phase;
   STATE.btbWeek      = 1;
-  STATE.btbStartDate = new Date().toISOString().slice(0, 10);
+  STATE.btbStartDate = _localDateStr(new Date());
   lsSet('btb_phase',      phase);
   lsSet('btb_week',       1);
   lsSet('btb_start_date', STATE.btbStartDate);
@@ -9952,7 +9952,7 @@ function setBtbPhase(phase) {
 function startBtbProgram() {
   STATE.btbPhase     = 1;
   STATE.btbWeek      = 1;
-  STATE.btbStartDate = new Date().toISOString().slice(0, 10);
+  STATE.btbStartDate = _localDateStr(new Date());
   lsSet('btb_phase',      STATE.btbPhase);
   lsSet('btb_week',       STATE.btbWeek);
   lsSet('btb_start_date', STATE.btbStartDate);
@@ -10009,7 +10009,7 @@ function renderExerciseSlot(planEx, exData, idx, circuitLabel, phaseConfig) {
     ? `<span class="exercise-warning-badge">⚠️ kerge</span>` : '';
 
   // Ladinud selle treeningu ajal
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDateStr(new Date());
   const tlog  = lsGet('training_log') ?? [];
   const todayEntry = tlog.find(e => e.date === today && e.plan === STATE.activePlan && e.treening === STATE.currentTraining);
   const todaySets  = todayEntry?.exercises?.find(e => String(e.exercise_id) === id)?.sets ?? [];
@@ -10146,7 +10146,7 @@ function stopBmxSession() {
   // Salvesta loogi
   const bmxLog = lsGet('bmx_log') ?? [];
   bmxLog.unshift({
-    date: endTime.toISOString().slice(0, 10),
+    date: _localDateStr(endTime),
     start: STATE.bmxStartTime,
     end: endTime.toISOString(),
     duration_min: durationMin,
@@ -10492,7 +10492,7 @@ function renderTrenn() {
   const loc = plan.location ?? '';
 
   // Treening tehtud nupp
-  const today     = new Date().toISOString().slice(0, 10);
+  const today     = _localDateStr(new Date());
   const tlog      = lsGet('training_log') ?? [];
   const todayDone = tlog.some(e => e.date === today && e.plan === activePlan && e.treening === curT && e.done);
 
