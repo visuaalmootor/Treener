@@ -1898,7 +1898,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.5.7</span>
+  <span id="version-label">v0.9.5.8</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1917,7 +1917,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.5.7';
+const APP_VERSION  = '0.9.5.8';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2057,6 +2057,31 @@ function _withTimeout(promise, ms, label) {
   ]);
 }
 
+/* v0.9.5.8: diagnostika — testib eraldi IndexedDB-d ja võrku Firebase'ini,
+   et teada kumb login'i rippuma paneb. */
+async function _gisDiagnose() {
+  let idb = '?';
+  try {
+    idb = await _withTimeout(new Promise((res) => {
+      let done = false;
+      const req = indexedDB.open('__diag_test_ttm__', 1);
+      req.onsuccess = () => { if (done) return; done = true; try { req.result.close(); } catch (e) {} try { indexedDB.deleteDatabase('__diag_test_ttm__'); } catch (e) {} res('✓ OK'); };
+      req.onerror   = () => { if (done) return; done = true; res('viga: ' + (req.error && req.error.name || 'unknown')); };
+      req.onblocked = () => { if (done) return; done = true; res('BLOCKED'); };
+    }), 4000, 'idb');
+  } catch (e) { idb = 'RIPUB ✗'; }
+  let net = '?';
+  try {
+    const resp = await _withTimeout(
+      fetch('https://identitytoolkit.googleapis.com/v1/projects?key=' + FB_CONFIG.apiKey, { method: 'GET' }),
+      8000, 'net');
+    net = '✓ OK (HTTP ' + resp.status + ')';
+  } catch (e) {
+    net = /timeout/i.test(e.message) ? 'RIPUB ✗' : ('viga: ' + e.message);
+  }
+  return { idb, net };
+}
+
 async function _gisCallback(response) {
   try {
     if (!response || !response.credential) {
@@ -2080,10 +2105,16 @@ async function _gisCallback(response) {
     } catch (e) {
       const code = e.code || e.message || String(e);
       log('signInWithCredential viga: ' + code, 'dbg-err');
-      const hint = /timeout/i.test(code)
-        ? '<br><span style="font-weight:400;color:#8A7E6A;">Salvestus (IndexedDB) ripub selles brauseris. Proovi: Brave seaded → tühjenda selle saidi andmed, VÕI ava app Safaris ja logi seal sisse.</span>'
-        : '';
-      _gisSetStatus('❌ Firebase login ebaõnnestus:<br><b>' + code + '</b>' + hint, true);
+      _gisSetStatus('❌ Login timeout — diagnoosin…', true);
+      if (/timeout/i.test(code)) {
+        const d = await _gisDiagnose();
+        log('DIAG idb=' + d.idb + ' net=' + d.net, 'dbg-warn');
+        _gisSetStatus('❌ Login timeout.<br><span style="font-weight:400;color:#211E18;font-size:12px;">'
+          + 'IndexedDB (salvestus): <b>' + d.idb + '</b><br>'
+          + 'Võrk Firebase\'ini: <b>' + d.net + '</b></span>', true);
+      } else {
+        _gisSetStatus('❌ Firebase login ebaõnnestus:<br><b>' + code + '</b>', true);
+      }
     }
   } catch (e) {
     const code = e.message || String(e);
