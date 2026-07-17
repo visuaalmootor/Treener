@@ -1898,7 +1898,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.6.4</span>
+  <span id="version-label">v0.9.6.5</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1917,7 +1917,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.6.4';
+const APP_VERSION  = '0.9.6.5';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2194,13 +2194,49 @@ async function fbLogout() {
   showToast('Välja logitud');
 }
 
-// Kirjuta Firestoresse — fire-and-forget, ei blokeeri UI-d
+/* ===== v0.9.6.5: Firestore KIRJUTAMINE REST-API kaudu =====
+   Firestore SDK striimiv WebChannel-kirjutamiskanal on Safaris/iOS-is blokeeritud
+   (batch.commit aegus 20s). REST-API on tavaline HTTPS PATCH ja töötab Safaris.
+   Lugemine (get + onSnapshot) jääb SDK peale — see töötab. */
+function _toFsValue(x) {
+  if (x === null || x === undefined) return { nullValue: null };
+  if (typeof x === 'boolean') return { booleanValue: x };
+  if (typeof x === 'number') {
+    if (!isFinite(x)) return { doubleValue: 0 };
+    return Number.isInteger(x) ? { integerValue: String(x) } : { doubleValue: x };
+  }
+  if (typeof x === 'string') return { stringValue: x };
+  if (Array.isArray(x)) return { arrayValue: { values: x.map(_toFsValue) } };
+  if (typeof x === 'object') {
+    const fields = {};
+    for (const k in x) if (Object.prototype.hasOwnProperty.call(x, k)) fields[k] = _toFsValue(x[k]);
+    return { mapValue: { fields } };
+  }
+  return { stringValue: String(x) };
+}
+
+async function _fbRestWrite(key, value) {
+  if (!FB_USER) throw new Error('pole sisse logitud');
+  const token = await FB_USER.getIdToken();
+  const url = `https://firestore.googleapis.com/v1/projects/${FB_CONFIG.projectId}`
+    + `/databases/(default)/documents/users/${FB_USER.uid}/kv/${encodeURIComponent(key)}`;
+  const body = { fields: { v: _toFsValue(value), ts: { integerValue: String(Date.now()) } } };
+  const resp = await fetch(url, {
+    method: 'PATCH',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!resp.ok) {
+    const t = await resp.text().catch(() => '');
+    throw new Error('HTTP ' + resp.status + ' ' + t.slice(0, 140));
+  }
+  return true;
+}
+
+// Kirjuta Firestoresse — fire-and-forget, ei blokeeri UI-d (REST kaudu)
 function fbWrite(key, value) {
   if (!FB_USER || !_fbDb) return;
-  _fbDb.collection('users').doc(FB_USER.uid)
-    .collection('kv').doc(key)
-    .set({ v: value, ts: Date.now() })
-    .catch(e => log('fbWrite viga: ' + e.message, 'dbg-err'));
+  _fbRestWrite(key, value).catch(e => log('fbWrite viga: ' + (e.message || e), 'dbg-err'));
 }
 
 /* ===== v0.9.5.0: liidetavate logide targem sünk =====
@@ -2430,30 +2466,28 @@ function _setupResyncListeners() {
 async function pushAllToFirestore() {
   if (!FB_USER || !_fbDb) { showToast('Logi kõigepealt Google\'iga sisse'); return; }
   showToast('⬆️ Laen üles…');
-  log('pushAllToFirestore: alustan…', 'dbg-ok');
-  const ref = _fbDb.collection('users').doc(FB_USER.uid).collection('kv');
-  const batch = _fbDb.batch();
-  let count = 0;
+  log('pushAllToFirestore: alustan (REST)…', 'dbg-ok');
+  const keys = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
     if (!k || !k.startsWith('ttm_') || k === 'ttm__meta_ts') continue;
-    const key = k.slice(4);
-    try {
-      const val = JSON.parse(localStorage.getItem(k));
-      batch.set(ref.doc(key), { v: val, ts: Date.now() });
-      count++;
-    } catch {}
+    keys.push(k.slice(4));
   }
-  // v0.9.6.4: selge tagasiside + ajapiirang, et nupp ei jääks vaikselt rippuma.
-  // Veakood ütleb MIKS kirjutamine ebaõnnestub (permission-denied / unavailable / timeout).
-  try {
-    await _withTimeout(batch.commit(), 20000, 'batch.commit');
-    showToast(`☁️ ${count} kirjet üles laetud`);
-    log(`pushAllToFirestore OK: ${count} kirjet`, 'dbg-ok');
-  } catch (e) {
-    const code = e.code || e.message || String(e);
-    showToast('❌ Üleslaadimine ebaõnnestus: ' + code);
-    log('pushAllToFirestore VIGA: ' + code, 'dbg-err');
+  // v0.9.6.5: REST-kirjutamine (SDK batch.commit aegus Safaris). Iga võti eraldi, paralleelselt.
+  let ok = 0, fail = 0, firstErr = '';
+  await Promise.all(keys.map(async key => {
+    try {
+      const val = JSON.parse(localStorage.getItem('ttm_' + key));
+      await _withTimeout(_fbRestWrite(key, val), 15000, 'rest');
+      ok++;
+    } catch (e) { fail++; if (!firstErr) firstErr = (e.message || String(e)); }
+  }));
+  if (fail === 0) {
+    showToast(`☁️ ${ok} kirjet üles laetud`);
+    log(`pushAllToFirestore REST OK: ${ok} kirjet`, 'dbg-ok');
+  } else {
+    showToast(`⚠️ ${ok} õnnestus, ${fail} ebaõnnestus: ${firstErr}`);
+    log(`pushAllToFirestore REST: ok=${ok} fail=${fail} — ${firstErr}`, 'dbg-err');
   }
 }
 
