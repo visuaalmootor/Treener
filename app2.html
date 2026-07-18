@@ -1911,7 +1911,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.6.6</span>
+  <span id="version-label">v0.9.6.7</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1930,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.6.6';
+const APP_VERSION  = '0.9.6.7';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2259,9 +2259,34 @@ function fbWrite(key, value) {
 function _isMergeKey(id) {
   return id === 'nutrition_log' || id === 'training_log' || id === 'weight_log'
       || id === 'meal_plan' || id === 'mp_prep_done' || id === 'exercise_notes'
+      || id === 'deleted_items'
       || id.indexOf('alkohol_week_') === 0;
 }
-function _mergeByKey(a, b, keyFn) {
+
+/* ===== v0.9.6.7: kustutamise "tombstone'id" =====
+   Puhas union-liitmine EI SAA kunagi kustutamist edastada: kui A kustutab kirje ja B-l on
+   endiselt vana koopia, liidab järgmine sünk selle lihtsalt tagasi (kirje "tuleb kohe tagasi").
+   Lahendus: kustutamisel jäta "tombstone" (kustutamise ajatempel) võtmega "<skoop>|<kirjevõti>".
+   Liitmisel jäetakse välja iga kirje, mille oma ajatempel (updated_at/added_at) on tombstone'ist vanem —
+   nii saab kustutatud kirje tagasi tulla ainult siis, kui keegi selle TEADLIKULT uuesti lisab. */
+function _mergeTombstones(a, b) {
+  const out = { ...(a || {}) };
+  Object.entries(b || {}).forEach(([k, ts]) => { out[k] = Math.max(out[k] || 0, ts || 0); });
+  return out;
+}
+function _isDeleted(scope, itemKey, itemTs) {
+  const tomb = lsGet('deleted_items') || {};
+  const dts = tomb[`${scope}|${itemKey}`];
+  if (dts == null) return false;
+  return (itemTs || 0) <= dts;
+}
+function _markDeleted(scope, itemKey) {
+  const tomb = lsGet('deleted_items') || {};
+  tomb[`${scope}|${itemKey}`] = Date.now();
+  lsSet('deleted_items', tomb);
+}
+
+function _mergeByKey(a, b, keyFn, scope) {
   const map = new Map();
   [...(a || []), ...(b || [])].forEach(it => {
     if (it == null) return;
@@ -2270,7 +2295,9 @@ function _mergeByKey(a, b, keyFn) {
     // sama võtme korral hoia "rikkalikum" kirje (rohkem infot)
     if (!ex || JSON.stringify(it).length >= JSON.stringify(ex).length) map.set(k, it);
   });
-  return [...map.values()];
+  let out = [...map.values()];
+  if (scope) out = out.filter(it => !_isDeleted(scope, keyFn(it), it.updated_at || it.added_at || 0));
+  return out;
 }
 function _mergeNutritionLog(a, b) {
   const out = {};
@@ -2278,27 +2305,43 @@ function _mergeNutritionLog(a, b) {
   dates.forEach(d => {
     const da = (a && a[d]) || {}, db = (b && b[d]) || {};
     const m = {};
+    // v0.9.6.7: iga slot-staatuse muutmise ajatempel — eristab "pole veel märgitud" (null, alati)
+    // ja "teadlikult tühjaks tehtud" (null, aga uuem ajatempel kui pilve 'eaten') — vt allpool.
+    const tsA = da._ts || {}, tsB = db._ts || {};
+    const mTs = {};
+    new Set([...Object.keys(tsA), ...Object.keys(tsB)]).forEach(k => { mTs[k] = Math.max(tsA[k] || 0, tsB[k] || 0); });
     const keys = new Set([...Object.keys(da), ...Object.keys(db)]);
     keys.forEach(s => {
       if (s === '_custom') {
         const byId = {};
         [...(da._custom || []), ...(db._custom || [])].forEach(e => { if (e && e.id != null) byId[e.id] = e; });
-        m._custom = Object.values(byId);
+        m._custom = Object.values(byId).filter(e =>
+          !_isDeleted(`nutrition_log._custom|${d}`, e.id, e.added_at ? new Date(e.added_at).getTime() : 0));
+      } else if (s === '_ts') {
+        // käsitletud eraldi (mTs) — ei kirjuta otse
       } else {
         const va = da[s], vb = db[s];
-        // söödud-staatus: eelista mitte-null; konflikti korral 'eaten'
-        m[s] = (va && vb) ? ((va === 'eaten' || vb === 'eaten') ? 'eaten' : va) : (va ?? vb);
+        const ta = tsA[s] || 0, tb = tsB[s] || 0;
+        if (ta || tb) {
+          // uuem TEADLIK muutus võidab alati — ka siis kui uuem väärtus on null (lahti märgitud)
+          m[s] = ta >= tb ? va : vb;
+        } else {
+          // vanad kirjed ilma ajatemplita — endine tagasiühilduv käitumine
+          m[s] = (va && vb) ? ((va === 'eaten' || vb === 'eaten') ? 'eaten' : va) : (va ?? vb);
+        }
       }
     });
+    if (Object.keys(mTs).length) m._ts = mTs;
     out[d] = m;
   });
   return out;
 }
 function _mergeLogValue(id, localVal, cloudVal) {
   if (id === 'nutrition_log') return _mergeNutritionLog(localVal, cloudVal);
-  if (id === 'training_log')  return _mergeByKey(localVal, cloudVal, e => `${e.date}|${e.plan}|${e.treening}`);
-  if (id === 'weight_log')    return _mergeByKey(localVal, cloudVal, e => e.date).sort((x, y) => (x.date || '').localeCompare(y.date || ''));
-  if (id.indexOf('alkohol_week_') === 0) return _mergeByKey(localVal, cloudVal, e => `${e.date}|${e.time}|${e.label}`);
+  if (id === 'training_log')  return _mergeByKey(localVal, cloudVal, e => `${e.date}|${e.plan}|${e.treening}`, 'training_log');
+  if (id === 'weight_log')    return _mergeByKey(localVal, cloudVal, e => e.date, 'weight_log').sort((x, y) => (x.date || '').localeCompare(y.date || ''));
+  if (id === 'deleted_items') return _mergeTombstones(localVal, cloudVal);
+  if (id.indexOf('alkohol_week_') === 0) return _mergeByKey(localVal, cloudVal, e => `${e.date}|${e.time}|${e.label}`, id);
   if (id === 'exercise_notes') return { ...(cloudVal || {}), ...(localVal || {}) };
   if (id === 'mp_prep_done') {
     const out = { ...(cloudVal || {}) };
@@ -5446,6 +5489,8 @@ function removeCustomMeal(dateStr, id) {
   if (!nutLog[dateStr]?._custom) return;
   nutLog[dateStr]._custom = nutLog[dateStr]._custom.filter(e => e.id !== id);
   lsSet('nutrition_log', nutLog);
+  // v0.9.6.7: jäta tombstone, muidu toob sünk kustutatud käsitsi-toidu tagasi (union-liitmine)
+  _markDeleted(`nutrition_log._custom|${dateStr}`, id);
 
   const totalKcal = calcEatenKcal(dateStr);
   lsSet('kcal_today_' + dateStr, totalKcal);
@@ -5652,6 +5697,10 @@ function setMealStatus(slotId, status, dateStr) {
     log[dateStr][slotId] = status;
   }
   const newStatus = log[dateStr][slotId] ?? null;
+  // v0.9.6.7: jäta ajatempel — muidu liidab sünk lahtimärkimise vahel tagasi 'eaten'-ks,
+  // sest liitmine ei osanud eristada "pole veel märgitud" ja "teadlikult lahti märgitud" (null vs null)
+  if (!log[dateStr]._ts) log[dateStr]._ts = {};
+  log[dateStr]._ts[slotId] = Date.now();
   lsSet('nutrition_log', log);
 
   // Auto-vesi: arvestatakse ainult kui eaten-staatus MUUTUB (null/skipped ↔ eaten)
@@ -9291,7 +9340,8 @@ function saveWeightEntry() {
     weight_kg:    weight,
     shoulder_cm:  parseFloat(document.getElementById('inp-shoulder')?.value) || null,
     bicep_cm:     parseFloat(document.getElementById('inp-bicep')?.value)    || null,
-    waist_cm:     parseFloat(document.getElementById('inp-waist')?.value)    || null
+    waist_cm:     parseFloat(document.getElementById('inp-waist')?.value)    || null,
+    updated_at:   Date.now() // v0.9.6.7: vajalik kustutamise-tombstone võrdluseks (vt _mergeByKey)
   };
 
   if (idx >= 0) weightLog[idx] = entry;
@@ -9334,11 +9384,12 @@ function cancelEditWeightEntry() {
   renderTab('mina');
 }
 
-/* v0.9.6.6: kustuta kaalukirje */
+/* v0.9.6.6: kustuta kaalukirje (v0.9.6.7: jätab tombstone'i, et sünk ei tooks tagasi) */
 function deleteWeightEntry(date) {
   let weightLog = lsGet('weight_log') ?? [];
   weightLog = weightLog.filter(e => e.date !== date);
   lsSet('weight_log', weightLog);
+  _markDeleted('weight_log', date);
   if (STATE.editingWeightDate === date) STATE.editingWeightDate = null;
   showToast('Kaalukirje kustutatud');
   renderTab('mina');
