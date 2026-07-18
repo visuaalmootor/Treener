@@ -549,6 +549,19 @@
       display: flex; align-items: center; justify-content: center;
     }
     .btn-delete-custom:active { color: var(--red); }
+    .btn-edit-custom {
+      width: 28px; height: 28px;
+      border: none; background: none;
+      color: var(--text-3); font-size: 14px;
+      cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-edit-custom:active { color: var(--accent); }
+    .weight-history-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0; border-bottom: 0.5px solid var(--border);
+    }
+    .weight-history-row:last-child { border-bottom: none; }
 
     .custom-add-form {
       background: var(--bg);
@@ -1898,7 +1911,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.6.5</span>
+  <span id="version-label">v0.9.6.6</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1917,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.6.5';
+const APP_VERSION  = '0.9.6.6';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -3512,6 +3525,7 @@ let STATE = {
   // Tab 4 — Progress
   minaPeriod:         4,      // 0=täna | 1 | 4 | 8 | 12 nädalat
   progressChartType:  'weight', // 'weight'|'shoulder'|'bicep'|'waist'|'all'
+  editingWeightDate:  null,     // v0.9.6.6: kui seatud, saveWeightEntry() uuendab seda kirjet (mitte ei lisa tänast)
   bodyMapMuscle:      null,     // valitud lihasgrupp body mapil
   analysis:           null,     // data/analysis.json (scheduled task kirjutab)
   // BMX mode
@@ -8097,7 +8111,10 @@ function renderProgress() {
       <div class="chart-sub">${chartSub}</div>
       ${chartHtml}
       <hr class="meas-divider">
-      <div class="weight-form-title">➕ Lisa mõõtmised</div>
+      <div class="weight-form-title" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>${STATE.editingWeightDate ? `✏️ Muudad kirjet: ${STATE.editingWeightDate}` : '➕ Lisa mõõtmised'}</span>
+        ${STATE.editingWeightDate ? `<span onclick="cancelEditWeightEntry()" style="font-size:11px;font-weight:500;color:var(--text-3);cursor:pointer;text-decoration:underline;">tühista</span>` : ''}
+      </div>
       <div class="weight-inputs">
         <div class="weight-input-group">
           <label>Kaal (kg) <span style="color:var(--red);">*</span></label>
@@ -8116,8 +8133,10 @@ function renderProgress() {
           <input type="number" id="inp-waist" placeholder="72" step="0.5">
         </div>
       </div>
-      <button class="btn-primary" onclick="saveWeightEntry()" style="margin-top:0;">Salvesta</button>
+      <button class="btn-primary" onclick="saveWeightEntry()" style="margin-top:0;">${STATE.editingWeightDate ? 'Uuenda kirjet' : 'Salvesta'}</button>
     </div>
+
+    ${renderWeightHistoryList(weightLog)}
 
     ${renderPRSection()}
 
@@ -9250,7 +9269,7 @@ function renderBtbRoadmap() {
     </div>`;
 }
 
-/* Kaalukirje salvestamine */
+/* Kaalukirje salvestamine (v0.9.6.6: toetab ka olemasoleva kirje muutmist) */
 function saveWeightEntry() {
   const wEl = document.getElementById('inp-weight');
   const weight = parseFloat(wEl?.value);
@@ -9259,30 +9278,101 @@ function saveWeightEntry() {
     return;
   }
 
-  const today = _localDateStr(new Date());
-  const log   = lsGet('weight_log') ?? [];
+  // v0.9.6.6 fix: muutuja EI TOHI olla nimega 'log' — see varjutab globaalse
+  // log() funktsiooni, mistõttu allolev log(...) kutse viskab vea ja renderTab
+  // jääb käivitamata (vt sama viga v0.9.4.7 juures custom-toidu lisamisel).
+  const targetDate = STATE.editingWeightDate || _localDateStr(new Date());
+  const weightLog  = lsGet('weight_log') ?? [];
 
-  // Asenda kui täna juba on kirje
-  const idx = log.findIndex(e => e.date === today);
+  // Asenda kui sellel kuupäeval juba on kirje
+  const idx = weightLog.findIndex(e => e.date === targetDate);
   const entry = {
-    date:         today,
+    date:         targetDate,
     weight_kg:    weight,
     shoulder_cm:  parseFloat(document.getElementById('inp-shoulder')?.value) || null,
     bicep_cm:     parseFloat(document.getElementById('inp-bicep')?.value)    || null,
     waist_cm:     parseFloat(document.getElementById('inp-waist')?.value)    || null
   };
 
-  if (idx >= 0) log[idx] = entry;
-  else log.push(entry);
+  if (idx >= 0) weightLog[idx] = entry;
+  else weightLog.push(entry);
 
-  log.sort((a, b) => a.date.localeCompare(b.date));
-  lsSet('weight_log', log);
-  log(`Kaalukirje salvestatud: ${today} → ${weight} kg`, 'dbg-ok');
+  weightLog.sort((a, b) => a.date.localeCompare(b.date));
+  lsSet('weight_log', weightLog);
+  log(`Kaalukirje salvestatud: ${targetDate} → ${weight} kg`, 'dbg-ok');
 
   // Uuenda kasutaja praegune kaal headeris (ei kirjuta user.json-i)
   if (STATE.user) STATE.user.weight_kg = weight;
+  STATE.editingWeightDate = null;
 
   renderTab('mina');
+}
+
+/* v0.9.6.6: täidab vormi olemasoleva kirje andmetega, et seda muuta */
+function editWeightEntry(date) {
+  const weightLog = lsGet('weight_log') ?? [];
+  const entry = weightLog.find(e => e.date === date);
+  if (!entry) return;
+  STATE.editingWeightDate = date;
+  renderTab('mina');
+  setTimeout(() => {
+    const wEl = document.getElementById('inp-weight');
+    const sEl = document.getElementById('inp-shoulder');
+    const bEl = document.getElementById('inp-bicep');
+    const uEl = document.getElementById('inp-waist');
+    if (wEl) wEl.value = entry.weight_kg ?? '';
+    if (sEl) sEl.value = entry.shoulder_cm ?? '';
+    if (bEl) bEl.value = entry.bicep_cm ?? '';
+    if (uEl) uEl.value = entry.waist_cm ?? '';
+    wEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 0);
+}
+
+/* v0.9.6.6: katkesta muutmisrežiim ilma salvestamata */
+function cancelEditWeightEntry() {
+  STATE.editingWeightDate = null;
+  renderTab('mina');
+}
+
+/* v0.9.6.6: kustuta kaalukirje */
+function deleteWeightEntry(date) {
+  let weightLog = lsGet('weight_log') ?? [];
+  weightLog = weightLog.filter(e => e.date !== date);
+  lsSet('weight_log', weightLog);
+  if (STATE.editingWeightDate === date) STATE.editingWeightDate = null;
+  showToast('Kaalukirje kustutatud');
+  renderTab('mina');
+}
+
+/* v0.9.6.6: kaalukirjete ajaloo nimekiri (uusim eest) — muuda/kustuta */
+function renderWeightHistoryList(weightLog) {
+  if (!weightLog || !weightLog.length) return '';
+  const sorted = [...weightLog].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 20);
+  const rows = sorted.map(e => {
+    const dLabel = new Date(e.date + 'T00:00:00').toLocaleDateString('et-EE', { day: 'numeric', month: 'short', year: 'numeric' });
+    const extras = [
+      e.shoulder_cm ? `Õlg ${e.shoulder_cm}cm` : null,
+      e.bicep_cm    ? `Biitseps ${e.bicep_cm}cm` : null,
+      e.waist_cm    ? `Vöö ${e.waist_cm}cm` : null,
+    ].filter(Boolean).join(' · ');
+    return `
+      <div class="weight-history-row">
+        <div>
+          <div style="font-size:13px;font-weight:600;">${e.weight_kg} kg <span style="font-weight:400;color:var(--text-3);font-size:11px;">— ${dLabel}</span></div>
+          ${extras ? `<div style="font-size:11px;color:var(--text-3);">${extras}</div>` : ''}
+        </div>
+        <div style="display:flex;flex-shrink:0;">
+          <button class="btn-edit-custom" onclick="editWeightEntry('${e.date}')" title="Muuda">✏️</button>
+          <button class="btn-delete-custom" onclick="deleteWeightEntry('${e.date}')" title="Kustuta">×</button>
+        </div>
+      </div>`;
+  }).join('');
+  return `
+    <div class="chart-card">
+      <div class="chart-title">📋 Kaalukirjete ajalugu</div>
+      <div class="chart-sub">Puuduta ✏️ et muuta või × et kustutada</div>
+      ${rows}
+    </div>`;
 }
 
 /* ============================================================
