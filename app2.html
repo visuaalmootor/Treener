@@ -1911,7 +1911,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.6.7</span>
+  <span id="version-label">v0.9.6.8</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1930,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.6.7';
+const APP_VERSION  = '0.9.6.8';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -3939,11 +3939,14 @@ function renderKodu() {
   const weightLog  = lsGet('weight_log') ?? [];
   const lastWeight = weightLog.length ? weightLog[weightLog.length - 1] : null;
   const prevWeight = weightLog.length > 1 ? weightLog[weightLog.length - 2] : null;
-  const curKg      = lastWeight?.weight ?? STATE.user?.weight_kg ?? 63;
-  const goalKg     = STATE.user?.goal_weight ?? 78;
+  // v0.9.6.8 fix: kirjed kasutavad välja 'weight_kg' (mitte 'weight') — vt weight_log kõikjal mujal
+  // failis. See rida jäi vahele, mistõttu Kodu tab näitas alati algset (user.json) kaalu, mitte uusimat
+  // weight_log kirjet — kaalu muutmine "Mina" tabis ei kajastunud Kodu tabis.
+  const curKg      = lastWeight?.weight ?? lastWeight?.weight_kg ?? STATE.user?.weight_kg ?? 63;
+  const goalKg     = STATE.user?.goal_weight_kg ?? 78; // väli on 'goal_weight_kg', mitte 'goal_weight'
   const startKg    = STATE.user?.weight_kg ?? 63;
   let weightDelta  = null;
-  if (prevWeight) weightDelta = (curKg - prevWeight.weight);
+  if (prevWeight) weightDelta = (curKg - (prevWeight.weight ?? prevWeight.weight_kg));
   const weightTrend = weightDelta === null ? '' :
     weightDelta > 0 ? `<span style="color:var(--green);font-size:13px;font-weight:600;">↑ +${weightDelta.toFixed(1)} kg</span>` :
     weightDelta < 0 ? `<span style="color:var(--red);font-size:13px;font-weight:600;">↓ ${weightDelta.toFixed(1)} kg</span>` :
