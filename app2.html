@@ -1911,7 +1911,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.7.0</span>
+  <span id="version-label">v0.9.7.1</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1930,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.7.0';
+const APP_VERSION  = '0.9.7.1';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -7542,24 +7542,24 @@ function renderMuscleBarsChart(cat, weeks) {
   start.setDate(start.getDate() - weeks * 7);
 
   const W = 340, H = 140;
-  const PAD = { top: 14, right: 20, bottom: 28, left: 32 };
+  const PAD = { top: 14, right: 20, bottom: 28, left: 36 };
   const pw = W - PAD.left - PAD.right;
   const ph = H - PAD.top - PAD.bottom;
 
-  // Iga treening kus see lihasgrupp esines → üks andmepunkt
+  // Iga treening kus see lihasgrupp esines → üks andmepunkt (reppide arv)
   const sessions = [];
   tlog.forEach(s => {
     const d = new Date(s.date);
     if (d < start || d > now) return;
-    let sets = 0;
+    let reps = 0;
     (s.exercises ?? []).forEach(ex => {
       const exCat = exIndex[String(ex.exercise_id)]?.category;
       const match = cat === 'Selg'
         ? (exCat === 'Selg' || exCat === 'Alaselg')
         : (exCat === cat);
-      if (match) sets += (ex.sets?.length ?? 0);
+      if (match) reps += (ex.sets ?? []).reduce((a, sv) => a + (sv.reps ?? 0), 0);
     });
-    if (sets > 0) sessions.push({ date: s.date, sets });
+    if (reps > 0) sessions.push({ date: s.date, reps });
   });
   sessions.sort((a, b) => a.date.localeCompare(b.date));
 
@@ -7567,25 +7567,27 @@ function renderMuscleBarsChart(cat, weeks) {
     return `<div style="text-align:center;padding:20px 0;font-size:12px;color:var(--text-3);">Sellel perioodil andmed puuduvad</div>`;
   }
 
-  // BtB faasi sihtmärk — setti sessiooni kohta (faasi keskmine)
+  // BtB faasi sihtmärk — reppi sessiooni kohta (avg sette × avg reppi/seeria)
   const phase = STATE.btbPhase ?? 1;
   const phaseData = STATE.btbPhaseData?.phases?.[String(phase)];
-  let targetSets = 3;
+  let targetReps = 30;
   if (phaseData && !phaseData.coming_soon && phaseData.week_progression) {
-    const avg = phaseData.week_progression.reduce((a, w) => a + w.sets, 0) / phaseData.week_progression.length;
-    targetSets = Math.round(avg);
+    const wp = phaseData.week_progression;
+    const avgSets = wp.reduce((a, w) => a + w.sets, 0) / wp.length;
+    const avgRepsPerSet = wp.reduce((a, w) => a + (w.reps_min + w.reps_max) / 2, 0) / wp.length;
+    targetReps = Math.round(avgSets * avgRepsPerSet);
   }
 
-  const maxSets = Math.max(...sessions.map(s => s.sets), targetSets + 1, 4);
+  const maxReps = Math.max(...sessions.map(s => s.reps), targetReps + 1, 10);
   const toX = date => {
     const ms  = new Date(date) - start;
     const tot = now - start;
     return PAD.left + (ms / tot) * pw;
   };
-  const toY = v => PAD.top + ph - (v / maxSets) * ph;
+  const toY = v => PAD.top + ph - (v / maxReps) * ph;
 
   // Y-axis
-  const yTicks = [0, Math.ceil(maxSets / 2), maxSets];
+  const yTicks = [0, Math.ceil(maxReps / 2), maxReps];
   const yTicksHtml = yTicks.map(v => `
     <text x="${PAD.left - 5}" y="${toY(v) + 4}" text-anchor="end" font-size="10" fill="var(--text-3)">${v}</text>
     <line x1="${PAD.left}" y1="${toY(v)}" x2="${PAD.left + pw}" y2="${toY(v)}" stroke="var(--border)" stroke-width="0.5"/>`).join('');
@@ -7599,40 +7601,40 @@ function renderMuscleBarsChart(cat, weeks) {
   }).join('');
 
   // BtB sihtmärgi katkendlik joon
-  const ty = toY(targetSets);
+  const ty = toY(targetReps);
   const targetLineHtml = `
     <line x1="${PAD.left}" y1="${ty}" x2="${PAD.left + pw}" y2="${ty}"
       stroke="var(--green)" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>
-    <text x="${PAD.left + pw + 3}" y="${ty + 4}" font-size="9" fill="var(--green)">${targetSets}</text>`;
+    <text x="${PAD.left + pw + 3}" y="${ty + 4}" font-size="9" fill="var(--green)">${targetReps}</text>`;
 
   // Ühendav joon (hele)
-  const linePoints = sessions.map(s => `${toX(s.date)},${toY(s.sets)}`).join(' ');
+  const linePoints = sessions.map(s => `${toX(s.date)},${toY(s.reps)}`).join(' ');
   const lineHtml = sessions.length > 1
     ? `<polyline points="${linePoints}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.35"/>`
     : '';
 
   // Punktid — värvitud sihtmärgi suhtes
-  const dotColor = sets => {
-    const pct = sets / targetSets;
+  const dotColor = reps => {
+    const pct = reps / targetReps;
     if (pct >= 0.9) return 'var(--green)';
     if (pct >= 0.5) return 'var(--amber)';
     return 'var(--red)';
   };
   const dotsHtml = sessions.map(s => {
     const x = toX(s.date);
-    const y = toY(s.sets);
-    const col = dotColor(s.sets);
+    const y = toY(s.reps);
+    const col = dotColor(s.reps);
     const d = new Date(s.date);
     return `<circle cx="${x}" cy="${y}" r="4.5" fill="var(--surface)" stroke="${col}" stroke-width="2.5">
-      <title>${d.getDate()}.${d.getMonth() + 1}: ${s.sets} setti</title>
+      <title>${d.getDate()}.${d.getMonth() + 1}: ${s.reps} reppi</title>
     </circle>`;
   }).join('');
 
   // Viimane punkt — suurem + number
   const last = sessions[sessions.length - 1];
-  const lx = toX(last.date), ly = toY(last.sets), lc = dotColor(last.sets);
+  const lx = toX(last.date), ly = toY(last.reps), lc = dotColor(last.reps);
   const lastDotHtml = `<circle cx="${lx}" cy="${ly}" r="5" fill="${lc}" stroke="${lc}" stroke-width="0" opacity="0.9"/>
-    <text x="${lx}" y="${ly - 9}" text-anchor="middle" font-size="10" font-weight="600" fill="${lc}">${last.sets}</text>`;
+    <text x="${lx}" y="${ly - 9}" text-anchor="middle" font-size="10" font-weight="600" fill="${lc}">${last.reps}</text>`;
 
   return `
     <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible;margin-top:8px;">
@@ -7645,37 +7647,13 @@ function renderMuscleBarsChart(cat, weeks) {
     </svg>`;
 }
 
-/* Stacked bar chart — kõik lihasgrupid nädalate kaupa */
+/* Multi-line chart — kõik lihasgrupid nädalate kaupa, reppides */
 function renderAllMusclesStackedChart(allMuscles, weeks) {
   const tlog    = lsGet('training_log') ?? [];
   const exIndex = STATE.exercises?.exercises ?? {};
   const now     = new Date();
 
-  // Kogu igal nädalal iga lihasgrupi setid
-  const weekData = [];
-  for (let i = weeks - 1; i >= 0; i--) {
-    const wStart = new Date(now); wStart.setDate(wStart.getDate() - (i + 1) * 7);
-    const wEnd   = new Date(now); wEnd.setDate(wEnd.getDate() - i * 7);
-    const label  = weeks <= 4 ? `N${weeks - i}` : `-${(i) ? i + 'n' : 'see'}`;
-    const byCat  = {};
-    tlog.forEach(s => {
-      const d = new Date(s.date);
-      if (d < wStart || d >= wEnd) return;
-      (s.exercises ?? []).forEach(ex => {
-        const cat = exIndex[String(ex.exercise_id)]?.category;
-        if (!cat) return;
-        byCat[cat] = (byCat[cat] ?? 0) + (ex.sets?.length ?? 0);
-      });
-    });
-    weekData.push({ label, byCat });
-  }
-
-  // Max kõrgus = kõigi nädalate suurim kogusumma
-  const totals = weekData.map(w => Object.values(w.byCat).reduce((a, b) => a + b, 0));
-  const maxTotal = Math.max(...totals, 1);
-  const BAR_H = 72; // px
-
-  // Lihasgrupi värvid (fikseeritud, mitte aktiivsuse-põhine)
+  // Lihasgrupi värvid
   const CAT_COLORS = {
     'Rind':      '#3B82F6',
     'Selg':      '#8B5CF6',
@@ -7687,29 +7665,71 @@ function renderAllMusclesStackedChart(allMuscles, weeks) {
     'Jalad':     '#F97316',
   };
 
-  const cols = weekData.map(w => {
-    const total = Object.values(w.byCat).reduce((a, b) => a + b, 0);
-    const colH  = Math.round((total / maxTotal) * BAR_H);
+  // Kogu igal nädalal iga lihasgrupi repid
+  const weekData = [];
+  for (let i = weeks - 1; i >= 0; i--) {
+    const wStart = new Date(now); wStart.setDate(wStart.getDate() - (i + 1) * 7);
+    const wEnd   = new Date(now); wEnd.setDate(wEnd.getDate() - i * 7);
+    const label  = weeks <= 4 ? `N${weeks - i}` : `-${i ? i + 'n' : 'see'}`;
+    const byCat  = {};
+    tlog.forEach(s => {
+      const d = new Date(s.date);
+      if (d < wStart || d >= wEnd) return;
+      (s.exercises ?? []).forEach(ex => {
+        const cat = exIndex[String(ex.exercise_id)]?.category;
+        if (!cat) return;
+        byCat[cat] = (byCat[cat] ?? 0) + (ex.sets ?? []).reduce((a, sv) => a + (sv.reps ?? 0), 0);
+      });
+    });
+    weekData.push({ label, byCat });
+  }
 
-    // Virna segmendid — suuremad allapoole
-    const segments = allMuscles
-      .filter(m => (w.byCat[m.cat] ?? 0) > 0)
-      .sort((a, b) => (w.byCat[b.cat] ?? 0) - (w.byCat[a.cat] ?? 0))
-      .map(m => {
-        const s   = w.byCat[m.cat] ?? 0;
-        const pct = s / total;
-        const h   = Math.max(Math.round(pct * colH), 2);
-        const col = CAT_COLORS[m.cat] ?? '#888';
-        return `<div style="width:100%;height:${h}px;background:${col};"></div>`;
-      }).join('');
+  const hasAny = weekData.some(w => Object.keys(w.byCat).length > 0);
+  if (!hasAny) {
+    return `<div style="text-align:center;padding:20px 0;font-size:12px;color:var(--text-3);">Sellel perioodil andmed puuduvad</div>`;
+  }
 
-    return `<div class="train-bar-col">
-      <div class="train-bar-val">${total || ''}</div>
-      <div style="width:100%;height:${BAR_H}px;display:flex;flex-direction:column;justify-content:flex-end;border-radius:3px 3px 0 0;overflow:hidden;">
-        ${total > 0 ? segments : `<div style="height:3px;background:var(--border);border-radius:3px;"></div>`}
-      </div>
-      <div class="train-bar-lbl">${w.label}</div>
-    </div>`;
+  const W = 340, H = 160;
+  const PAD = { top: 14, right: 20, bottom: 28, left: 36 };
+  const pw = W - PAD.left - PAD.right;
+  const ph = H - PAD.top - PAD.bottom;
+  const n = weekData.length;
+
+  const allVals = weekData.flatMap(w => Object.values(w.byCat));
+  const maxReps = Math.max(...allVals, 1);
+
+  const toX = i => PAD.left + (n > 1 ? (i / (n - 1)) * pw : pw / 2);
+  const toY = v => PAD.top + ph - (v / maxReps) * ph;
+
+  // Y-axis
+  const yTicks = [0, Math.ceil(maxReps / 2), maxReps];
+  const yTicksHtml = yTicks.map(v => `
+    <text x="${PAD.left - 5}" y="${toY(v) + 4}" text-anchor="end" font-size="10" fill="var(--text-3)">${v}</text>
+    <line x1="${PAD.left}" y1="${toY(v)}" x2="${PAD.left + pw}" y2="${toY(v)}" stroke="var(--border)" stroke-width="0.5"/>`).join('');
+
+  // X-axis
+  const xTicksHtml = weekData.map((w, i) =>
+    `<text x="${toX(i)}" y="${H - 4}" text-anchor="middle" font-size="9" fill="var(--text-3)">${w.label}</text>`
+  ).join('');
+
+  // Üks joon iga lihasgrupi kohta
+  const linesHtml = allMuscles.map(m => {
+    const col = CAT_COLORS[m.cat] ?? '#888';
+    const pts = weekData.map((w, i) => ({ x: toX(i), y: toY(w.byCat[m.cat] ?? 0), v: w.byCat[m.cat] ?? 0 }));
+    if (pts.every(p => p.v === 0)) return '';
+
+    const polyPoints = pts.map(p => `${p.x},${p.y}`).join(' ');
+    const polyline = n > 1
+      ? `<polyline points="${polyPoints}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>`
+      : '';
+
+    const dots = pts.map(p => p.v === 0 ? '' :
+      `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="var(--surface)" stroke="${col}" stroke-width="2">
+        <title>${m.label}: ${p.v} reppi</title>
+      </circle>`
+    ).join('');
+
+    return polyline + dots;
   }).join('');
 
   // Legend
@@ -7720,7 +7740,12 @@ function renderAllMusclesStackedChart(allMuscles, weeks) {
     </span>`;
   }).join('');
 
-  return `<div class="train-bars">${cols}</div>
+  return `
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible;margin-top:8px;">
+      ${yTicksHtml}
+      ${xTicksHtml}
+      ${linesHtml}
+    </svg>
     <div style="margin-top:6px;line-height:1.8;">${legend}</div>`;
 }
 
