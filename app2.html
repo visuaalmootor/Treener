@@ -1563,7 +1563,15 @@
       flex: 1;
       max-width: 168px;
     }
-    .body-map-side-label {
+    @keyframes muscleStrokeFade {
+      0%   { stroke-opacity: 0.85; }
+      70%  { stroke-opacity: 0.6; }
+      100% { stroke-opacity: 0; }
+    }
+    .muscle-active-stroke {
+      animation: muscleStrokeFade 10s ease-out forwards;
+    }
+        .body-map-side-label {
       font-size: 9px;
       font-weight: 700;
       color: var(--text-3);
@@ -1930,7 +1938,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = 'v0.9.8.2';
+const APP_VERSION  = 'v0.9.8.3';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -7526,7 +7534,8 @@ function renderBodySVG(activity, activeMuscle, weeks) {
       var sets = cat ? (activity[cat] || 0) : 0;
       var fill = cat ? muscleColor(sets, weeks) : BASE;
       var isActive = cat && cat === activeMuscle;
-      var stroke = isActive ? ' stroke="' + muscleColor(sets, weeks) + '" stroke-width="20" stroke-opacity="0.5"' : '';
+      // REVERT valik: ' stroke="' + muscleColor(sets, weeks) + '" stroke-width="20" stroke-opacity="0.5"'
+      var stroke = isActive ? ' class="muscle-active-stroke" stroke="#111111" stroke-width="18"' : '';
       var click = cat ? ' onclick="setBodyMapMuscle(\'' + cat + '\')" style="cursor:pointer;"' : '';
       return '<path fill="' + fill + '"' + stroke + click + ' d="';
     });
