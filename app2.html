@@ -1911,7 +1911,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.7.3</span>
+  <span id="version-label">v0.9.7.4</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1930,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.7.3';
+const APP_VERSION  = '0.9.7.4';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -7459,9 +7459,14 @@ function getMuscleActivity(weeks) {
       if (new Date(session.date) < cutoff) return;
     }
     (session.exercises ?? []).forEach(ex => {
-      const cat = exIndex[String(ex.exercise_id)]?.category;
-      if (!cat) return;
-      counts[cat] = (counts[cat] ?? 0) + (ex.sets?.length ?? 0);
+      const exData = exIndex[String(ex.exercise_id)];
+      if (!exData) return;
+      const n = ex.sets?.length ?? 0;
+      if (!n) return;
+      const cat = exData.category;
+      if (cat && !cat.includes('/')) counts[cat] = (counts[cat] ?? 0) + n;
+      const sec = exData.secondary_category;
+      if (sec) counts[sec] = (counts[sec] ?? 0) + n;
     });
   });
   return counts;
