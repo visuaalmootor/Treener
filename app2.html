@@ -1911,7 +1911,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.7.5</span>
+  <span id="version-label">v0.9.7.6</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1930,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.7.5';
+const APP_VERSION  = '0.9.7.6';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -7824,6 +7824,66 @@ function renderAllMusclesStackedChart(allMuscles, weeks) {
     <div style="margin-top:6px;line-height:1.8;">${legend}</div>`;
 }
 
+/* Panustanud harjutused — millised harjutused andsid selle lihasgrupi repid */
+function renderMuscleExercises(cat, weeks) {
+  const tlog    = lsGet('training_log') ?? [];
+  const exIndex = STATE.exercises?.exercises ?? {};
+  const now     = new Date();
+  const todayStr = _localDateStr(now);
+
+  const start = new Date(now);
+  if (weeks === 0) {
+    start.setHours(0, 0, 0, 0);
+  } else {
+    start.setDate(start.getDate() - weeks * 7);
+  }
+
+  // Kas harjutus panustab sellesse lihasgruppi (primary või secondary)?
+  function contributes(exData) {
+    if (!exData) return false;
+    const primary = exData.category;
+    const sec = exData.secondary_category;
+    const allCats = [primary, ...(Array.isArray(sec) ? sec : sec ? [sec] : [])].filter(c => c && !c.includes('/'));
+    if (cat === 'Selg') return allCats.some(c => c === 'Selg' || c === 'Alaselg');
+    return allCats.includes(cat);
+  }
+
+  // Kogu repid harjutuse kaupa
+  const exReps = {};
+  tlog.forEach(session => {
+    const d = new Date(session.date);
+    if (d < start || d > now) return;
+    if (weeks === 0 && (session.date ?? '').slice(0, 10) !== todayStr) return;
+    (session.exercises ?? []).forEach(ex => {
+      const exData = exIndex[String(ex.exercise_id)];
+      if (!contributes(exData)) return;
+      const reps = (ex.sets ?? []).reduce((a, sv) => a + (sv.reps ?? 0), 0);
+      if (reps > 0) exReps[String(ex.exercise_id)] = (exReps[String(ex.exercise_id)] ?? 0) + reps;
+    });
+  });
+
+  const entries = Object.entries(exReps).sort((a, b) => b[1] - a[1]);
+  if (!entries.length) return '';
+
+  const items = entries.map(([eid, reps]) => {
+    const exData = exIndex[eid];
+    const primary = exData?.category;
+    const isPrimary = cat === 'Selg'
+      ? (primary === 'Selg' || primary === 'Alaselg')
+      : (primary === cat);
+    const label = isPrimary ? '' : `<span style="font-size:9px;color:var(--text-3);margin-left:3px;">sekund.</span>`;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0;border-bottom:0.5px solid var(--border);">
+      <span style="font-size:11px;color:var(--text-${isPrimary ? '1' : '2'});">${exData?.emoji ?? '💪'} ${exData?.name ?? `Harjutus ${eid}`}${label}</span>
+      <span style="font-size:11px;font-weight:600;color:var(--accent);font-family:var(--font-mono);min-width:32px;text-align:right;">${reps}</span>
+    </div>`;
+  }).join('');
+
+  return `<div style="margin-top:var(--sp-sm);padding-top:var(--sp-sm);border-top:0.5px solid var(--border);">
+    <div style="font-size:10px;font-weight:600;color:var(--text-3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Panustanud harjutused · repid perioodis</div>
+    ${items}
+  </div>`;
+}
+
 /* BtB maht-ülevaade lihasgrupi kohta — näitab oodatav vs tegelik sette/nädalas */
 function renderMuscleVolumeCard(cat, weeks) {
   var phase = STATE.btbPhase ?? 1;
@@ -7929,6 +7989,7 @@ function renderBodyMap(weeks) {
         <div style="font-size:12px;font-weight:600;margin-bottom:var(--sp-xs);">${muscle?.label ?? activeCat}${weeks === 0 ? ' — täna' : ` — ${weeks} nädala ajalugu`}</div>
         <div style="font-size:11px;color:var(--text-2);margin-bottom:var(--sp-sm);">Repid sessioonide lõikes · kokku ${totalSets} setti perioodis</div>
         ${weeks === 0 ? '' : renderMuscleBarsChart(activeCat, Math.min(weeks, 8))}
+        ${renderMuscleExercises(activeCat, weeks)}
         ${renderMuscleVolumeCard(activeCat, weeks)}
       </div>`;
   }
