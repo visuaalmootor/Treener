@@ -557,6 +557,193 @@
       "ingmar_note": "Ebastabiilsus aktiveerib rohkem stabilisaatoreid kui tavalised kätekõverdused — see on eelis, mitte probleem",
       "youtube_search": "ring push ups tutorial calisthenics",
       "secondary_category": "Triitseps"
+    },
+    "38": {
+      "name": "Rinnasurumised (push-up)",
+      "emoji": "💪",
+      "category": "Rind",
+      "secondary_category": "Triitseps",
+      "plans": [
+        "D",
+        "E"
+      ],
+      "is_bodyweight": true,
+      "equipment": "",
+      "steps": [
+        "Käed õlgade laiusel või veidi laiemalt, sõrmed ette",
+        "Keha sirge lauatahvlina — ära lase puusad alla vajuda",
+        "Lase rind maha kuni 2-3 cm põrandast, küünarnukid 45° kehast",
+        "Suru täie käega üles, lukusta küünarliigesed üleval"
+      ],
+      "notes": "Raske versioon: aeglane 3s alla, plahvatuslik üles. Kerge: põlved maas."
+    },
+    "39": {
+      "name": "Pike push-up (V-surumised)",
+      "emoji": "🔺",
+      "category": "Õlad",
+      "secondary_category": "Triitseps",
+      "plans": [
+        "D",
+        "E"
+      ],
+      "is_bodyweight": true,
+      "equipment": "",
+      "steps": [
+        "Tuharnikku üles — keha moodustab tagurpidi V-kuju",
+        "Pea vaatab põrandale, käed õlgade laiusel",
+        "Lase pea maha maa suunas — küünarnukid painutuvad väljapoole",
+        "Suru üles — tagurpidi V-asend tagasi"
+      ],
+      "notes": "Mida kõrgemad tuharad, seda rohkem fookust õladele. Tee tõuse jalataldade peal."
+    },
+    "40": {
+      "name": "Tooli dips (triitseps)",
+      "emoji": "🪑",
+      "category": "Triitseps",
+      "secondary_category": "Rind",
+      "plans": [
+        "E"
+      ],
+      "is_bodyweight": true,
+      "equipment": "tool",
+      "steps": [
+        "Istu tooli servale, käed puusade kõrval, sõrmed ette",
+        "Liigu eemale — toetud ainult kätele, jalad sirutatud",
+        "Lase puusad alla kuni küünarnukid 90° — ära lase õlad kõrvadeni tõusta",
+        "Suru käte jõul üles"
+      ],
+      "notes": "Raskem: jalad sirutatud kaugemale. Kergem: põlved kõverdatud."
+    },
+    "41": {
+      "name": "Laua invertrida (table row)",
+      "emoji": "🪵",
+      "category": "Selg",
+      "secondary_category": "Biitseps",
+      "plans": [
+        "E"
+      ],
+      "is_bodyweight": true,
+      "equipment": "laud",
+      "steps": [
+        "Lame laua alla, haara laua servast kinni — keha diagonaalis",
+        "Kanna maas, keha sirge laudtahvlina",
+        "Tõmba rind laua poole, küünarnukid suunduvad tahapoole",
+        "Lase alla kontrollitud tempos"
+      ],
+      "notes": "Mida horisontaalsem asend, seda raskem. Alusta 45° nurgaga. Asendab lõuatõmmet."
+    },
+    "42": {
+      "name": "Bulgaaria split kükk (tooliga)",
+      "emoji": "🦵",
+      "category": "Jalad",
+      "secondary_category": "Tuharad",
+      "plans": [
+        "E"
+      ],
+      "is_bodyweight": true,
+      "equipment": "tool",
+      "steps": [
+        "Seisa toolist ~60-70 cm ees, pane tagajalg tooli peale",
+        "Esijalg piisavalt kaugel — põlv ei lähe varbast ette",
+        "Lase puusad alla kuni esijalg 90° — hoia torso püsti",
+        "Suru esijalast üles tagasi"
+      ],
+      "notes": "Üks keerulisemaid kehakaaluharjutusi. Hoida tasakaalu esialgu seinast."
+    },
+    "43": {
+      "name": "Seinaistumine (wall sit)",
+      "emoji": "🧱",
+      "category": "Jalad",
+      "secondary_category": null,
+      "plans": [
+        "D",
+        "E"
+      ],
+      "is_bodyweight": true,
+      "equipment": "sein",
+      "steps": [
+        "Seisa seljaga vastu seina, jalad ~60 cm seinast",
+        "Lase maha kuni reied paralleelsed põrandaga — 90° põlveliiges",
+        "Selg täielikult vastu seina, käed reite peal või sirutatud",
+        "Hoia asendit ettenähtud aja"
+      ],
+      "notes": "Isomeetriline harjutus — kalorid põlevad küll. Eesmärk: 60s → 90s → 2min."
+    },
+    "44": {
+      "name": "Kehakaalu kükk (bodyweight squat)",
+      "emoji": "🦵",
+      "category": "Jalad",
+      "secondary_category": "Tuharad",
+      "plans": [
+        "D",
+        "E"
+      ],
+      "is_bodyweight": true,
+      "equipment": "",
+      "steps": [
+        "Jalad õlgade laiusel, varbad kergelt väljapoole",
+        "Käed ette sirutatud tasakaalu jaoks",
+        "Lase maha nagu toolile istudes — reied paralleelsed",
+        "Suru kannustest üles, lukusta puusad üleval"
+      ],
+      "notes": "Fookus: kanna põrandas, põlved varbade suunas. Sügav kükk = parem."
+    },
+    "45": {
+      "name": "Puusatõste / Glute bridge",
+      "emoji": "🍑",
+      "category": "Jalad",
+      "secondary_category": "Alaselg",
+      "plans": [
+        "D",
+        "E"
+      ],
+      "is_bodyweight": true,
+      "equipment": "",
+      "steps": [
+        "Selili, põlved kõverdatud, jalad õlgade laiusel, kannad maas",
+        "Suru puusad lakke — pigista tuharad ülevalt kokku",
+        "Hoia ülemises punktis 2 sek, ärge lase alaselg sisse vajuda",
+        "Lase kontrollitult maha — ära puuduta põrandat täielikult"
+      ],
+      "notes": "Ühe jalaga versioon = palju raskem. Hea eelsoojendus ka."
+    },
+    "46": {
+      "name": "Mountain climber",
+      "emoji": "🏔️",
+      "category": "Core",
+      "secondary_category": "Jalad",
+      "plans": [
+        "D",
+        "E"
+      ],
+      "is_bodyweight": true,
+      "equipment": "",
+      "steps": [
+        "Plankiasend — käed otse õlgade all, keha sirge",
+        "Tõmba üks põlv rinna poole, teine jäi sirutatud",
+        "Kiiresti vaheta jalgu — nagu jookseksid horisontaalselt",
+        "Hoia puusad stabiilsena — ärge löö üles-alla"
+      ],
+      "notes": "Loenda 1 kordus = 2 põlvetõmmet (mõlemad jalad). Kiirematempoga = kardio."
+    },
+    "47": {
+      "name": "Hollow body hold",
+      "emoji": "🫙",
+      "category": "Core",
+      "secondary_category": null,
+      "plans": [
+        "D",
+        "E"
+      ],
+      "is_bodyweight": true,
+      "equipment": "",
+      "steps": [
+        "Selili, käed pea taha sirutatud, jalad sirutatud",
+        "Pigista kõhulihased ja lükka alaselg põranda vastu",
+        "Tõsta õlad ja jalad ~15-20 cm põrandast — keha nagu banaan",
+        "Hoia asendit hingates — ärge lase alaselg lahti"
+      ],
+      "notes": "Raske aga väga efektiivne. Alusta 10-15 sekundiga, eesmärk 30-60s."
     }
   }
 }
