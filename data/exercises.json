@@ -95,7 +95,10 @@
       "name": "Ühe käe hantelrida",
       "emoji": "💪",
       "category": "Selg",
-      "secondary_category": "Biitseps",
+      "secondary_category": [
+        "Biitseps",
+        "Käsivarred"
+      ],
       "plans": [
         "B"
       ],
@@ -126,7 +129,10 @@
       ],
       "ingmar_note": "Hoia kael neutraalne — ära tõsta pead liiga kõrgele",
       "youtube_search": "chest supported dumbbell row",
-      "secondary_category": "Biitseps"
+      "secondary_category": [
+        "Biitseps",
+        "Käsivarred"
+      ]
     },
     "15": {
       "name": "Lat pulldown (alakäsi)",
@@ -144,7 +150,10 @@
       ],
       "ingmar_note": "ÄRA tõmba kaela taha — see on ohtlik kaelaprobleemiga inimesele!",
       "youtube_search": "lat pulldown underhand grip form",
-      "secondary_category": "Biitseps"
+      "secondary_category": [
+        "Biitseps",
+        "Käsivarred"
+      ]
     },
     "16": {
       "name": "Istudes kabeltõmme",
@@ -162,7 +171,10 @@
       ],
       "ingmar_note": "Liigutus toimub kätes, mitte seljas — ära kummarda tugevalt ette-taha",
       "youtube_search": "seated cable row proper form",
-      "secondary_category": "Biitseps"
+      "secondary_category": [
+        "Biitseps",
+        "Käsivarred"
+      ]
     },
     "17": {
       "name": "Bicep curl",
@@ -374,7 +386,10 @@
         "Hoia keha täiesti püsti — ära kalde raskuse poole"
       ],
       "ingmar_note": "Koormab kaela minimaalselt — suurepärane funktsionaalne harjutus",
-      "youtube_search": "farmers carry loaded carry tutorial Dan John"
+      "youtube_search": "farmers carry loaded carry tutorial Dan John",
+      "secondary_category": [
+        "Käsivarred"
+      ]
     },
     "29": {
       "name": "Masinkükk (OG10)",
@@ -427,7 +442,10 @@
       ],
       "ingmar_note": "Lai haare (B-treening) = ülaselg rohkem; kitsas haare = lailihas rohkem",
       "youtube_url": "https://youtu.be/jlhNOGBkpWA",
-      "secondary_category": "Biitseps"
+      "secondary_category": [
+        "Biitseps",
+        "Käsivarred"
+      ]
     },
     "32": {
       "name": "Masin-front press (OG41)",
@@ -464,7 +482,10 @@
       ],
       "ingmar_note": "Kael neutraalne. Kui täied kordused ei tule: hüppa üles, lase aeglaselt alla 4–5 sek (negatiivne kordus). 3×5 negatiivset → progresseerud täisteni.",
       "youtube_search": "chin up beginner form Jeff Nippard",
-      "secondary_category": "Biitseps"
+      "secondary_category": [
+        "Biitseps",
+        "Käsivarred"
+      ]
     },
     "34": {
       "name": "Rööbaspuud dips (OG81)",
