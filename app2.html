@@ -1911,7 +1911,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.6.9</span>
+  <span id="version-label">v0.9.7.0</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1930,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.6.9';
+const APP_VERSION  = '0.9.7.0';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2259,8 +2259,16 @@ function fbWrite(key, value) {
 function _isMergeKey(id) {
   return id === 'nutrition_log' || id === 'training_log' || id === 'weight_log'
       || id === 'meal_plan' || id === 'mp_prep_done' || id === 'exercise_notes'
-      || id === 'deleted_items'
+      || id === 'deleted_items' || id === 'meal_plan_ts'
       || id.indexOf('alkohol_week_') === 0;
+}
+
+/* v0.9.7.0: jäta märge, millal seda päeva toidukava viimati KÄSITSI muudeti (mpSwapSlot/mpGenerate).
+   Vt _mergeLogValue 'meal_plan' haru — vajalik, et sünk ei kirjutaks värsket vahetust vana pilvekoopiaga üle. */
+function _touchMealPlanDay(dateStr) {
+  const t = lsGet('meal_plan_ts') || {};
+  t[dateStr] = Date.now();
+  lsSet('meal_plan_ts', t);
 }
 
 /* ===== v0.9.6.7: kustutamise "tombstone'id" =====
@@ -2336,11 +2344,12 @@ function _mergeNutritionLog(a, b) {
   });
   return out;
 }
-function _mergeLogValue(id, localVal, cloudVal) {
+function _mergeLogValue(id, localVal, cloudVal, cloudTs) {
   if (id === 'nutrition_log') return _mergeNutritionLog(localVal, cloudVal);
   if (id === 'training_log')  return _mergeByKey(localVal, cloudVal, e => `${e.date}|${e.plan}|${e.treening}`, 'training_log');
   if (id === 'weight_log')    return _mergeByKey(localVal, cloudVal, e => e.date, 'weight_log').sort((x, y) => (x.date || '').localeCompare(y.date || ''));
   if (id === 'deleted_items') return _mergeTombstones(localVal, cloudVal);
+  if (id === 'meal_plan_ts')  return _mergeTombstones(localVal, cloudVal);
   if (id.indexOf('alkohol_week_') === 0) return _mergeByKey(localVal, cloudVal, e => `${e.date}|${e.time}|${e.label}`, id);
   if (id === 'exercise_notes') return { ...(cloudVal || {}), ...(localVal || {}) };
   if (id === 'mp_prep_done') {
@@ -2349,9 +2358,23 @@ function _mergeLogValue(id, localVal, cloudVal) {
     return out;
   }
   if (id === 'meal_plan') {
+    // v0.9.7.0 fix: vana loogika valis pikema JSON-iga versiooni ("rikkalikum" heuristik) — aga
+    // toidu VAHETAMINE (mpSwapSlot) ei tee kava JSON-i tingimata pikemaks (uus toit võib olla
+    // lühema nimega kui vana), mistõttu käsitsi tehtud vahetus kaotas vahel vana pilvekoopia vastu
+    // ja "vahetus tuli kohe tagasi". Nüüd: kui kohalik päev on _touchMealPlanDay'ga märgitud UUEMAKS
+    // kui pilve DOKUMENDI viimane kirjutus tervikuna (cloudTs), võidab kohalik muudatus alati.
+    // Kui ajatemplit pole (vana kirje / teise seadme genereeritud päev), endine pikkuse-heuristik.
     const out = { ...(cloudVal || {}) };
+    const dayTs = lsGet('meal_plan_ts') || {};
     for (const [d, plan] of Object.entries(localVal || {})) {
-      if (!out[d] || JSON.stringify(plan).length >= JSON.stringify(out[d]).length) out[d] = plan;
+      const cur = out[d];
+      if (!cur) { out[d] = plan; continue; }
+      const localDayTs = dayTs[d] || 0;
+      if (localDayTs && localDayTs > (cloudTs || 0)) {
+        out[d] = plan;
+      } else if (!localDayTs && JSON.stringify(plan).length >= JSON.stringify(cur).length) {
+        out[d] = plan;
+      }
     }
     return out;
   }
@@ -2378,7 +2401,7 @@ function _applyCloudDoc(id, cloudData, meta) {
   const localVal = localRaw != null ? (() => { try { return JSON.parse(localRaw); } catch (e) { return undefined; } })() : undefined;
 
   if (_isMergeKey(id) && localVal !== undefined) {
-    const merged    = _mergeLogValue(id, localVal, cloudVal);
+    const merged    = _mergeLogValue(id, localVal, cloudVal, cloudTs);
     const mergedStr = JSON.stringify(merged);
     let changed = false;
     if (mergedStr !== localRaw) { localStorage.setItem('ttm_' + id, mergedStr); changed = true; }
@@ -6000,6 +6023,7 @@ function mpGenerate() {
       dp['S06'] = { recipe_id: 'M08', name: m.name, kcal: m.kcal, protein: m.protein, carbs: m.carbs, fat: m.fat };
     }
     plan[dateStr] = dp;
+    _touchMealPlanDay(dateStr);
   });
   lsSet('meal_plan', plan);
   renderTab('mealprep');
@@ -6036,6 +6060,7 @@ function mpSwapSlot(dateStr, slotId) {
   const nm = MP_MEALS[newId];
   plan[dateStr][slotId] = { recipe_id: newId, name: nm.name, kcal: nm.kcal, protein: nm.protein, carbs: nm.carbs, fat: nm.fat };
   lsSet('meal_plan', plan);
+  _touchMealPlanDay(dateStr); // v0.9.7.0: märgi käsitsi-vahetus ajatempliga, et sünk seda tagasi ei kirjutaks
   STATE.mealPrepExpandedSlot = null;
   renderTab('mealprep');
 }
