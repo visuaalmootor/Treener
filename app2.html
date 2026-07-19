@@ -1930,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = 'v0.9.7.9';
+const APP_VERSION  = 'v0.9.8.0';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -7710,9 +7710,13 @@ function renderAllMusclesStackedChart(allMuscles, weeks) {
       if (weeks === 0 && (s.date ?? '').slice(0, 10) !== todayStr) return;
       const byCat = {};
       (s.exercises ?? []).forEach(ex => {
-        const cat = exIndex[String(ex.exercise_id)]?.category;
-        if (!cat) return;
-        byCat[cat] = (byCat[cat] ?? 0) + (ex.sets ?? []).reduce((a, sv) => a + (sv.reps ?? 0), 0);
+        const exData = exIndex[String(ex.exercise_id)];
+        if (!exData) return;
+        const reps = (ex.sets ?? []).reduce((a, sv) => a + (sv.reps ?? 0), 0);
+        if (!reps) return;
+        const sec = exData.secondary_category;
+        const cats = [exData.category, ...(Array.isArray(sec) ? sec : sec ? [sec] : [])].filter(c => c && !c.includes('/'));
+        cats.forEach(c => { byCat[c] = (byCat[c] ?? 0) + reps; });
       });
       if (Object.keys(byCat).length > 0) sessions.push({ date: s.date, byCat });
     });
@@ -7776,9 +7780,13 @@ function renderAllMusclesStackedChart(allMuscles, weeks) {
       const d = new Date(s.date);
       if (d < wStart || d >= wEnd) return;
       (s.exercises ?? []).forEach(ex => {
-        const cat = exIndex[String(ex.exercise_id)]?.category;
-        if (!cat) return;
-        byCat[cat] = (byCat[cat] ?? 0) + (ex.sets ?? []).reduce((a, sv) => a + (sv.reps ?? 0), 0);
+        const exData = exIndex[String(ex.exercise_id)];
+        if (!exData) return;
+        const reps = (ex.sets ?? []).reduce((a, sv) => a + (sv.reps ?? 0), 0);
+        if (!reps) return;
+        const sec = exData.secondary_category;
+        const cats = [exData.category, ...(Array.isArray(sec) ? sec : sec ? [sec] : [])].filter(c => c && !c.includes('/'));
+        cats.forEach(c => { byCat[c] = (byCat[c] ?? 0) + reps; });
       });
     });
     weekData.push({ label, byCat });
