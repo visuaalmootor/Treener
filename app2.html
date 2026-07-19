@@ -7538,44 +7538,111 @@ function renderMuscleBarsChart(cat, weeks) {
   const tlog    = lsGet('training_log') ?? [];
   const exIndex = STATE.exercises?.exercises ?? {};
   const now     = new Date();
+  const start   = new Date(now);
+  start.setDate(start.getDate() - weeks * 7);
 
-  // Kogu viimased `weeks` nädalat
-  const weekData = [];
-  for (let i = weeks - 1; i >= 0; i--) {
-    const wStart = new Date(now);
-    wStart.setDate(wStart.getDate() - (i + 1) * 7);
-    const wEnd = new Date(now);
-    wEnd.setDate(wEnd.getDate() - i * 7);
+  const W = 340, H = 140;
+  const PAD = { top: 14, right: 20, bottom: 28, left: 32 };
+  const pw = W - PAD.left - PAD.right;
+  const ph = H - PAD.top - PAD.bottom;
 
-    const label = `N${weeks - i}`;
+  // Iga treening kus see lihasgrupp esines → üks andmepunkt
+  const sessions = [];
+  tlog.forEach(s => {
+    const d = new Date(s.date);
+    if (d < start || d > now) return;
     let sets = 0;
-    tlog.forEach(s => {
-      const d = new Date(s.date);
-      if (d < wStart || d >= wEnd) return;
-      (s.exercises ?? []).forEach(ex => {
-        const exCat = exIndex[String(ex.exercise_id)]?.category;
-        // Selg + Alaselg koos
-        const match = cat === 'Selg'
-          ? (exCat === 'Selg' || exCat === 'Alaselg')
-          : (exCat === cat);
-        if (match) sets += (ex.sets?.length ?? 0);
-      });
+    (s.exercises ?? []).forEach(ex => {
+      const exCat = exIndex[String(ex.exercise_id)]?.category;
+      const match = cat === 'Selg'
+        ? (exCat === 'Selg' || exCat === 'Alaselg')
+        : (exCat === cat);
+      if (match) sets += (ex.sets?.length ?? 0);
     });
-    weekData.push({ label, sets });
+    if (sets > 0) sessions.push({ date: s.date, sets });
+  });
+  sessions.sort((a, b) => a.date.localeCompare(b.date));
+
+  if (!sessions.length) {
+    return `<div style="text-align:center;padding:20px 0;font-size:12px;color:var(--text-3);">Sellel perioodil andmed puuduvad</div>`;
   }
 
-  const maxSets = Math.max(...weekData.map(w => w.sets), 1);
-  const cols = weekData.map(w => {
-    const h = Math.round((w.sets / maxSets) * 56);
-    const barColor = w.sets === 0 ? '' : `background:${muscleColor(w.sets, 1)};`;
-    return `<div class="train-bar-col">
-      <div class="train-bar-val" style="${w.sets > 0 ? `color:${muscleColor(w.sets, 1)};` : ''}">${w.sets || ''}</div>
-      <div class="train-bar ${w.sets === 0 ? 'empty' : ''}" style="height:${Math.max(h, 3)}px;${barColor}"></div>
-      <div class="train-bar-lbl">${w.label}</div>
-    </div>`;
+  // BtB faasi sihtmärk — setti sessiooni kohta (faasi keskmine)
+  const phase = STATE.btbPhase ?? 1;
+  const phaseData = STATE.btbPhaseData?.phases?.[String(phase)];
+  let targetSets = 3;
+  if (phaseData && !phaseData.coming_soon && phaseData.week_progression) {
+    const avg = phaseData.week_progression.reduce((a, w) => a + w.sets, 0) / phaseData.week_progression.length;
+    targetSets = Math.round(avg);
+  }
+
+  const maxSets = Math.max(...sessions.map(s => s.sets), targetSets + 1, 4);
+  const toX = date => {
+    const ms  = new Date(date) - start;
+    const tot = now - start;
+    return PAD.left + (ms / tot) * pw;
+  };
+  const toY = v => PAD.top + ph - (v / maxSets) * ph;
+
+  // Y-axis
+  const yTicks = [0, Math.ceil(maxSets / 2), maxSets];
+  const yTicksHtml = yTicks.map(v => `
+    <text x="${PAD.left - 5}" y="${toY(v) + 4}" text-anchor="end" font-size="10" fill="var(--text-3)">${v}</text>
+    <line x1="${PAD.left}" y1="${toY(v)}" x2="${PAD.left + pw}" y2="${toY(v)}" stroke="var(--border)" stroke-width="0.5"/>`).join('');
+
+  // X-axis — kuupäevad perioodi algusest lõpuni
+  const xTickCount = Math.min(weeks <= 4 ? 4 : 5, 6);
+  const xTicksHtml = Array.from({length: xTickCount + 1}, (_, i) => {
+    const d = new Date(start.getTime() + i * (now - start) / xTickCount);
+    const x = PAD.left + i * pw / xTickCount;
+    return `<text x="${x}" y="${H - 4}" text-anchor="middle" font-size="9" fill="var(--text-3)">${d.getDate()}.${d.getMonth() + 1}</text>`;
   }).join('');
 
-  return `<div class="train-bars">${cols}</div>`;
+  // BtB sihtmärgi katkendlik joon
+  const ty = toY(targetSets);
+  const targetLineHtml = `
+    <line x1="${PAD.left}" y1="${ty}" x2="${PAD.left + pw}" y2="${ty}"
+      stroke="var(--green)" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>
+    <text x="${PAD.left + pw + 3}" y="${ty + 4}" font-size="9" fill="var(--green)">${targetSets}</text>`;
+
+  // Ühendav joon (hele)
+  const linePoints = sessions.map(s => `${toX(s.date)},${toY(s.sets)}`).join(' ');
+  const lineHtml = sessions.length > 1
+    ? `<polyline points="${linePoints}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.35"/>`
+    : '';
+
+  // Punktid — värvitud sihtmärgi suhtes
+  const dotColor = sets => {
+    const pct = sets / targetSets;
+    if (pct >= 0.9) return 'var(--green)';
+    if (pct >= 0.5) return 'var(--amber)';
+    return 'var(--red)';
+  };
+  const dotsHtml = sessions.map(s => {
+    const x = toX(s.date);
+    const y = toY(s.sets);
+    const col = dotColor(s.sets);
+    const d = new Date(s.date);
+    return `<circle cx="${x}" cy="${y}" r="4.5" fill="var(--surface)" stroke="${col}" stroke-width="2.5">
+      <title>${d.getDate()}.${d.getMonth() + 1}: ${s.sets} setti</title>
+    </circle>`;
+  }).join('');
+
+  // Viimane punkt — suurem + number
+  const last = sessions[sessions.length - 1];
+  const lx = toX(last.date), ly = toY(last.sets), lc = dotColor(last.sets);
+  const lastDotHtml = `<circle cx="${lx}" cy="${ly}" r="5" fill="${lc}" stroke="${lc}" stroke-width="0" opacity="0.9"/>
+    <text x="${lx}" y="${ly - 9}" text-anchor="middle" font-size="10" font-weight="600" fill="${lc}">${last.sets}</text>`;
+
+  return `
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible;margin-top:8px;">
+      ${yTicksHtml}
+      ${xTicksHtml}
+      ${targetLineHtml}
+      ${lineHtml}
+      ${dotsHtml}
+      ${lastDotHtml}
+    </svg>`;
 }
 
 /* Stacked bar chart — kõik lihasgrupid nädalate kaupa */
