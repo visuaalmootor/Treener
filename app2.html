@@ -1930,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = 'v0.9.8.0';
+const APP_VERSION  = 'v0.9.8.1';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -7466,11 +7466,8 @@ function getMuscleActivity(weeks) {
       const cat = exData.category;
       if (cat && !cat.includes('/')) counts[cat] = (counts[cat] ?? 0) + n;
       const sec = exData.secondary_category;
-      if (Array.isArray(sec)) {
-        sec.forEach(s => { counts[s] = (counts[s] ?? 0) + n; });
-      } else if (sec) {
-        counts[sec] = (counts[sec] ?? 0) + n;
-      }
+      const secList = Array.isArray(sec) ? sec : sec ? [sec] : [];
+      secList.forEach(s => { if (s && !s.includes('/')) counts[s] = (counts[s] ?? 0) + n * 0.5; });
     });
   });
   return counts;
@@ -7565,11 +7562,16 @@ function renderMuscleBarsChart(cat, weeks) {
       if (!exData) return;
       const exCat = exData.category;
       const exSec = exData.secondary_category;
-      const allCats = [exCat, ...(Array.isArray(exSec) ? exSec : exSec ? [exSec] : [])].filter(c => c && !c.includes('/'));
-      const match = cat === 'Selg'
-        ? allCats.some(c => c === 'Selg' || c === 'Alaselg')
-        : allCats.includes(cat);
-      if (match) reps += (ex.sets ?? []).reduce((a, sv) => a + (sv.reps ?? 0), 0);
+      const exSecList = Array.isArray(exSec) ? exSec : exSec ? [exSec] : [];
+      const exReps = (ex.sets ?? []).reduce((a, sv) => a + (sv.reps ?? 0), 0);
+      const isPrimary = cat === 'Selg'
+        ? (exCat === 'Selg' || exCat === 'Alaselg')
+        : (exCat === cat);
+      const isSecondary = !isPrimary && (cat === 'Selg'
+        ? exSecList.some(c => c === 'Selg' || c === 'Alaselg')
+        : exSecList.includes(cat));
+      if (isPrimary) reps += exReps;
+      else if (isSecondary) reps += exReps * 0.5;
     });
     if (reps > 0) sessions.push({ date: s.date, reps });
   });
@@ -7714,9 +7716,11 @@ function renderAllMusclesStackedChart(allMuscles, weeks) {
         if (!exData) return;
         const reps = (ex.sets ?? []).reduce((a, sv) => a + (sv.reps ?? 0), 0);
         if (!reps) return;
+        const primCat = exData.category;
         const sec = exData.secondary_category;
-        const cats = [exData.category, ...(Array.isArray(sec) ? sec : sec ? [sec] : [])].filter(c => c && !c.includes('/'));
-        cats.forEach(c => { byCat[c] = (byCat[c] ?? 0) + reps; });
+        const secList = Array.isArray(sec) ? sec : sec ? [sec] : [];
+        if (primCat && !primCat.includes('/')) byCat[primCat] = (byCat[primCat] ?? 0) + reps;
+        secList.forEach(c => { if (c && !c.includes('/')) byCat[c] = (byCat[c] ?? 0) + reps * 0.5; });
       });
       if (Object.keys(byCat).length > 0) sessions.push({ date: s.date, byCat });
     });
@@ -7784,9 +7788,11 @@ function renderAllMusclesStackedChart(allMuscles, weeks) {
         if (!exData) return;
         const reps = (ex.sets ?? []).reduce((a, sv) => a + (sv.reps ?? 0), 0);
         if (!reps) return;
+        const primCat = exData.category;
         const sec = exData.secondary_category;
-        const cats = [exData.category, ...(Array.isArray(sec) ? sec : sec ? [sec] : [])].filter(c => c && !c.includes('/'));
-        cats.forEach(c => { byCat[c] = (byCat[c] ?? 0) + reps; });
+        const secList = Array.isArray(sec) ? sec : sec ? [sec] : [];
+        if (primCat && !primCat.includes('/')) byCat[primCat] = (byCat[primCat] ?? 0) + reps;
+        secList.forEach(c => { if (c && !c.includes('/')) byCat[c] = (byCat[c] ?? 0) + reps * 0.5; });
       });
     });
     weekData.push({ label, byCat });
