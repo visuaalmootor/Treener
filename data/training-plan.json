@@ -1,10 +1,9 @@
 {
   "version": "2.0",
-  "updated": "2026-06-22",
+  "updated": "2026-07-19",
   "active_plan": "B",
   "notes": "Seeriad/kordused tulevad btb-phases.json-ist. circuit A1+A2 tähendab: teed A1 → puhkus → A2 → puhkus → tagasi A1, kuni kõik seeriad tehtud. Seejärel B-ring, siis C-ring, siis D.",
   "plans": {
-
     "A": {
       "name": "Karlova välijõusaal",
       "location": "Karlova, Tartu",
@@ -14,46 +13,279 @@
         "A": {
           "name": "Treening A",
           "phase_1": [
-            { "id": 29, "circuit": "A", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 20, "unit": "kordust",   "note": "Sügav alla, põlved varbade suunas" },
-            { "id": 30, "circuit": "A", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 15, "unit": "kordust",   "note": "Lai haare — rinna fookus" },
-            { "id": 33, "circuit": "B", "order": 1, "reps_min": 5,  "reps_max": 8,  "start_weight_kg": 0,  "unit": "kordust",   "note": "Alakäsi haare; negatiivsed kui täied ei tule — tee värskete kätega enne sõudmist" },
-            { "id": 35, "circuit": "B", "order": 2, "reps_min": 12, "reps_max": 15, "start_weight_kg": 0,  "unit": "kordust",   "note": "Kael neutraalne, ära tõsta üle sirge joone" },
-            { "id": 31, "circuit": "C", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 30, "unit": "kordust",   "note": "Kitsas neutraalne haare" },
-            { "id": 36, "circuit": "C", "order": 2, "reps_min": 12, "reps_max": 15, "start_weight_kg": 0,  "unit": "kordust",   "note": "Käed rinnale" },
-            { "id": 32, "circuit": "D", "order": 1, "reps_min": 12, "reps_max": 15, "start_weight_kg": 10, "unit": "kordust",   "note": "⚠️ KERGE — õla tugevdamine, mitte jõuharjutus" }
+            {
+              "id": 29,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 20,
+              "unit": "kordust",
+              "note": "Sügav alla, põlved varbade suunas"
+            },
+            {
+              "id": 30,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 15,
+              "unit": "kordust",
+              "note": "Lai haare — rinna fookus"
+            },
+            {
+              "id": 33,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 5,
+              "reps_max": 8,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Alakäsi haare; negatiivsed kui täied ei tule — tee värskete kätega enne sõudmist"
+            },
+            {
+              "id": 35,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 12,
+              "reps_max": 15,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Kael neutraalne, ära tõsta üle sirge joone"
+            },
+            {
+              "id": 31,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 30,
+              "unit": "kordust",
+              "note": "Kitsas neutraalne haare"
+            },
+            {
+              "id": 36,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 12,
+              "reps_max": 15,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Käed rinnale"
+            },
+            {
+              "id": 32,
+              "circuit": "D",
+              "order": 1,
+              "reps_min": 12,
+              "reps_max": 15,
+              "start_weight_kg": 10,
+              "unit": "kordust",
+              "note": "⚠️ KERGE — õla tugevdamine, mitte jõuharjutus"
+            }
           ],
           "phase_2": [
-            { "id": 29, "circuit": "A", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 25, "unit": "kordust",   "note": "Raskem kui F1 — 2 sek pause all-asendis" },
-            { "id": 30, "circuit": "A", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 20, "unit": "kordust",   "note": "Raskem; hoia abaluu aktiivselt pinges" },
-            { "id": 33, "circuit": "B", "order": 1, "reps_min": 5,  "reps_max": 8,  "start_weight_kg": 0,  "unit": "kordust",   "note": "Ülekaas lai haare F2-s — tee värskete kätega" },
-            { "id": 47, "circuit": "B", "order": 2, "reps_min": 15, "reps_max": 25, "start_weight_kg": 0,  "unit": "sek hoid", "note": "Chin-up ISO hoid: hüppa üles, hoia rind lati lähedal 15–25 sek" },
-            { "id": 31, "circuit": "C", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 35, "unit": "kordust",   "note": "Lai haare — ülaselg rohkem" },
-            { "id": 36, "circuit": "C", "order": 2, "reps_min": 12, "reps_max": 15, "start_weight_kg": 0,  "unit": "kordust",   "note": "" },
-            { "id": 32, "circuit": "D", "order": 1, "reps_min": 12, "reps_max": 15, "start_weight_kg": 12, "unit": "kordust",   "note": "⚠️ Natuke raskem kui F1 — ainult valuvabasid" }
+            {
+              "id": 29,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 25,
+              "unit": "kordust",
+              "note": "Raskem kui F1 — 2 sek pause all-asendis"
+            },
+            {
+              "id": 30,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 20,
+              "unit": "kordust",
+              "note": "Raskem; hoia abaluu aktiivselt pinges"
+            },
+            {
+              "id": 33,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 5,
+              "reps_max": 8,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Ülekaas lai haare F2-s — tee värskete kätega"
+            },
+            {
+              "id": 47,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 15,
+              "reps_max": 25,
+              "start_weight_kg": 0,
+              "unit": "sek hoid",
+              "note": "Chin-up ISO hoid: hüppa üles, hoia rind lati lähedal 15–25 sek"
+            },
+            {
+              "id": 31,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 35,
+              "unit": "kordust",
+              "note": "Lai haare — ülaselg rohkem"
+            },
+            {
+              "id": 36,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 12,
+              "reps_max": 15,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": ""
+            },
+            {
+              "id": 32,
+              "circuit": "D",
+              "order": 1,
+              "reps_min": 12,
+              "reps_max": 15,
+              "start_weight_kg": 12,
+              "unit": "kordust",
+              "note": "⚠️ Natuke raskem kui F1 — ainult valuvabasid"
+            }
           ]
         },
         "B": {
           "name": "Treening B",
           "phase_1": [
-            { "id": 29, "circuit": "A", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 20, "unit": "kordust",   "note": "2 sek hoid all-asendis — suurem stimulatsioon" },
-            { "id": 34, "circuit": "A", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 0,  "unit": "kordust",   "note": "Keha sirge = triitseps; negatiivsed kui täied ei tule" },
-            { "id": 31, "circuit": "B", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 25, "unit": "kordust",   "note": "Lai haare — ülaselg" },
-            { "id": 35, "circuit": "B", "order": 2, "reps_min": 12, "reps_max": 15, "start_weight_kg": 0,  "unit": "kordust",   "note": "" },
-            { "id": 37, "circuit": "C", "order": 1, "reps_min": 10, "reps_max": 12, "start_weight_kg": 0,  "unit": "kordust",   "note": "Rõngad kõrgemale = kergem" },
-            { "id": 36, "circuit": "C", "order": 2, "reps_min": 10, "reps_max": 12, "start_weight_kg": 0,  "unit": "kordust",   "note": "Rippu pull-up postil, tõsta jalgu 90°-ni" }
+            {
+              "id": 29,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 20,
+              "unit": "kordust",
+              "note": "2 sek hoid all-asendis — suurem stimulatsioon"
+            },
+            {
+              "id": 34,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Keha sirge = triitseps; negatiivsed kui täied ei tule"
+            },
+            {
+              "id": 31,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 25,
+              "unit": "kordust",
+              "note": "Lai haare — ülaselg"
+            },
+            {
+              "id": 35,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 12,
+              "reps_max": 15,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": ""
+            },
+            {
+              "id": 37,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Rõngad kõrgemale = kergem"
+            },
+            {
+              "id": 36,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Rippu pull-up postil, tõsta jalgu 90°-ni"
+            }
           ],
           "phase_2": [
-            { "id": 29, "circuit": "A", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 25, "unit": "kordust",   "note": "3 sek alla, raskem" },
-            { "id": 34, "circuit": "A", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 0,  "unit": "kordust",   "note": "Kalluta kergelt ette — alumine rind rohkem" },
-            { "id": 31, "circuit": "B", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 30, "unit": "kordust",   "note": "Vaheta haaret: kitsas vs lai iga trenni vahelduseks" },
-            { "id": 33, "circuit": "B", "order": 2, "reps_min": 5,  "reps_max": 8,  "start_weight_kg": 0,  "unit": "kordust",   "note": "F2: lõuatõmme täied kordused või ISO hoid" },
-            { "id": 37, "circuit": "C", "order": 1, "reps_min": 10, "reps_max": 12, "start_weight_kg": 0,  "unit": "kordust",   "note": "Rõngad madalamale kui F1-s" },
-            { "id": 36, "circuit": "C", "order": 2, "reps_min": 12, "reps_max": 15, "start_weight_kg": 0,  "unit": "kordust",   "note": "Seljapink + jalgtõste kombinatsioon" }
+            {
+              "id": 29,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 25,
+              "unit": "kordust",
+              "note": "3 sek alla, raskem"
+            },
+            {
+              "id": 34,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Kalluta kergelt ette — alumine rind rohkem"
+            },
+            {
+              "id": 31,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 30,
+              "unit": "kordust",
+              "note": "Vaheta haaret: kitsas vs lai iga trenni vahelduseks"
+            },
+            {
+              "id": 33,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 5,
+              "reps_max": 8,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "F2: lõuatõmme täied kordused või ISO hoid"
+            },
+            {
+              "id": 37,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Rõngad madalamale kui F1-s"
+            },
+            {
+              "id": 36,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 12,
+              "reps_max": 15,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Seljapink + jalgtõste kombinatsioon"
+            }
           ]
         }
       }
     },
-
     "B": {
       "name": "Kodus",
       "location": "Kodus — 2× reguleeritav hantel kuni 10 kg kumbki (Decathlon Domyos 20 kg kit) + kehakaal",
@@ -64,48 +296,299 @@
         "A": {
           "name": "Treening A",
           "phase_1": [
-            { "id": 8,  "circuit": "A", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 10, "unit": "kordust (kumb. pool)", "note": "Üks hantel kumb. käes — kael neutraalne kogu aeg" },
-            { "id": 18, "circuit": "A", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 10, "unit": "kordust (kumb. pool)", "note": "Ühe käega korraga — küünar 45° kehast" },
-            { "id": 13, "circuit": "B", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 10, "unit": "kordust (kumb. pool)", "note": "Toeta vaba käsi põlvele" },
-            { "id": 10, "circuit": "B", "order": 2, "reps_min": 10, "reps_max": 12, "start_weight_kg": 10, "unit": "kordust",               "note": "Hoia MÕLEMAD hantlid koos mõlema käega rinnale (kokku kuni 20 kg)" },
-            { "id": 24, "circuit": "C", "order": 1, "reps_min": 8,  "reps_max": 8,  "start_weight_kg": 0,  "unit": "kordust (kumb. pool)", "note": "Selg vastu põrandat kogu aeg" },
-            { "id": 25, "circuit": "C", "order": 2, "reps_min": 30, "reps_max": 45, "start_weight_kg": 0,  "unit": "sek",                  "note": "" },
-            { "id": 22, "circuit": "D", "order": 1, "reps_min": 12, "reps_max": 15, "start_weight_kg": 4,  "unit": "kordust (kumb. pool)", "note": "Üks käsi korraga — pane hantel maha, vaheta; aeglane alla 3 sek" }
+            {
+              "id": 8,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 10,
+              "unit": "kordust (kumb. pool)",
+              "note": "Üks hantel kumb. käes — kael neutraalne kogu aeg"
+            },
+            {
+              "id": 18,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 10,
+              "unit": "kordust (kumb. pool)",
+              "note": "Ühe käega korraga — küünar 45° kehast"
+            },
+            {
+              "id": 13,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 10,
+              "unit": "kordust (kumb. pool)",
+              "note": "Toeta vaba käsi põlvele"
+            },
+            {
+              "id": 10,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 10,
+              "unit": "kordust",
+              "note": "Hoia MÕLEMAD hantlid koos mõlema käega rinnale (kokku kuni 20 kg)"
+            },
+            {
+              "id": 24,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 8,
+              "start_weight_kg": 0,
+              "unit": "kordust (kumb. pool)",
+              "note": "Selg vastu põrandat kogu aeg"
+            },
+            {
+              "id": 25,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 30,
+              "reps_max": 45,
+              "start_weight_kg": 0,
+              "unit": "sek",
+              "note": ""
+            },
+            {
+              "id": 22,
+              "circuit": "D",
+              "order": 1,
+              "reps_min": 12,
+              "reps_max": 15,
+              "start_weight_kg": 4,
+              "unit": "kordust (kumb. pool)",
+              "note": "Üks käsi korraga — pane hantel maha, vaheta; aeglane alla 3 sek"
+            }
           ],
           "phase_2": [
-            { "id": 8,  "circuit": "A", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 10, "unit": "kordust (kumb. pool)", "note": "2 sek paus alt-asendis; max kaal = 10 kg kumb. käes" },
-            { "id": 18, "circuit": "A", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 10, "unit": "kordust (kumb. pool)", "note": "Pingsam laskumine — 3 sek alla" },
-            { "id": 13, "circuit": "B", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 10, "unit": "kordust (kumb. pool)", "note": "Raskem; pigista abaluu rohkem ülaosas" },
-            { "id": 10, "circuit": "B", "order": 2, "reps_min": 10, "reps_max": 12, "start_weight_kg": 14, "unit": "kordust",               "note": "Sügavamale alla — reied alla põlve taseme; mõlemad hantlid koos" },
-            { "id": 24, "circuit": "C", "order": 1, "reps_min": 8,  "reps_max": 8,  "start_weight_kg": 0,  "unit": "kordust (kumb. pool)", "note": "Aeglasem — 3 sek alla iga kordus" },
-            { "id": 26, "circuit": "C", "order": 2, "reps_min": 25, "reps_max": 35, "start_weight_kg": 0,  "unit": "sek (kumb. pool)",     "note": "F2 upgrade: külgplank asendab planki — rohkem obliques" },
-            { "id": 48, "circuit": "D", "order": 1, "reps_min": 8,  "reps_max": 12, "start_weight_kg": 0,  "unit": "kordust",               "note": "F2 upgrade: kitsa haardega kätekõverdus asendab lateral raise'i" }
+            {
+              "id": 8,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 10,
+              "unit": "kordust (kumb. pool)",
+              "note": "2 sek paus alt-asendis; max kaal = 10 kg kumb. käes"
+            },
+            {
+              "id": 18,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 10,
+              "unit": "kordust (kumb. pool)",
+              "note": "Pingsam laskumine — 3 sek alla"
+            },
+            {
+              "id": 13,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 10,
+              "unit": "kordust (kumb. pool)",
+              "note": "Raskem; pigista abaluu rohkem ülaosas"
+            },
+            {
+              "id": 10,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 14,
+              "unit": "kordust",
+              "note": "Sügavamale alla — reied alla põlve taseme; mõlemad hantlid koos"
+            },
+            {
+              "id": 24,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 8,
+              "start_weight_kg": 0,
+              "unit": "kordust (kumb. pool)",
+              "note": "Aeglasem — 3 sek alla iga kordus"
+            },
+            {
+              "id": 26,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 25,
+              "reps_max": 35,
+              "start_weight_kg": 0,
+              "unit": "sek (kumb. pool)",
+              "note": "F2 upgrade: külgplank asendab planki — rohkem obliques"
+            },
+            {
+              "id": 48,
+              "circuit": "D",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 12,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "F2 upgrade: kitsa haardega kätekõverdus asendab lateral raise'i"
+            }
           ]
         },
         "B": {
           "name": "Treening B",
           "phase_1": [
-            { "id": 9,  "circuit": "A", "order": 1, "reps_min": 10, "reps_max": 12, "start_weight_kg": 14, "unit": "kordust",               "note": "Laiad jalad — turvalisem pahkluule; hoia MÕLEMAD hantlid koos mõlema käega (kokku kuni 20 kg)" },
-            { "id": 11, "circuit": "A", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 8,  "unit": "kordust (kumb. pool)", "note": "AINULT tagasisamm; hantel käes vastasküljel" },
-            { "id": 14, "circuit": "B", "order": 1, "reps_min": 10, "reps_max": 12, "start_weight_kg": 10, "unit": "kordust",               "note": "Lama kõhuli diivanil, ühe käega korraga" },
-            { "id": 17, "circuit": "B", "order": 2, "reps_min": 10, "reps_max": 12, "start_weight_kg": 8,  "unit": "kordust (kumb. pool)", "note": "Täis liikuvusulatus mõlemas suunas" },
-            { "id": 28, "circuit": "C", "order": 1, "reps_min": 20, "reps_max": 20, "start_weight_kg": 10, "unit": "sammu",                "note": "Farmer's carry: üks hantel kumb. käes, käed sirgelt külgedel; kõnni 20 sammu" },
-            { "id": 26, "circuit": "C", "order": 2, "reps_min": 20, "reps_max": 30, "start_weight_kg": 0,  "unit": "sek (kumb. pool)",     "note": "" },
-            { "id": 21, "circuit": "D", "order": 1, "reps_min": 12, "reps_max": 15, "start_weight_kg": 4,  "unit": "kordust (kumb. pool)", "note": "Küünar üleval kogu aeg" }
+            {
+              "id": 9,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 14,
+              "unit": "kordust",
+              "note": "Laiad jalad — turvalisem pahkluule; hoia MÕLEMAD hantlid koos mõlema käega (kokku kuni 20 kg)"
+            },
+            {
+              "id": 11,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 8,
+              "unit": "kordust (kumb. pool)",
+              "note": "AINULT tagasisamm; hantel käes vastasküljel"
+            },
+            {
+              "id": 14,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 10,
+              "unit": "kordust",
+              "note": "Lama kõhuli diivanil, ühe käega korraga"
+            },
+            {
+              "id": 17,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 8,
+              "unit": "kordust (kumb. pool)",
+              "note": "Täis liikuvusulatus mõlemas suunas"
+            },
+            {
+              "id": 28,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 20,
+              "reps_max": 20,
+              "start_weight_kg": 10,
+              "unit": "sammu",
+              "note": "Farmer's carry: üks hantel kumb. käes, käed sirgelt külgedel; kõnni 20 sammu"
+            },
+            {
+              "id": 26,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 20,
+              "reps_max": 30,
+              "start_weight_kg": 0,
+              "unit": "sek (kumb. pool)",
+              "note": ""
+            },
+            {
+              "id": 21,
+              "circuit": "D",
+              "order": 1,
+              "reps_min": 12,
+              "reps_max": 15,
+              "start_weight_kg": 4,
+              "unit": "kordust (kumb. pool)",
+              "note": "Küünar üleval kogu aeg"
+            }
           ],
           "phase_2": [
-            { "id": 9,  "circuit": "A", "order": 1, "reps_min": 10, "reps_max": 12, "start_weight_kg": 18, "unit": "kordust",               "note": "Mõlemad hantlid koos; 1 sek paus alt-asendis" },
-            { "id": 11, "circuit": "A", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 12, "unit": "kordust (kumb. pool)", "note": "Raskem — hantel mõlemas käes kui jõuad" },
-            { "id": 14, "circuit": "B", "order": 1, "reps_min": 10, "reps_max": 12, "start_weight_kg": 14, "unit": "kordust",               "note": "Raskem; pigista abaluud tugevalt kokku ülaosas" },
-            { "id": 17, "circuit": "B", "order": 2, "reps_min": 10, "reps_max": 12, "start_weight_kg": 12, "unit": "kordust (kumb. pool)", "note": "Lisa supinatsiooni pöörde liikumise lõpus" },
-            { "id": 28, "circuit": "C", "order": 1, "reps_min": 20, "reps_max": 20, "start_weight_kg": 10, "unit": "sammu",                "note": "Max kaal kumb. käes (10 kg kummaski) — käed sirgelt külgedel; kõnni 20 sammu" },
-            { "id": 26, "circuit": "C", "order": 2, "reps_min": 25, "reps_max": 35, "start_weight_kg": 0,  "unit": "sek (kumb. pool)",     "note": "F2: Lisa käe tõstmine — vaba käsi näitab lakke" },
-            { "id": 21, "circuit": "D", "order": 1, "reps_min": 12, "reps_max": 15, "start_weight_kg": 6,  "unit": "kordust (kumb. pool)", "note": "Raskem; lisa 2 sek hoid ülaosas" }
+            {
+              "id": 9,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 18,
+              "unit": "kordust",
+              "note": "Mõlemad hantlid koos; 1 sek paus alt-asendis"
+            },
+            {
+              "id": 11,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 12,
+              "unit": "kordust (kumb. pool)",
+              "note": "Raskem — hantel mõlemas käes kui jõuad"
+            },
+            {
+              "id": 14,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 14,
+              "unit": "kordust",
+              "note": "Raskem; pigista abaluud tugevalt kokku ülaosas"
+            },
+            {
+              "id": 17,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 12,
+              "unit": "kordust (kumb. pool)",
+              "note": "Lisa supinatsiooni pöörde liikumise lõpus"
+            },
+            {
+              "id": 28,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 20,
+              "reps_max": 20,
+              "start_weight_kg": 10,
+              "unit": "sammu",
+              "note": "Max kaal kumb. käes (10 kg kummaski) — käed sirgelt külgedel; kõnni 20 sammu"
+            },
+            {
+              "id": 26,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 25,
+              "reps_max": 35,
+              "start_weight_kg": 0,
+              "unit": "sek (kumb. pool)",
+              "note": "F2: Lisa käe tõstmine — vaba käsi näitab lakke"
+            },
+            {
+              "id": 21,
+              "circuit": "D",
+              "order": 1,
+              "reps_min": 12,
+              "reps_max": 15,
+              "start_weight_kg": 6,
+              "unit": "kordust (kumb. pool)",
+              "note": "Raskem; lisa 2 sek hoid ülaosas"
+            }
           ]
         }
       }
     },
-
     "C": {
       "name": "GYM Eesti",
       "location": "Tasku, Turu 2, 4. korrus, Tartu",
@@ -115,47 +598,576 @@
         "A": {
           "name": "Treening A",
           "phase_1": [
-            { "id": 12, "circuit": "A", "order": 1, "reps_min": 10, "reps_max": 12, "start_weight_kg": 40, "unit": "kordust",               "note": "Sügavale alla" },
-            { "id": 19, "circuit": "A", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 10, "unit": "kordust",               "note": "MITTE üle 30° kalde" },
-            { "id": 15, "circuit": "B", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 25, "unit": "kordust",               "note": "ÄRA tõmba kaela taha" },
-            { "id": 16, "circuit": "B", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 25, "unit": "kordust",               "note": "Kitsas neutraalne haare" },
-            { "id": 24, "circuit": "C", "order": 1, "reps_min": 8,  "reps_max": 8,  "start_weight_kg": 0,  "unit": "kordust (kumb. pool)", "note": "" },
-            { "id": 25, "circuit": "C", "order": 2, "reps_min": 45, "reps_max": 45, "start_weight_kg": 0,  "unit": "sek",                  "note": "" },
-            { "id": 23, "circuit": "D", "order": 1, "reps_min": 15, "reps_max": 15, "start_weight_kg": 6,  "unit": "kordust",               "note": "Silma kõrgusel, W-kuju lõpus" }
+            {
+              "id": 12,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 40,
+              "unit": "kordust",
+              "note": "Sügavale alla"
+            },
+            {
+              "id": 19,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 10,
+              "unit": "kordust",
+              "note": "MITTE üle 30° kalde"
+            },
+            {
+              "id": 15,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 25,
+              "unit": "kordust",
+              "note": "ÄRA tõmba kaela taha"
+            },
+            {
+              "id": 16,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 25,
+              "unit": "kordust",
+              "note": "Kitsas neutraalne haare"
+            },
+            {
+              "id": 24,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 8,
+              "start_weight_kg": 0,
+              "unit": "kordust (kumb. pool)",
+              "note": ""
+            },
+            {
+              "id": 25,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 45,
+              "reps_max": 45,
+              "start_weight_kg": 0,
+              "unit": "sek",
+              "note": ""
+            },
+            {
+              "id": 23,
+              "circuit": "D",
+              "order": 1,
+              "reps_min": 15,
+              "reps_max": 15,
+              "start_weight_kg": 6,
+              "unit": "kordust",
+              "note": "Silma kõrgusel, W-kuju lõpus"
+            }
           ],
           "phase_2": [
-            { "id": 12, "circuit": "A", "order": 1, "reps_min": 10, "reps_max": 12, "start_weight_kg": 50, "unit": "kordust",               "note": "Raskem; 2 sek paus alt-asendis" },
-            { "id": 19, "circuit": "A", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 14, "unit": "kordust",               "note": "Raskem; lisa 1 sek paus all-asendis" },
-            { "id": 15, "circuit": "B", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 35, "unit": "kordust",               "note": "Raskem; pigista lat ülaosas" },
-            { "id": 41, "circuit": "B", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 15, "unit": "kordust (kumb. pool)", "note": "F2: poolpõlvili kabeltõmme asendab seated row't" },
-            { "id": 45, "circuit": "C", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 10, "unit": "kordust (kumb. pool)", "note": "F2: toolil astmetõus; hüppa üles → lase aeglaselt alla" },
-            { "id": 25, "circuit": "C", "order": 2, "reps_min": 45, "reps_max": 45, "start_weight_kg": 0,  "unit": "sek",                  "note": "" },
-            { "id": 23, "circuit": "D", "order": 1, "reps_min": 15, "reps_max": 15, "start_weight_kg": 8,  "unit": "kordust",               "note": "Raskem" }
+            {
+              "id": 12,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 50,
+              "unit": "kordust",
+              "note": "Raskem; 2 sek paus alt-asendis"
+            },
+            {
+              "id": 19,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 14,
+              "unit": "kordust",
+              "note": "Raskem; lisa 1 sek paus all-asendis"
+            },
+            {
+              "id": 15,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 35,
+              "unit": "kordust",
+              "note": "Raskem; pigista lat ülaosas"
+            },
+            {
+              "id": 41,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 15,
+              "unit": "kordust (kumb. pool)",
+              "note": "F2: poolpõlvili kabeltõmme asendab seated row't"
+            },
+            {
+              "id": 45,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 10,
+              "unit": "kordust (kumb. pool)",
+              "note": "F2: toolil astmetõus; hüppa üles → lase aeglaselt alla"
+            },
+            {
+              "id": 25,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 45,
+              "reps_max": 45,
+              "start_weight_kg": 0,
+              "unit": "sek",
+              "note": ""
+            },
+            {
+              "id": 23,
+              "circuit": "D",
+              "order": 1,
+              "reps_min": 15,
+              "reps_max": 15,
+              "start_weight_kg": 8,
+              "unit": "kordust",
+              "note": "Raskem"
+            }
           ]
         },
         "B": {
           "name": "Treening B",
           "phase_1": [
-            { "id": 8,  "circuit": "A", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 12, "unit": "kordust",               "note": "Hantlid mõlemas käes" },
-            { "id": 11, "circuit": "A", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 8,  "unit": "kordust (kumb. pool)", "note": "AINULT tagasisamm" },
-            { "id": 20, "circuit": "B", "order": 1, "reps_min": 10, "reps_max": 12, "start_weight_kg": 10, "unit": "kordust",               "note": "Kaabel alla või rinna kõrgusele" },
-            { "id": 16, "circuit": "B", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 25, "unit": "kordust",               "note": "Alternatiiv: hantlirida kaldepingil" },
-            { "id": 27, "circuit": "C", "order": 1, "reps_min": 10, "reps_max": 10, "start_weight_kg": 6,  "unit": "kordust (kumb. pool)", "note": "" },
-            { "id": 28, "circuit": "C", "order": 2, "reps_min": 20, "reps_max": 20, "start_weight_kg": 20, "unit": "sammu",                "note": "Kaks hantlit" },
-            { "id": 22, "circuit": "D", "order": 1, "reps_min": 12, "reps_max": 15, "start_weight_kg": 6,  "unit": "kordust",               "note": "Aeglane alla, 3 sek" }
+            {
+              "id": 8,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 12,
+              "unit": "kordust",
+              "note": "Hantlid mõlemas käes"
+            },
+            {
+              "id": 11,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 8,
+              "unit": "kordust (kumb. pool)",
+              "note": "AINULT tagasisamm"
+            },
+            {
+              "id": 20,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 10,
+              "unit": "kordust",
+              "note": "Kaabel alla või rinna kõrgusele"
+            },
+            {
+              "id": 16,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 25,
+              "unit": "kordust",
+              "note": "Alternatiiv: hantlirida kaldepingil"
+            },
+            {
+              "id": 27,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 10,
+              "start_weight_kg": 6,
+              "unit": "kordust (kumb. pool)",
+              "note": ""
+            },
+            {
+              "id": 28,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 20,
+              "reps_max": 20,
+              "start_weight_kg": 20,
+              "unit": "sammu",
+              "note": "Kaks hantlit"
+            },
+            {
+              "id": 22,
+              "circuit": "D",
+              "order": 1,
+              "reps_min": 12,
+              "reps_max": 15,
+              "start_weight_kg": 6,
+              "unit": "kordust",
+              "note": "Aeglane alla, 3 sek"
+            }
           ],
           "phase_2": [
-            { "id": 8,  "circuit": "A", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 16, "unit": "kordust",               "note": "Raskem; 2 sek paus alt-asendis" },
-            { "id": 11, "circuit": "A", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 12, "unit": "kordust (kumb. pool)", "note": "Raskem; lisa hantel mõlemasse kätte" },
-            { "id": 20, "circuit": "B", "order": 1, "reps_min": 10, "reps_max": 12, "start_weight_kg": 14, "unit": "kordust",               "note": "Kaabel madalamale — rohkem ülemist rinda" },
-            { "id": 47, "circuit": "B", "order": 2, "reps_min": 15, "reps_max": 25, "start_weight_kg": 0,  "unit": "sek hoid",             "note": "F2: chin-up ISO hoid (hüppa üles, hoia rind lati juures)" },
-            { "id": 27, "circuit": "C", "order": 1, "reps_min": 10, "reps_max": 10, "start_weight_kg": 10, "unit": "kordust (kumb. pool)", "note": "Raskem; kaabel vastand asendist" },
-            { "id": 28, "circuit": "C", "order": 2, "reps_min": 20, "reps_max": 20, "start_weight_kg": 24, "unit": "sammu",                "note": "Max kaal, kaks hantlit" },
-            { "id": 48, "circuit": "D", "order": 1, "reps_min": 8,  "reps_max": 12, "start_weight_kg": 0,  "unit": "kordust",               "note": "F2: kitsa haardega kätekõverdus asendab lateral raise'i" }
+            {
+              "id": 8,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 16,
+              "unit": "kordust",
+              "note": "Raskem; 2 sek paus alt-asendis"
+            },
+            {
+              "id": 11,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 10,
+              "start_weight_kg": 12,
+              "unit": "kordust (kumb. pool)",
+              "note": "Raskem; lisa hantel mõlemasse kätte"
+            },
+            {
+              "id": 20,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 12,
+              "start_weight_kg": 14,
+              "unit": "kordust",
+              "note": "Kaabel madalamale — rohkem ülemist rinda"
+            },
+            {
+              "id": 47,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 15,
+              "reps_max": 25,
+              "start_weight_kg": 0,
+              "unit": "sek hoid",
+              "note": "F2: chin-up ISO hoid (hüppa üles, hoia rind lati juures)"
+            },
+            {
+              "id": 27,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 10,
+              "start_weight_kg": 10,
+              "unit": "kordust (kumb. pool)",
+              "note": "Raskem; kaabel vastand asendist"
+            },
+            {
+              "id": 28,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 20,
+              "reps_max": 20,
+              "start_weight_kg": 24,
+              "unit": "sammu",
+              "note": "Max kaal, kaks hantlit"
+            },
+            {
+              "id": 48,
+              "circuit": "D",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 12,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "F2: kitsa haardega kätekõverdus asendab lateral raise'i"
+            }
+          ]
+        }
+      }
+    },
+    "D": {
+      "name": "Festival (hädajuhu)",
+      "location": "Kõikjal — ainult põrand",
+      "emoji": "✈️",
+      "duration_min": 20,
+      "description": "15-30 min · kehakaalu · reisil · harjumuse hoidmiseks",
+      "trainings": {
+        "A": {
+          "name": "Treening A (push + core)",
+          "phase_1": [
+            {
+              "id": 38,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 15,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Kui 15 kordust liiga kerge: aeglustage (3s alla)"
+            },
+            {
+              "id": 39,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 12,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Tuharad lakke — V-kuju"
+            },
+            {
+              "id": 45,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 15,
+              "reps_max": 20,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Pigista tuharad üleval 2 sek"
+            },
+            {
+              "id": 46,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 16,
+              "reps_max": 24,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "1 kordusteks = 2 jalaviipet"
+            },
+            {
+              "id": 25,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 30,
+              "reps_max": 60,
+              "start_weight_kg": 0,
+              "unit": "sekundit",
+              "note": "Kõhulihased pinge all kogu aeg"
+            },
+            {
+              "id": 44,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 15,
+              "reps_max": 20,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Sügav kükk, kanna põrandas"
+            }
+          ]
+        },
+        "B": {
+          "name": "Treening B (legs + core)",
+          "phase_1": [
+            {
+              "id": 44,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 15,
+              "reps_max": 25,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Täissügavus — reied paralleelsed põrandaga"
+            },
+            {
+              "id": 43,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 30,
+              "reps_max": 60,
+              "start_weight_kg": 0,
+              "unit": "sekundit",
+              "note": "Reied paralleelsed — püsi!"
+            },
+            {
+              "id": 38,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 12,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Aeglane kontroll — 3s alla, 1s üles"
+            },
+            {
+              "id": 47,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 15,
+              "reps_max": 30,
+              "start_weight_kg": 0,
+              "unit": "sekundit",
+              "note": "Alaselg põranda vastu kogu aeg"
+            },
+            {
+              "id": 45,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 15,
+              "reps_max": 20,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Ühe jalaga kui liiga kerge"
+            },
+            {
+              "id": 24,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 6,
+              "reps_max": 8,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Aeglane ja kontrollitud — ära lase selg kaardu"
+            }
+          ]
+        }
+      }
+    },
+    "E": {
+      "name": "Kodus (kalisteetika)",
+      "location": "Kodus — tool + laud + sein",
+      "emoji": "🏠",
+      "duration_min": 40,
+      "description": "Täisprogramm · tool + laud + sein · ilma hantliteta",
+      "trainings": {
+        "A": {
+          "name": "Treening A (ülakeha)",
+          "phase_1": [
+            {
+              "id": 38,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 15,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Lai haare = rohkem rinda; kitsas haare = rohkem triitsepsi"
+            },
+            {
+              "id": 41,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 12,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Asendab lõuatõmmet — keha horisontaalsem = raskem"
+            },
+            {
+              "id": 40,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 10,
+              "reps_max": 15,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Küünarnukid suunduvad taha, mitte külgedele"
+            },
+            {
+              "id": 39,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 8,
+              "reps_max": 12,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Mida kõrgemad tuharad, seda rohkem õlgu"
+            },
+            {
+              "id": 25,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 45,
+              "reps_max": 60,
+              "start_weight_kg": 0,
+              "unit": "sekundit",
+              "note": "Kõva kere = parem surumistehnika"
+            },
+            {
+              "id": 26,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 30,
+              "reps_max": 45,
+              "start_weight_kg": 0,
+              "unit": "sekundit",
+              "note": "Kumbki pool — ära lase puusad vajuda"
+            }
+          ]
+        },
+        "B": {
+          "name": "Treening B (alakeha)",
+          "phase_1": [
+            {
+              "id": 42,
+              "circuit": "A",
+              "order": 1,
+              "reps_min": 8,
+              "reps_max": 12,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Mõlemad pooled — üks keerulisemaid kehakaaluharjutusi"
+            },
+            {
+              "id": 43,
+              "circuit": "A",
+              "order": 2,
+              "reps_min": 45,
+              "reps_max": 60,
+              "start_weight_kg": 0,
+              "unit": "sekundit",
+              "note": "Reied paralleelsed põrandaga — täis 90°"
+            },
+            {
+              "id": 44,
+              "circuit": "B",
+              "order": 1,
+              "reps_min": 15,
+              "reps_max": 20,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Kiire tempo — plahvatuslik üles"
+            },
+            {
+              "id": 45,
+              "circuit": "B",
+              "order": 2,
+              "reps_min": 15,
+              "reps_max": 20,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Ühe jalaga versioon kui liiga kerge"
+            },
+            {
+              "id": 46,
+              "circuit": "C",
+              "order": 1,
+              "reps_min": 20,
+              "reps_max": 30,
+              "start_weight_kg": 0,
+              "unit": "kordust",
+              "note": "Kiire tempo — kardio efekt"
+            },
+            {
+              "id": 47,
+              "circuit": "C",
+              "order": 2,
+              "reps_min": 20,
+              "reps_max": 30,
+              "start_weight_kg": 0,
+              "unit": "sekundit",
+              "note": "Kõige raskem core harjutus — alaselg põranda vastu"
+            }
           ]
         }
       }
     }
-
   }
 }
