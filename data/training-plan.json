@@ -16,18 +16,18 @@
           "phase_1": [
             { "id": 29, "circuit": "A", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 20, "unit": "kordust",   "note": "Sügav alla, põlved varbade suunas" },
             { "id": 30, "circuit": "A", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 15, "unit": "kordust",   "note": "Lai haare — rinna fookus" },
-            { "id": 31, "circuit": "B", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 30, "unit": "kordust",   "note": "Kitsas neutraalne haare" },
+            { "id": 33, "circuit": "B", "order": 1, "reps_min": 5,  "reps_max": 8,  "start_weight_kg": 0,  "unit": "kordust",   "note": "Alakäsi haare; negatiivsed kui täied ei tule — tee värskete kätega enne sõudmist" },
             { "id": 35, "circuit": "B", "order": 2, "reps_min": 12, "reps_max": 15, "start_weight_kg": 0,  "unit": "kordust",   "note": "Kael neutraalne, ära tõsta üle sirge joone" },
-            { "id": 33, "circuit": "C", "order": 1, "reps_min": 5,  "reps_max": 8,  "start_weight_kg": 0,  "unit": "kordust",   "note": "Alakäsi haare; negatiivsed kui täied ei tule" },
+            { "id": 31, "circuit": "C", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 30, "unit": "kordust",   "note": "Kitsas neutraalne haare" },
             { "id": 36, "circuit": "C", "order": 2, "reps_min": 12, "reps_max": 15, "start_weight_kg": 0,  "unit": "kordust",   "note": "Käed rinnale" },
             { "id": 32, "circuit": "D", "order": 1, "reps_min": 12, "reps_max": 15, "start_weight_kg": 10, "unit": "kordust",   "note": "⚠️ KERGE — õla tugevdamine, mitte jõuharjutus" }
           ],
           "phase_2": [
             { "id": 29, "circuit": "A", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 25, "unit": "kordust",   "note": "Raskem kui F1 — 2 sek pause all-asendis" },
             { "id": 30, "circuit": "A", "order": 2, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 20, "unit": "kordust",   "note": "Raskem; hoia abaluu aktiivselt pinges" },
-            { "id": 31, "circuit": "B", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 35, "unit": "kordust",   "note": "Lai haare — ülaselg rohkem" },
+            { "id": 33, "circuit": "B", "order": 1, "reps_min": 5,  "reps_max": 8,  "start_weight_kg": 0,  "unit": "kordust",   "note": "Ülekaas lai haare F2-s — tee värskete kätega" },
             { "id": 47, "circuit": "B", "order": 2, "reps_min": 15, "reps_max": 25, "start_weight_kg": 0,  "unit": "sek hoid", "note": "Chin-up ISO hoid: hüppa üles, hoia rind lati lähedal 15–25 sek" },
-            { "id": 33, "circuit": "C", "order": 1, "reps_min": 5,  "reps_max": 8,  "start_weight_kg": 0,  "unit": "kordust",   "note": "Ülekaas lai haare F2-s — rohkem laiust selga" },
+            { "id": 31, "circuit": "C", "order": 1, "reps_min": 8,  "reps_max": 10, "start_weight_kg": 35, "unit": "kordust",   "note": "Lai haare — ülaselg rohkem" },
             { "id": 36, "circuit": "C", "order": 2, "reps_min": 12, "reps_max": 15, "start_weight_kg": 0,  "unit": "kordust",   "note": "" },
             { "id": 32, "circuit": "D", "order": 1, "reps_min": 12, "reps_max": 15, "start_weight_kg": 12, "unit": "kordust",   "note": "⚠️ Natuke raskem kui F1 — ainult valuvabasid" }
           ]
