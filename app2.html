@@ -1930,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = 'v0.9.8.2';
+const APP_VERSION  = 'v0.9.8.4';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -10915,7 +10915,7 @@ function renderTrenn() {
   const isComingSoon = phaseCfg?.coming_soon ?? false;
 
   // Plaanivalija
-  const planBtns = ['A', 'B', 'C'].filter(p => plans[p]).map(p => {
+  const planBtns = ['A', 'B', 'C', 'D', 'E'].filter(p => plans[p]).map(p => {
     const pl = plans[p];
     return `<button class="plan-btn ${activePlan === p ? 'active' : ''}" onclick="selectPlan('${p}')">
       <span class="plan-btn-emoji">${pl.emoji}</span>
