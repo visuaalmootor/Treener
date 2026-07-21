@@ -1911,7 +1911,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.7.1</span>
+  <span id="version-label">v0.9.7.2</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1930,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.7.1';
+const APP_VERSION  = '0.9.7.2';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -2304,7 +2304,26 @@ function _mergeByKey(a, b, keyFn, scope) {
     if (!ex || JSON.stringify(it).length >= JSON.stringify(ex).length) map.set(k, it);
   });
   let out = [...map.values()];
-  if (scope) out = out.filter(it => !_isDeleted(scope, keyFn(it), it.updated_at || it.added_at || 0));
+  if (scope) out = out.filter(it => !_isDeleted(scope, keyFn(it), it.updated_at || it.added_at || it.ts || 0));
+  return out;
+}
+/* v0.9.7.2: harjutuse märkmed — nüüd kuupäevastatud logi (mitte üks pidevalt ülekirjutatav tekst).
+   Iga harjutuse kohta hoitakse massiivi { id, text, ts }. Liitmisel kasutatakse sama _mergeByKey
+   võtme-loogikat + tombstone'e, nii et kirje lisamine/kustutamine ühest seadmest ei kao teise sünkides.
+   Vana formaat (lihtne tekst-string) teisendatakse ühekordseks "legacy" kirjeks tagasiühilduvuse jaoks. */
+function _asNoteArray(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'string' && raw.trim()) return [{ id: 'legacy', text: raw, ts: 0 }];
+  return [];
+}
+function _mergeExerciseNotes(a, b) {
+  const out = {};
+  const ids = new Set([...Object.keys(a || {}), ...Object.keys(b || {})]);
+  ids.forEach(exId => {
+    const merged = _mergeByKey(_asNoteArray(a?.[exId]), _asNoteArray(b?.[exId]), n => n.id, `exercise_notes|${exId}`)
+      .sort((x, y) => (x.ts || 0) - (y.ts || 0));
+    if (merged.length) out[exId] = merged;
+  });
   return out;
 }
 function _mergeNutritionLog(a, b) {
@@ -2351,7 +2370,7 @@ function _mergeLogValue(id, localVal, cloudVal, cloudTs) {
   if (id === 'deleted_items') return _mergeTombstones(localVal, cloudVal);
   if (id === 'meal_plan_ts')  return _mergeTombstones(localVal, cloudVal);
   if (id.indexOf('alkohol_week_') === 0) return _mergeByKey(localVal, cloudVal, e => `${e.date}|${e.time}|${e.label}`, id);
-  if (id === 'exercise_notes') return { ...(cloudVal || {}), ...(localVal || {}) };
+  if (id === 'exercise_notes') return _mergeExerciseNotes(localVal, cloudVal);
   if (id === 'mp_prep_done') {
     const out = { ...(cloudVal || {}) };
     for (const [wk, days] of Object.entries(localVal || {})) out[wk] = { ...(out[wk] || {}), ...days };
@@ -9648,13 +9667,32 @@ function toggleRestTimer() {
   }
 }
 
-/* ---- Märkmed harjutuse kohta ---- */
-function saveExerciseNote(id) {
-  const v = document.getElementById('ex-note-inp')?.value ?? '';
+/* ---- Märkmed harjutuse kohta ----
+   v0.9.7.2: märkmed on nüüd kuupäevastatud logi (vt _mergeExerciseNotes ülal), mitte üks
+   pidevalt käsitsi juurde kirjutatav tekstikast. */
+function _getExerciseNotes(id) {
+  return _asNoteArray((lsGet('exercise_notes') ?? {})[String(id)]);
+}
+function addExerciseNote(id) {
+  const el = document.getElementById('ex-note-inp');
+  const text = (el?.value ?? '').trim();
+  if (!text) { el?.focus(); return; }
   const notes = lsGet('exercise_notes') ?? {};
-  notes[String(id)] = v;
+  const list = _asNoteArray(notes[String(id)]);
+  list.push({ id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, text, ts: Date.now() });
+  notes[String(id)] = list;
   lsSet('exercise_notes', notes);
-  showToast('✓ Märkus salvestatud');
+  if (el) el.value = '';
+  showToast('✓ Märkus lisatud');
+  renderTab('trenn');
+}
+function deleteExerciseNote(id, noteId) {
+  const notes = lsGet('exercise_notes') ?? {};
+  const list = _asNoteArray(notes[String(id)]).filter(n => n.id !== noteId);
+  notes[String(id)] = list;
+  lsSet('exercise_notes', notes);
+  _markDeleted(`exercise_notes|${id}`, noteId);
+  renderTab('trenn');
 }
 
 function renderExerciseDetail() {
@@ -9739,7 +9777,18 @@ function renderExerciseDetail() {
       </div>`;
   }).join('');
 
-  const notes = (lsGet('exercise_notes') ?? {})[String(planEx.id)] ?? '';
+  const notes = _getExerciseNotes(planEx.id).slice().sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  const notesListHtml = notes.length ? notes.map(n => {
+    const dLabel = n.ts ? new Date(n.ts).toLocaleDateString('et-EE', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Varasem märkus';
+    return `
+      <div class="weight-history-row">
+        <div style="min-width:0;">
+          <div style="font:400 9.5px/1 var(--font-mono);color:var(--text-3);margin-bottom:3px;">${dLabel}</div>
+          <div style="font:500 13px/1.4 var(--font);color:var(--text-1);white-space:pre-wrap;">${n.text}</div>
+        </div>
+        <button class="btn-delete-custom" onclick="deleteExerciseNote('${planEx.id}','${n.id}')" title="Kustuta">×</button>
+      </div>`;
+  }).join('') : `<div style="font:500 12px/1.4 var(--font);color:var(--text-3);padding:6px 0;">Märkmeid pole veel lisatud.</div>`;
   const ytQuery = encodeURIComponent(exData.youtube_search ?? exData.name);
   const stepsHtml = (exData.steps ?? []).map(s => `<li style="margin-bottom:5px;">${s}</li>`).join('');
 
@@ -9797,13 +9846,13 @@ function renderExerciseDetail() {
       <button onclick="toggleRestTimer()" style="width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;background:var(--accent);color:#fff;font-size:16px;">▶</button>
     </div>
 
-    <!-- Märkmed -->
+    <!-- Märkmed (v0.9.7.2: kuupäevastatud logi, mitte üks pidevalt ülekirjutatav tekst) -->
     <div class="card" style="border-radius:var(--r-lg);">
       <div class="card-title">Märkmed</div>
-      <textarea id="ex-note-inp" rows="2" placeholder="Lisa märkus selle harjutuse kohta (tunne, tehnika, valu jne)…"
-        onblur="saveExerciseNote('${planEx.id}')"
-        style="width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 11px;font:500 13px/1.5 var(--font);color:var(--text-1);background:var(--surface);resize:vertical;box-sizing:border-box;">${notes}</textarea>
-      <div style="font:400 9.5px/1 var(--font);color:var(--text-3);margin-top:5px;">Salvestub automaatselt · nähtav ainult siin</div>
+      <textarea id="ex-note-inp" rows="2" placeholder="Lisa uus märkus selle harjutuse kohta (tunne, tehnika, valu jne)…"
+        style="width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 11px;font:500 13px/1.5 var(--font);color:var(--text-1);background:var(--surface);resize:vertical;box-sizing:border-box;"></textarea>
+      <button class="btn-primary" onclick="addExerciseNote('${planEx.id}')" style="margin-top:8px;width:100%;">➕ Lisa märkus</button>
+      <div style="margin-top:${notes.length ? '10px' : '6px'};">${notesListHtml}</div>
     </div>
 
     <!-- Eelmine / Järgmine -->
