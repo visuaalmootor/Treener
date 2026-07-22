@@ -1911,7 +1911,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.7.3</span>
+  <span id="version-label">v0.9.7.4</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1930,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.7.3';
+const APP_VERSION  = '0.9.7.4';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -10066,10 +10066,16 @@ function renderWeekSchedule() {
       bg = 'var(--bg)'; border = 'var(--border)';
       iconColor = 'opacity:0.3;font-size:15px;';
     } else if (isToday) {
+      // v0.9.7.4 fix: varem sai SIIN nuppu ainult VAADATA, mitte klõpsata — kui täna polnud
+      // eelnevalt trennipäevaks märgitud (nt trenniti graafikuväliselt ad hoc), polnud mingit
+      // võimalust täna toitumiskavasse trennijooki lisada. Nüüd on ka tänane päev klõpsatav
+      // (nagu tulevikupäevad), va kui trenn on juba "tehtud"-märgitud (roheline linnuke ülal).
       icon = isPlanned ? '💪' : '😊';
       bg = isPlanned ? 'var(--accent-bg)' : 'var(--bg)';
       border = isPlanned ? 'var(--accent)' : 'var(--border)'; iconColor = '';
       if (isPlanned) extraStyle = 'box-shadow:0 0 0 2px var(--accent-bg);';
+      clickable = `onclick="toggleTrainSchedDay(${i})" title="${isPlanned?'Eemalda tänane treeningpäev':'Lisa täna treeningpäevaks (trennijook lisandub toitumiskavva)'}"`;
+      extraStyle += 'cursor:pointer;';
     } else {
       // Tulevik — klikitav
       icon = isPlanned ? '💪' : '😊';
