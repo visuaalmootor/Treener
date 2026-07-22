@@ -1911,7 +1911,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.7.2</span>
+  <span id="version-label">v0.9.7.3</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1930,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.7.2';
+const APP_VERSION  = '0.9.7.3';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -10729,7 +10729,10 @@ function renderTrenn() {
   const isComingSoon = phaseCfg?.coming_soon ?? false;
 
   // Plaanivalija
-  const planBtns = ['A', 'B', 'C'].filter(p => plans[p]).map(p => {
+  // v0.9.7.3 fix: vana kood näitas ainult plaane A/B/C (kõvasti kodeeritud) — kui lisati
+  // D (Festival hädaplaan) ja E (Kodus kalisteetika), need lihtsalt ei ilmunudki valikusse.
+  // Nüüd näidatakse KÕIKI training-plan.json-is olevaid plaane, olenemata tähest/arvust.
+  const planBtns = Object.keys(plans).filter(p => plans[p]).map(p => {
     const pl = plans[p];
     return `<button class="plan-btn ${activePlan === p ? 'active' : ''}" onclick="selectPlan('${p}')">
       <span class="plan-btn-emoji">${pl.emoji}</span>
