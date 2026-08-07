@@ -1911,7 +1911,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.7.4</span>
+  <span id="version-label">v0.9.8.0</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1930,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.7.4';
+const APP_VERSION  = '0.9.8.0';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -3611,6 +3611,9 @@ let STATE = {
   minaPeriod:         4,      // 0=täna | 1 | 4 | 8 | 12 nädalat
   progressChartType:  'weight', // 'weight'|'shoulder'|'bicep'|'waist'|'all'
   editingWeightDate:  null,     // v0.9.6.6: kui seatud, saveWeightEntry() uuendab seda kirjet (mitte ei lisa tänast)
+  showWeightHistory:  false,    // v0.9.8.0: kaalukirjete ajalugu on vaikimisi kokku voltitud (ruumi kokkuhoid)
+  showMealTimesSettings: false, // v0.9.8.0: söögiaegade seadistus on vaikimisi kokku voltitud (ruumi kokkuhoid)
+  recentFoodsSearch:  '',       // v0.9.8.0: "Viimati söödud" otsinguväli
   bodyMapMuscle:      null,     // valitud lihasgrupp body mapil
   analysis:           null,     // data/analysis.json (scheduled task kirjutab)
   // BMX mode
@@ -3659,9 +3662,26 @@ function renderTab(tab) {
    BtB KALORIVALEM
 ============================================================ */
 
+/* v0.9.8.0: ÜKS koht, kust "praegune kaal" loetakse. Varem oli kaks eraldi, omavahel
+   sünkroonimata kaalu-sisestuskohta — "⚙️ Minu kehainfo" seadete "Kehakaal (kg)" väli
+   (kirjutas mina_settings.kaal, mida kaloriarvutus kasutas) ja "➕ Lisa mõõtmised" (kirjutas
+   weight_log'i, mida graafik/ajalugu kasutas) — ning kumbki muudatus ei kandunud teise üle.
+   Nüüd on weight_log (uusim kirje) alati esmane allikas; mina_settings.kaal on ainult
+   tagasiühilduv varuväärtus vanade kirjete jaoks, kellel weight_log veel tühi. */
+function getCurrentWeightKg() {
+  const wl = lsGet('weight_log') ?? [];
+  if (wl.length) {
+    const last = wl[wl.length - 1];
+    const w = last.weight_kg ?? last.weight;
+    if (w) return w;
+  }
+  const s = lsGet('mina_settings') ?? {};
+  return s.kaal ?? STATE.user?.weight_kg ?? 63;
+}
+
 function calcKcalTarget() {
   const s = lsGet('mina_settings') ?? {};
-  const kaal     = s.kaal          ?? STATE.user?.weight_kg ?? 63;
+  const kaal     = getCurrentWeightKg();
   const rasvaPct = s.rasvaprotsent ?? 12;
   const neatMult = s.neat_mult     ?? 1.6;
   const bulk     = s.bulk_surplus  ?? 300;
@@ -3673,7 +3693,7 @@ function calcKcalTarget() {
 
 function calcKcalTrainingDay() {
   const s        = lsGet('mina_settings') ?? {};
-  const kaal     = s.kaal          ?? STATE.user?.weight_kg ?? 63;
+  const kaal     = getCurrentWeightKg();
   const rasvaPct = s.rasvaprotsent ?? 12;
   const trainH   = s.train_hours   ?? 1.5;
   const leanMass = kaal * (1 - rasvaPct / 100);
@@ -3682,7 +3702,7 @@ function calcKcalTrainingDay() {
 }
 
 function previewKcal() {
-  const kaal     = parseFloat(document.getElementById('ms-kaal')?.value)  || 63;
+  const kaal     = getCurrentWeightKg();
   const rasva    = parseFloat(document.getElementById('ms-rasva')?.value)  || 12;
   const neat     = parseFloat(document.getElementById('ms-neat')?.value)   || 1.6;
   const bulk     = parseInt(document.getElementById('ms-bulk')?.value)     || 300;
@@ -3736,17 +3756,18 @@ function showToast(msg, durationMs = 2500) {
 }
 
 function saveMinaSettings() {
-  const kaal     = parseFloat(document.getElementById('ms-kaal')?.value)     || 63;
+  // v0.9.8.0: kehakaalu väli eemaldatud siit — kaal tuleb nüüd ALATI weight_log'ist
+  // (vt getCurrentWeightKg()). Kehakaalu muutmiseks kasuta "Minu kehainfo" kaalu-kaarti.
   const rasva    = parseFloat(document.getElementById('ms-rasva')?.value)    || 12;
   const neat     = parseFloat(document.getElementById('ms-neat')?.value)     || 1.6;
   const eesmärk  = parseFloat(document.getElementById('ms-eesmärk')?.value) || 78;
   const bulk     = parseInt(document.getElementById('ms-bulk')?.value)       || 300;
   const btbStart = document.getElementById('ms-btbstart')?.value             || '';
-  lsSet('mina_settings', { kaal, rasvaprotsent: rasva, neat_mult: neat,
+  const prevSettings = lsGet('mina_settings') ?? {};
+  lsSet('mina_settings', { ...prevSettings, rasvaprotsent: rasva, neat_mult: neat,
                             kaalueesmärk: eesmärk, bulk_surplus: bulk, btb_start: btbStart });
   STATE.minaSettingsDirty = false; // salvestatud → taustasünk tohib jälle renderdada
   STATE.user = STATE.user ?? {};
-  STATE.user.weight_kg   = kaal;
   STATE.user.goal_weight = eesmärk;
 
   // Nupu visuaalne tagasiside
@@ -3769,7 +3790,7 @@ function saveMinaSettings() {
 
 function renderMinaSettings() {
   const s       = lsGet('mina_settings') ?? {};
-  const kaal    = s.kaal          ?? (STATE.user?.weight_kg  ?? 63);
+  const kaal    = getCurrentWeightKg(); // v0.9.8.0: alati weight_log'i uusim kirje, vt getCurrentWeightKg()
   const rasva   = s.rasvaprotsent ?? 12;
   const neat    = s.neat_mult     ?? 1.6;
   const eesmärk = s.kaalueesmärk  ?? (STATE.user?.goal_weight ?? 78);
@@ -3798,8 +3819,11 @@ function renderMinaSettings() {
       <div style="padding:var(--sp-sm) var(--sp-md);border-bottom:0.5px solid var(--border);
                   font-size:14px;font-weight:700;">⚙️ Minu kehainfo</div>
       <div style="padding:var(--sp-sm) var(--sp-md);">
+        <!-- v0.9.8.0: kehakaalu väli eemaldatud siit — kaal tuleb alati weight_log'ist (vt allpool "⚖️ Kaal" kaart) -->
+        <div style="background:var(--accent-bg);border-radius:10px;padding:8px 11px;margin-bottom:var(--sp-sm);font:500 11.5px/1.4 var(--font);color:var(--accent);">
+          ⚖️ Praegune kaal: <strong>${kaal} kg</strong> — muuda seda allpool "⚖️ Kaal" kaardil, mitte siin.
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-sm);margin-bottom:var(--sp-sm);">
-          ${inp('ms-kaal',    'Kehakaal (kg)',       kaal,    'number', 'step="0.1" min="40" max="150" oninput="previewKcal()"')}
           ${inp('ms-eesmärk', 'Kaalueesmärk (kg)',   eesmärk, 'number', 'step="0.5"')}
           ${inp('ms-bulk',    'Bulk surplus (kcal)', bulk,    'number', 'step="50"  oninput="previewKcal()"')}
         </div>
@@ -6501,25 +6525,58 @@ const TOITUMINE_SLOT_ORDER = ['S01','S02','S03','S04','S05','S06'];
 const TOITUMINE_SLOT_EMOJI = { S01:'🌅', S02:'🥜', S03:'🍽', S04:'🍎', S05:'🌙', S06:'💪' };
 
 /* ---- Kiirlisamine: "Viimati söödud" (v0.9.3.5, Quiet Data) ---- */
-function getRecentCustomFoods() {
+/* v0.9.8.0: varem näidati alati ainult 6 kõige uuemat käsitsi lisatud toitu, ilma otsingu
+   või "näita rohkem" võimaluseta — vanemad toidud olid andmetes täiesti alles (need ei kao
+   KUNAGI, vt Object.values(log) all — käib läbi KÕIK päevad algusest peale), lihtsalt polnud
+   võimalik neid üles leida. Nüüd saab otsida nime järgi, mis tõstab piiri 30-ni. */
+function getRecentCustomFoods(searchTerm = '', limit = 8) {
   const log = getNutritionLog();
   const all = [];
   Object.values(log).forEach(day => (day?._custom || []).forEach(e => all.push(e)));
   all.sort((a, b) => (b.added_at ?? '').localeCompare(a.added_at ?? ''));
+  const term = searchTerm.trim().toLowerCase();
   const seen = new Set(), out = [];
   for (const e of all) {
     const key = (e.name ?? '').toLowerCase();
     if (!key || seen.has(key)) continue;
+    if (term && !key.includes(term)) continue;
     seen.add(key);
     out.push(e);
-    if (out.length >= 6) break;
+    if (out.length >= limit) break;
   }
   return out;
 }
 
 function toggleRecentFoods() {
   STATE.showRecentFoods = !STATE.showRecentFoods;
+  STATE.recentFoodsSearch = '';
   renderTab('toitumine');
+}
+
+/* Filtreerib "Viimati söödud" nimekirja jooksvalt, ilma kogu tabi uuesti renderdamata
+   (muidu kaotaks tekstiväli fookuse igal klahvivajutusel) */
+function filterRecentFoods(term) {
+  STATE.recentFoodsSearch = term;
+  STATE._recentFoods = getRecentCustomFoods(term, term.trim() ? 30 : 8);
+  const el = document.getElementById('recent-foods-list');
+  if (el) el.innerHTML = _renderRecentFoodsRows();
+}
+
+function _renderRecentFoodsRows() {
+  const list = STATE._recentFoods ?? [];
+  if (!list.length) {
+    return STATE.recentFoodsSearch.trim()
+      ? `<div style="font-size:12px;color:var(--text-3);padding:4px 0;">Vasteid ei leitud.</div>`
+      : `<div style="font-size:12px;color:var(--text-3);padding:4px 0;">Käsitsi lisatud toite pole veel — lisa esimene "Otsi toitu" kaudu.</div>`;
+  }
+  return list.map((e, i) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--track);">
+      <div style="min-width:0;">
+        <div style="font:500 13px/1.2 var(--font);color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.name}</div>
+        <div style="font:500 10px/1.2 var(--font-mono);color:var(--text-3);margin-top:2px;">${e.kcal} kcal${e.protein_g ? ' · V ' + e.protein_g + 'g' : ''}</div>
+      </div>
+      <button onclick="addRecentFood(${i},'${STATE._recentFoodsDate}')" style="flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;border:none;cursor:pointer;font:700 16px/1 var(--font-mono);">+</button>
+    </div>`).join('');
 }
 
 /* v0.9.4.5: Toitumine söögisloti laiendus (retsept nagu Meal Prepis) */
@@ -6737,7 +6794,8 @@ function renderToitumine() {
   };
 
   /* ---- Kiirlisamise rida + "Viimati söödud" ---- */
-  STATE._recentFoods = getRecentCustomFoods();
+  STATE._recentFoodsDate = selDate;
+  STATE._recentFoods = getRecentCustomFoods(STATE.recentFoodsSearch, STATE.recentFoodsSearch.trim() ? 30 : 8);
   const quickAddRow = `
     <div style="display:flex;gap:8px;margin-bottom:8px;">
       <button onclick="qaOpenForm('${selDate}','scan')" style="flex:1;padding:10px 4px;background:var(--surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;box-shadow:var(--shadow);font:600 11px/1.3 var(--font);color:var(--text-1);">📷<br>Skanni triipkood</button>
@@ -6747,14 +6805,10 @@ function renderToitumine() {
     ${STATE.showRecentFoods ? `
     <div class="card" style="margin-bottom:8px;">
       <div class="card-title">Viimati söödud — vajuta lisamiseks</div>
-      ${STATE._recentFoods.length ? STATE._recentFoods.map((e, i) => `
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--track);">
-          <div style="min-width:0;">
-            <div style="font:500 13px/1.2 var(--font);color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.name}</div>
-            <div style="font:500 10px/1.2 var(--font-mono);color:var(--text-3);margin-top:2px;">${e.kcal} kcal${e.protein_g ? ' · V ' + e.protein_g + 'g' : ''}</div>
-          </div>
-          <button onclick="addRecentFood(${i},'${selDate}')" style="flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;border:none;cursor:pointer;font:700 16px/1 var(--font-mono);">+</button>
-        </div>`).join('') : `<div style="font-size:12px;color:var(--text-3);padding:4px 0;">Käsitsi lisatud toite pole veel — lisa esimene "Otsi toitu" kaudu.</div>`}
+      <input type="text" placeholder="🔍 Otsi varasemate toitude seast..." value="${STATE.recentFoodsSearch ?? ''}"
+        oninput="filterRecentFoods(this.value)"
+        style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:10px;font:500 13px/1.3 var(--font);color:var(--text-1);background:var(--surface);box-sizing:border-box;margin-bottom:6px;">
+      <div id="recent-foods-list">${_renderRecentFoodsRows()}</div>
     </div>` : ''}`;
 
   return `
@@ -8137,11 +8191,15 @@ function renderTrainingStatsChart(weeks) {
 }
 
 /* Tab 4 — Progress */
-function renderProgress() {
+/* v0.9.8.0: Kaalu/mõõtmiste graafik + "Lisa mõõtmised" vorm + ajalugu on nüüd OMAETE kaart,
+   mis renderdatakse "Minu kehainfo" kõrval tabi ÜLAOSAS (vt renderMina()) — varem oli see
+   matnud "Progress" sektsiooni keskele, kaugel teisest kaalu-sisestuskohast (mina_settings'i
+   "Kehakaal" väli), mis oligi kogu segaduse põhjus. Kasutab sama STATE.minaPeriod väärtust
+   mis allesjäänud renderProgress()'i graafikud — perioodivalija on seal, mõjutab ka siin. */
+function renderWeightEntryCard() {
   const weeks      = STATE.minaPeriod;
   const chartType  = STATE.progressChartType ?? 'weight';
   const weightLog  = lsGet('weight_log') ?? [];
-  const nutLog     = lsGet('nutrition_log') ?? {};
 
   const CHART_TYPES = [
     { id: 'weight',   label: '⚖️ Kaal' },
@@ -8150,18 +8208,6 @@ function renderProgress() {
     { id: 'waist',    label: '📏 Vöö' },
     { id: 'all',      label: '📊 Kõik koos' }
   ];
-
-  const PERIODS = [
-    { w: 0,  label: 'Täna' },
-    { w: 1,  label: '1 nädal' },
-    { w: 4,  label: '4 nädalat' },
-    { w: 8,  label: '8 nädalat' },
-    { w: 12, label: '12 nädalat' },
-  ];
-  const periodBtns = PERIODS.map(p =>
-    `<button class="period-btn ${weeks === p.w ? 'active' : ''}" onclick="setMinaPeriod(${p.w})">${p.label}</button>`
-  ).join('');
-
   const chartTypeBtns = CHART_TYPES.map(t =>
     `<button class="chart-type-btn ${chartType === t.id ? 'active' : ''}" onclick="setProgressChart('${t.id}')">${t.label}</button>`
   ).join('');
@@ -8196,18 +8242,6 @@ function renderProgress() {
   }
 
   return `
-    <div class="period-selector">${periodBtns}</div>
-
-    ${renderBodyMap(weeks)}
-
-    ${renderGoalsTracker()}
-
-    ${renderOnTrackCard(weeks)}
-
-    ${renderKcalChart(weeks)}
-
-    ${renderTrainingStatsChart(weeks)}
-
     <div class="chart-card">
       <div class="chart-type-selector" style="margin-bottom:var(--sp-sm);">${chartTypeBtns}</div>
       <div class="chart-title">${chartTitle}</div>
@@ -8239,7 +8273,36 @@ function renderProgress() {
       <button class="btn-primary" onclick="saveWeightEntry()" style="margin-top:0;">${STATE.editingWeightDate ? 'Uuenda kirjet' : 'Salvesta'}</button>
     </div>
 
-    ${renderWeightHistoryList(weightLog)}
+    ${renderWeightHistoryList(weightLog)}`;
+}
+
+function renderProgress() {
+  const weeks      = STATE.minaPeriod;
+  const nutLog     = lsGet('nutrition_log') ?? {};
+
+  const PERIODS = [
+    { w: 0,  label: 'Täna' },
+    { w: 1,  label: '1 nädal' },
+    { w: 4,  label: '4 nädalat' },
+    { w: 8,  label: '8 nädalat' },
+    { w: 12, label: '12 nädalat' },
+  ];
+  const periodBtns = PERIODS.map(p =>
+    `<button class="period-btn ${weeks === p.w ? 'active' : ''}" onclick="setMinaPeriod(${p.w})">${p.label}</button>`
+  ).join('');
+
+  return `
+    <div class="period-selector">${periodBtns}</div>
+
+    ${renderBodyMap(weeks)}
+
+    ${renderGoalsTracker()}
+
+    ${renderOnTrackCard(weeks)}
+
+    ${renderKcalChart(weeks)}
+
+    ${renderTrainingStatsChart(weeks)}
 
     ${renderPRSection()}
 
@@ -8595,7 +8658,19 @@ function resetMealTimes() {
   renderTab('mina');
 }
 
+/* v0.9.8.0: kaart on vaikimisi kokku volditud — võttis liiga palju ruumi, kui alati lahti. */
+function toggleMealTimesSettings() {
+  STATE.showMealTimesSettings = !STATE.showMealTimesSettings;
+  renderTab('mina');
+}
 function renderMealTimesCard() {
+  if (!STATE.showMealTimesSettings) {
+    return `
+      <div class="card" onclick="toggleMealTimesSettings()" style="border-radius:var(--r-lg);cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+        <div class="card-title" style="margin-bottom:0;">🕐 Söögiaegade seadistus</div>
+        <span style="color:var(--text-3);font-size:12px;">▼</span>
+      </div>`;
+  }
   const labels = { S01: 'Hommikusöök', S02: 'Vahepala', S03: 'Lõuna', S04: 'Vahepala 2', S05: 'Õhtusöök' };
   const emojis = { S01: '🌅', S02: '🥜', S03: '🍽', S04: '🍎', S05: '🌙' };
   const rows = ['S01', 'S02', 'S03', 'S04', 'S05'].map(sid => `
@@ -8606,9 +8681,12 @@ function renderMealTimesCard() {
     </div>`).join('');
   return `
     <div class="card" style="border-radius:var(--r-lg);">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;">
-        <div class="card-title" style="margin-bottom:0;">Söögiaegade seadistus</div>
-        <span onclick="resetMealTimes()" style="font:500 10px/1 var(--font);color:var(--text-3);cursor:pointer;text-decoration:underline;">lähtesta</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="card-title" style="margin-bottom:0;">🕐 Söögiaegade seadistus</div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span onclick="resetMealTimes()" style="font:500 10px/1 var(--font);color:var(--text-3);cursor:pointer;text-decoration:underline;">lähtesta</span>
+          <span onclick="toggleMealTimesSettings()" style="color:var(--text-3);font-size:12px;cursor:pointer;">▲</span>
+        </div>
       </div>
       <div style="font:400 10.5px/1.5 var(--font);color:var(--text-3);margin:4px 0 6px;">Aja muutmine nihutab hilisemad söögikorrad automaatselt sama vahedega — kohanda vajadusel üksikult ja salvesta. Uuendab automaatselt Toidupäeviku, Meal Prepi ja Kodu ajad.</div>
       ${rows}
@@ -8627,6 +8705,7 @@ function renderMina() {
   return `
     ${renderMinaProfileHeader()}
     ${renderKehainfoCard()}
+    ${renderWeightEntryCard()}
     ${renderKaloritarveCard()}
     ${renderMinaSettings()}
     ${renderMealTimesCard()}
@@ -9450,8 +9529,14 @@ function deleteWeightEntry(date) {
 }
 
 /* v0.9.6.6: kaalukirjete ajaloo nimekiri (uusim eest) — muuda/kustuta */
+/* v0.9.8.0: ajalugu on vaikimisi kokku volditud — võttis liiga palju ruumi lahti püsivalt lahti. */
+function toggleWeightHistory() {
+  STATE.showWeightHistory = !STATE.showWeightHistory;
+  renderTab('mina');
+}
 function renderWeightHistoryList(weightLog) {
   if (!weightLog || !weightLog.length) return '';
+  const isOpen = !!STATE.showWeightHistory;
   const sorted = [...weightLog].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 20);
   const rows = sorted.map(e => {
     const dLabel = new Date(e.date + 'T00:00:00').toLocaleDateString('et-EE', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -9474,9 +9559,11 @@ function renderWeightHistoryList(weightLog) {
   }).join('');
   return `
     <div class="chart-card">
-      <div class="chart-title">📋 Kaalukirjete ajalugu</div>
-      <div class="chart-sub">Puuduta ✏️ et muuta või × et kustutada</div>
-      ${rows}
+      <div onclick="toggleWeightHistory()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+        <div class="chart-title" style="margin-bottom:0;">📋 Kaalukirjete ajalugu <span style="color:var(--text-3);font-weight:500;">(${sorted.length})</span></div>
+        <span style="color:var(--text-3);font-size:12px;">${isOpen ? '▲' : '▼'}</span>
+      </div>
+      ${isOpen ? `<div class="chart-sub" style="margin-top:6px;">Puuduta ✏️ et muuta või × et kustutada</div>${rows}` : ''}
     </div>`;
 }
 
@@ -9604,8 +9691,11 @@ function exSaveSet(exerciseId, setNo) {
   let tlog = lsGet('training_log') ?? [];
   let todayEntry = tlog.find(e => e.date === today && e.plan === STATE.activePlan && e.treening === STATE.currentTraining);
   if (!todayEntry) {
-    todayEntry = { date: today, plan: STATE.activePlan, treening: STATE.currentTraining, done: false, exercises: [] };
+    // v0.9.8.0: done=true kohe — vt allpool täispikk selgitus exSaveSet'i lõpus
+    todayEntry = { date: today, plan: STATE.activePlan, treening: STATE.currentTraining, done: true, exercises: [] };
     tlog.push(todayEntry);
+  } else {
+    todayEntry.done = true;
   }
   let exEntry = todayEntry.exercises.find(e => String(e.exercise_id) === String(exerciseId));
   if (!exEntry) {
@@ -9877,8 +9967,11 @@ function saveExerciseLog(exerciseId) {
   let tlog = lsGet('training_log') ?? [];
   let todayEntry = tlog.find(e => e.date === today && e.plan === STATE.activePlan && e.treening === STATE.currentTraining);
   if (!todayEntry) {
-    todayEntry = { date: today, plan: STATE.activePlan, treening: STATE.currentTraining, done: false, exercises: [] };
+    // v0.9.8.0: done=true kohe — vt exSaveSet'i kommentaari, sama loogika
+    todayEntry = { date: today, plan: STATE.activePlan, treening: STATE.currentTraining, done: true, exercises: [] };
     tlog.push(todayEntry);
+  } else {
+    todayEntry.done = true;
   }
   let exEntry = todayEntry.exercises.find(e => String(e.exercise_id) === String(exerciseId));
   if (!exEntry) {
@@ -9894,7 +9987,12 @@ function saveExerciseLog(exerciseId) {
   renderTab('trenn');
 }
 
-/* Märgib treeningu tehtuks */
+/* Märgib treeningu tehtuks
+   v0.9.8.0: `done` lipp saab nüüd AUTOMAATSELT true kohe, kui esimene sett salvestatakse
+   (vt exSaveSet/saveExerciseLog) — varem läks kirje statistikasse ainult siis, kui SEDA nuppu
+   ka lõpuks vajutati, ja kui unustasid, kadus terve treening arvestusest ega saanud järgmisel
+   päeval enam tagantjärele parandada. See nupp on nüüd vajalik AINULT kahe lisaefekti jaoks:
+   1) anaboolse akna (toitumise) taimeri käivitamine, 2) automaatne A↔B treeningu vahetus. */
 function markTrainingDone() {
   const today = _localDateStr(new Date());
   let tlog = lsGet('training_log') ?? [];
