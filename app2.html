@@ -1911,7 +1911,7 @@
 
 <!-- DEBUG + VERSION -->
 <div id="footer-bar">
-  <span id="version-label">v0.9.8.0</span>
+  <span id="version-label">v0.9.8.5</span>
   <button id="dbg-btn" onclick="toggleDebug()">🛠</button>
 </div>
 <div id="dbg-panel">
@@ -1930,7 +1930,7 @@
    CONFIG
    Muuda GITHUB_RAW_BASE kui lähed Variant B peale.
 ============================================================ */
-const APP_VERSION  = '0.9.8.0';
+const APP_VERSION  = '0.9.8.5';
 
 /* ============================================================
    FIREBASE (v0.9.0) — Google Auth + Firestore sync
@@ -3007,6 +3007,80 @@ const FALLBACK = {
             ]
           }
         }
+      },
+      D: { name: 'Festival (hädaplaan)', location: 'Välismaal / festivalil — ainult kehakaal', emoji: '✈️', duration_min: 20,
+        trainings: {
+          A: { name: 'Treening A (push + core)',
+            phase_1: [
+              { id: 38, circuit: 'A', order: 1, reps_min: 8,  reps_max: 12, start_weight_kg: 0, unit: 'kordust', note: 'Sügavale alla, küünarnukid 45°' },
+              { id: 39, circuit: 'A', order: 2, reps_min: 5,  reps_max: 10, start_weight_kg: 0, unit: 'kordust', note: 'Puusad üles, kanna kätele koormus' },
+              { id: 24, circuit: 'B', order: 1, reps_min: 10, reps_max: 12, start_weight_kg: 0, unit: 'kordust (kumb. pool)', note: 'Selg vastu põrandat' },
+              { id: 25, circuit: 'B', order: 2, reps_min: 30, reps_max: 45, start_weight_kg: 0, unit: 'sek', note: 'Hoia keha sirge' },
+              { id: 49, circuit: 'C', order: 1, reps_min: 20, reps_max: 30, start_weight_kg: 0, unit: 'sek', note: 'Hoia alakõht vastu põrandat' }
+            ],
+            phase_2: [
+              { id: 38, circuit: 'A', order: 1, reps_min: 10, reps_max: 15, start_weight_kg: 0, unit: 'kordust', note: 'Hoia 2 sek all-asendis' },
+              { id: 39, circuit: 'A', order: 2, reps_min: 8,  reps_max: 12, start_weight_kg: 0, unit: 'kordust', note: 'Raskem variant' },
+              { id: 24, circuit: 'B', order: 1, reps_min: 12, reps_max: 15, start_weight_kg: 0, unit: 'kordust (kumb. pool)', note: '3 sek alla' },
+              { id: 48, circuit: 'B', order: 2, reps_min: 10, reps_max: 15, start_weight_kg: 0, unit: 'kordust', note: 'Mountain climber: kiirelt' },
+              { id: 49, circuit: 'C', order: 1, reps_min: 30, reps_max: 45, start_weight_kg: 0, unit: 'sek', note: 'Raskem, pingutus suurem' }
+            ]
+          },
+          B: { name: 'Treening B (legs + core)',
+            phase_1: [
+              { id: 42, circuit: 'A', order: 1, reps_min: 15, reps_max: 20, start_weight_kg: 0, unit: 'kordust', note: 'Mõlemad jalad korraga, põlved varbade suunas' },
+              { id: 43, circuit: 'A', order: 2, reps_min: 30, reps_max: 45, start_weight_kg: 0, unit: 'sek (kumb. pool)', note: 'Seina vastu, reied paralleelsed' },
+              { id: 46, circuit: 'B', order: 1, reps_min: 15, reps_max: 20, start_weight_kg: 0, unit: 'kordust', note: 'Puusad täielikult üles, pigista tuharad' },
+              { id: 25, circuit: 'B', order: 2, reps_min: 30, reps_max: 45, start_weight_kg: 0, unit: 'sek', note: '' }
+            ],
+            phase_2: [
+              { id: 42, circuit: 'A', order: 1, reps_min: 20, reps_max: 25, start_weight_kg: 0, unit: 'kordust', note: '2 sek all-asendis' },
+              { id: 44, circuit: 'A', order: 2, reps_min: 8,  reps_max: 10, start_weight_kg: 0, unit: 'kordust (kumb. pool)', note: 'Bulgaaria split kükk: tagumine jalg tõstetud' },
+              { id: 46, circuit: 'B', order: 1, reps_min: 20, reps_max: 25, start_weight_kg: 0, unit: 'kordust', note: 'Ühe jalaga variant' },
+              { id: 49, circuit: 'B', order: 2, reps_min: 30, reps_max: 45, start_weight_kg: 0, unit: 'sek', note: 'Hollow body hoid' }
+            ]
+          }
+        }
+      },
+      E: { name: 'Kodus (kalisteetika)', location: 'Kodus — ainult põrand, tool, sein', emoji: '🏠', duration_min: 40,
+        trainings: {
+          A: { name: 'Treening A (ülakeha)',
+            phase_1: [
+              { id: 38, circuit: 'A', order: 1, reps_min: 8,  reps_max: 12, start_weight_kg: 0, unit: 'kordust', note: 'Sügavale alla, täis liikuvus' },
+              { id: 40, circuit: 'A', order: 2, reps_min: 6,  reps_max: 10, start_weight_kg: 0, unit: 'kordust', note: 'Tooli äärelt dips: küünarnukid taha, mitte küljele' },
+              { id: 41, circuit: 'B', order: 1, reps_min: 8,  reps_max: 10, start_weight_kg: 0, unit: 'kordust', note: 'Laua invertrida: keha sirge, pigista abaluud' },
+              { id: 39, circuit: 'B', order: 2, reps_min: 5,  reps_max: 8,  start_weight_kg: 0, unit: 'kordust', note: 'Puusad üles — rohkem õlgu' },
+              { id: 24, circuit: 'C', order: 1, reps_min: 10, reps_max: 12, start_weight_kg: 0, unit: 'kordust (kumb. pool)', note: 'Selg vastu põrandat' },
+              { id: 25, circuit: 'C', order: 2, reps_min: 40, reps_max: 60, start_weight_kg: 0, unit: 'sek', note: '' }
+            ],
+            phase_2: [
+              { id: 38, circuit: 'A', order: 1, reps_min: 12, reps_max: 15, start_weight_kg: 0, unit: 'kordust', note: '2 sek all-asendis — kontrolli langemist' },
+              { id: 40, circuit: 'A', order: 2, reps_min: 8,  reps_max: 12, start_weight_kg: 0, unit: 'kordust', note: 'Jalad kaugemal = raskem' },
+              { id: 41, circuit: 'B', order: 1, reps_min: 10, reps_max: 12, start_weight_kg: 0, unit: 'kordust', note: 'Jalad tõstetud (tool alla) — raskem' },
+              { id: 39, circuit: 'B', order: 2, reps_min: 8,  reps_max: 10, start_weight_kg: 0, unit: 'kordust', note: '3 sek alla, kontrolli' },
+              { id: 24, circuit: 'C', order: 1, reps_min: 12, reps_max: 15, start_weight_kg: 0, unit: 'kordust (kumb. pool)', note: '3 sek alla' },
+              { id: 49, circuit: 'C', order: 2, reps_min: 30, reps_max: 45, start_weight_kg: 0, unit: 'sek', note: 'Hollow body hoid — alaselg vastu põrandat' }
+            ]
+          },
+          B: { name: 'Treening B (alakeha + core)',
+            phase_1: [
+              { id: 42, circuit: 'A', order: 1, reps_min: 15, reps_max: 20, start_weight_kg: 0, unit: 'kordust', note: 'Kehakaal kükk — sügav, 3 sek alla' },
+              { id: 44, circuit: 'A', order: 2, reps_min: 8,  reps_max: 10, start_weight_kg: 0, unit: 'kordust (kumb. pool)', note: 'Bulgaaria split kükk toolile toetudes' },
+              { id: 43, circuit: 'B', order: 1, reps_min: 30, reps_max: 60, start_weight_kg: 0, unit: 'sek (kumb. pool)', note: 'Reied paralleelsed põrandaga' },
+              { id: 46, circuit: 'B', order: 2, reps_min: 15, reps_max: 20, start_weight_kg: 0, unit: 'kordust', note: 'Puusad täielikult üles, 1 sek hoid' },
+              { id: 48, circuit: 'C', order: 1, reps_min: 20, reps_max: 30, start_weight_kg: 0, unit: 'kordust', note: 'Kiirelt — cardio efekt' },
+              { id: 25, circuit: 'C', order: 2, reps_min: 40, reps_max: 60, start_weight_kg: 0, unit: 'sek', note: '' }
+            ],
+            phase_2: [
+              { id: 42, circuit: 'A', order: 1, reps_min: 20, reps_max: 25, start_weight_kg: 0, unit: 'kordust', note: '2 sek all-asendis' },
+              { id: 45, circuit: 'A', order: 2, reps_min: 8,  reps_max: 12, start_weight_kg: 0, unit: 'kordust (kumb. pool)', note: 'Astmetõus toolile — kõrge samm' },
+              { id: 43, circuit: 'B', order: 1, reps_min: 45, reps_max: 60, start_weight_kg: 0, unit: 'sek (kumb. pool)', note: 'Ühe jala hoid poolel ajal' },
+              { id: 46, circuit: 'B', order: 2, reps_min: 15, reps_max: 20, start_weight_kg: 0, unit: 'kordust', note: 'Ühe jalaga glute bridge' },
+              { id: 48, circuit: 'C', order: 1, reps_min: 30, reps_max: 40, start_weight_kg: 0, unit: 'kordust', note: 'Mountain climber max tempo' },
+              { id: 49, circuit: 'C', order: 2, reps_min: 30, reps_max: 45, start_weight_kg: 0, unit: 'sek', note: 'Hollow body — alaselg kinni' }
+            ]
+          }
+        }
       }
     }
   },
@@ -3614,6 +3688,7 @@ let STATE = {
   showWeightHistory:  false,    // v0.9.8.0: kaalukirjete ajalugu on vaikimisi kokku voltitud (ruumi kokkuhoid)
   showMealTimesSettings: false, // v0.9.8.0: söögiaegade seadistus on vaikimisi kokku voltitud (ruumi kokkuhoid)
   recentFoodsSearch:  '',       // v0.9.8.0: "Viimati söödud" otsinguväli
+  _recentFoodsPage:   0,        // v0.9.8.5: paginatsioon (0-indekseeritud)
   bodyMapMuscle:      null,     // valitud lihasgrupp body mapil
   analysis:           null,     // data/analysis.json (scheduled task kirjutab)
   // BMX mode
@@ -6550,6 +6625,16 @@ function getRecentCustomFoods(searchTerm = '', limit = 8) {
 function toggleRecentFoods() {
   STATE.showRecentFoods = !STATE.showRecentFoods;
   STATE.recentFoodsSearch = '';
+  STATE._recentFoodsPage = 0;
+  renderTab('toitumine');
+}
+
+function recentFoodsLoadMore() {
+  STATE._recentFoodsPage = (STATE._recentFoodsPage ?? 0) + 1;
+  renderTab('toitumine');
+}
+function recentFoodsLoadMoreBack() {
+  STATE._recentFoodsPage = Math.max(0, (STATE._recentFoodsPage ?? 0) - 1);
   renderTab('toitumine');
 }
 
@@ -6557,17 +6642,26 @@ function toggleRecentFoods() {
    (muidu kaotaks tekstiväli fookuse igal klahvivajutusel) */
 function filterRecentFoods(term) {
   STATE.recentFoodsSearch = term;
-  STATE._recentFoods = getRecentCustomFoods(term, term.trim() ? 30 : 8);
+  STATE._recentFoodsPage = 0;
+  STATE._recentFoods = getRecentCustomFoods(term, term.trim() ? 30 : 100);
   const el = document.getElementById('recent-foods-list');
   if (el) el.innerHTML = _renderRecentFoodsRows();
 }
 
 function _renderRecentFoodsRows() {
-  const list = STATE._recentFoods ?? [];
-  if (!list.length) {
-    return STATE.recentFoodsSearch.trim()
+  const allList = STATE._recentFoods ?? [];
+  const isSearching = !!(STATE.recentFoodsSearch ?? '').trim();
+  const page = STATE._recentFoodsPage ?? 0;
+  const pageSize = 10;
+  const list = isSearching ? allList : allList.slice(page * pageSize, (page + 1) * pageSize);
+  const offset = isSearching ? 0 : page * pageSize;
+  if (!allList.length) {
+    return isSearching
       ? `<div style="font-size:12px;color:var(--text-3);padding:4px 0;">Vasteid ei leitud.</div>`
       : `<div style="font-size:12px;color:var(--text-3);padding:4px 0;">Käsitsi lisatud toite pole veel — lisa esimene "Otsi toitu" kaudu.</div>`;
+  }
+  if (!list.length) {
+    return `<div style="font-size:12px;color:var(--text-3);padding:4px 0;">Vasteid ei leitud.</div>`;
   }
   return list.map((e, i) => `
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--track);">
@@ -6575,7 +6669,7 @@ function _renderRecentFoodsRows() {
         <div style="font:500 13px/1.2 var(--font);color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.name}</div>
         <div style="font:500 10px/1.2 var(--font-mono);color:var(--text-3);margin-top:2px;">${e.kcal} kcal${e.protein_g ? ' · V ' + e.protein_g + 'g' : ''}</div>
       </div>
-      <button onclick="addRecentFood(${i},'${STATE._recentFoodsDate}')" style="flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;border:none;cursor:pointer;font:700 16px/1 var(--font-mono);">+</button>
+      <button onclick="addRecentFood(${offset + i},'${STATE._recentFoodsDate}')" style="flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;border:none;cursor:pointer;font:700 16px/1 var(--font-mono);">+</button>
     </div>`).join('');
 }
 
@@ -6795,7 +6889,12 @@ function renderToitumine() {
 
   /* ---- Kiirlisamise rida + "Viimati söödud" ---- */
   STATE._recentFoodsDate = selDate;
-  STATE._recentFoods = getRecentCustomFoods(STATE.recentFoodsSearch, STATE.recentFoodsSearch.trim() ? 30 : 8);
+  STATE._recentFoods = getRecentCustomFoods(STATE.recentFoodsSearch, STATE.recentFoodsSearch.trim() ? 30 : 100);
+  const _rfPage     = STATE._recentFoodsPage ?? 0;
+  const _rfPageSize = 10;
+  const _rfAll      = STATE._recentFoods;
+  const _rfHasMore  = !STATE.recentFoodsSearch.trim() && _rfAll.length > (_rfPage + 1) * _rfPageSize;
+  const _rfHasPrev  = !STATE.recentFoodsSearch.trim() && _rfPage > 0;
   const quickAddRow = `
     <div style="display:flex;gap:8px;margin-bottom:8px;">
       <button onclick="qaOpenForm('${selDate}','scan')" style="flex:1;padding:10px 4px;background:var(--surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;box-shadow:var(--shadow);font:600 11px/1.3 var(--font);color:var(--text-1);">📷<br>Skanni triipkood</button>
@@ -6809,6 +6908,11 @@ function renderToitumine() {
         oninput="filterRecentFoods(this.value)"
         style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:10px;font:500 13px/1.3 var(--font);color:var(--text-1);background:var(--surface);box-sizing:border-box;margin-bottom:6px;">
       <div id="recent-foods-list">${_renderRecentFoodsRows()}</div>
+      ${(_rfHasPrev || _rfHasMore) ? `
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        ${_rfHasPrev ? `<button onclick="recentFoodsLoadMoreBack()" style="flex:1;padding:8px 4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;font:600 12px/1.2 var(--font);color:var(--text-1);">← Uuemad</button>` : '<div style="flex:1"></div>'}
+        ${_rfHasMore ? `<button onclick="recentFoodsLoadMore()" style="flex:1;padding:8px 4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;font:600 12px/1.2 var(--font);color:var(--text-1);">Vanemad →</button>` : '<div style="flex:1"></div>'}
+      </div>` : ''}
     </div>` : ''}`;
 
   return `
