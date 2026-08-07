@@ -7532,9 +7532,15 @@ function getMuscleActivity(weeks) {
       if (new Date(session.date) < cutoff) return;
     }
     (session.exercises ?? []).forEach(ex => {
-      const cat = exIndex[String(ex.exercise_id)]?.category;
-      if (!cat) return;
-      counts[cat] = (counts[cat] ?? 0) + (ex.sets?.length ?? 0);
+      const exData = exIndex[String(ex.exercise_id)] ?? {};
+      const cat = exData.category;
+      const n = ex.sets?.length ?? 0;
+      if (cat && !cat.includes('/')) counts[cat] = (counts[cat] ?? 0) + n;
+      const extraPrim = exData.extra_primary ?? [];
+      extraPrim.forEach(p => { if (p && !p.includes('/')) counts[p] = (counts[p] ?? 0) + n; });
+      const sec = exData.secondary_category;
+      const secList = Array.isArray(sec) ? sec : sec ? [sec] : [];
+      secList.forEach(s => { if (s && !s.includes('/')) counts[s] = (counts[s] ?? 0) + n * 0.5; });
     });
   });
   return counts;
@@ -7626,12 +7632,20 @@ function renderMuscleBarsChart(cat, weeks) {
       const d = new Date(s.date);
       if (d < wStart || d >= wEnd) return;
       (s.exercises ?? []).forEach(ex => {
-        const exCat = exIndex[String(ex.exercise_id)]?.category;
-        // Selg + Alaselg koos
-        const match = cat === 'Selg'
+        const exData = exIndex[String(ex.exercise_id)] ?? {};
+        const exCat = exData.category;
+        const exExtra = exData.extra_primary ?? [];
+        const exSec = exData.secondary_category;
+        const exSecList = Array.isArray(exSec) ? exSec : exSec ? [exSec] : [];
+        const isPrimary = cat === 'Selg'
           ? (exCat === 'Selg' || exCat === 'Alaselg')
-          : (exCat === cat);
-        if (match) sets += (ex.sets?.length ?? 0);
+          : (exCat === cat || exExtra.includes(cat));
+        const isSecondary = !isPrimary && (cat === 'Selg'
+          ? exSecList.some(s => s === 'Selg' || s === 'Alaselg')
+          : exSecList.includes(cat));
+        const n = ex.sets?.length ?? 0;
+        if (isPrimary) sets += n;
+        else if (isSecondary) sets += n * 0.5;
       });
     });
     weekData.push({ label, sets });
@@ -7668,9 +7682,15 @@ function renderAllMusclesStackedChart(allMuscles, weeks) {
       const d = new Date(s.date);
       if (d < wStart || d >= wEnd) return;
       (s.exercises ?? []).forEach(ex => {
-        const cat = exIndex[String(ex.exercise_id)]?.category;
-        if (!cat) return;
-        byCat[cat] = (byCat[cat] ?? 0) + (ex.sets?.length ?? 0);
+        const exData = exIndex[String(ex.exercise_id)] ?? {};
+        const primCat = exData.category;
+        const extraPrim = exData.extra_primary ?? [];
+        const sec = exData.secondary_category;
+        const secList = Array.isArray(sec) ? sec : sec ? [sec] : [];
+        const n = ex.sets?.length ?? 0;
+        if (primCat && !primCat.includes('/')) byCat[primCat] = (byCat[primCat] ?? 0) + n;
+        extraPrim.forEach(p => { if (p && !p.includes('/')) byCat[p] = (byCat[p] ?? 0) + n; });
+        secList.forEach(sc => { if (sc && !sc.includes('/')) byCat[sc] = (byCat[sc] ?? 0) + n * 0.5; });
       });
     });
     weekData.push({ label, byCat });
